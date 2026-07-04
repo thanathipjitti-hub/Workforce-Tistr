@@ -3026,7 +3026,7 @@ function exportFormalReportToExcel(){
 
   // ===== SHEET 3: Band/SB =====
   const s3=[];
-  s3.push(['พนักงาน แยกตามตำแหน่ง (Band / Sub band) — สถาบันวิจัยวิ ทยาศาสตร์และเทคโนโลยีแห่งประเทศไทย (วว.)']);
+  s3.push(['พนักงาน แยกตามตำแหน่ง (Band / Sub band) — สถาบันวิจัยวิ�ทยาศาสตร์และเทคโนโลยีแห่งประเทศไทย (วว.)']);
   const {table:bandTbl}=r2BandTable(data);
   bandTbl.forEach(row=>s3.push(row));
   const ws3=XLSX.utils.aoa_to_sheet(s3);
