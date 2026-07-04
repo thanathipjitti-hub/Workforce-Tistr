@@ -1,0 +1,3446 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ระบบสารสนเทศอัตรากำลัง | วว.</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&family=Prompt:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+:root{
+  --c1:#1a1a6e;--c2:#2e2ea8;--c3:#4444c4;--c4:#8888cc;
+  --gold:#c8a84b;--gold2:#e4c86e;--gold3:#f5dfa0;
+  --bg:#f0f2f8;--w:#FFFFFF;--bdr:#d0d0e8;--light:#e8eaf4;
+  --muted:#5a5a80;--sh:0 2px 16px rgba(26,26,110,.09);--sh2:0 1px 5px rgba(26,26,110,.06);--r:12px
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Sarabun',sans-serif;background:var(--bg);color:#1a1a3e;font-size:14px;line-height:1.6}
+
+/* HEADER */
+.hdr{
+  background:var(--c1);border-bottom:3px solid var(--gold);
+  color:#fff;padding:0 32px;display:flex;align-items:center;justify-content:space-between;
+  height:72px;box-shadow:0 2px 16px rgba(26,26,110,.28);position:sticky;top:0;z-index:100;
+  position:relative;overflow:visible
+}
+.hdr::before{content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse at 110% 50%,rgba(100,100,200,.18) 0%,transparent 60%),
+             radial-gradient(ellipse at -10% 50%,rgba(200,168,75,.06) 0%,transparent 50%);pointer-events:none}
+.hdr-brand{display:flex;align-items:center;gap:13px;position:relative}
+.hdr-logo{
+  height:58px;width:58px;object-fit:contain;flex-shrink:0;
+  filter:brightness(0) invert(1)
+}
+.hero-logo{
+  height:64px;width:64px;object-fit:contain;flex-shrink:0;
+  filter:brightness(0) invert(1);
+  opacity:.95
+}
+.hdr-title{font-family:'Prompt',sans-serif;font-size:.93rem;font-weight:600;color:#fff;line-height:1.25}
+.hdr-sub{font-size:.68rem;color:rgba(255,255,255,.52);margin-top:2px}
+.hdr .btn-g{background:rgba(200,168,75,.2);color:var(--gold2);border:1.5px solid rgba(200,168,75,.45);font-weight:600;position:relative}
+.hdr .btn-g:hover{background:rgba(200,168,75,.32)}
+
+/* TABS */
+.tabs{background:var(--w);border-bottom:1px solid var(--bdr);padding:0 32px;display:flex}
+.tab{
+  padding:12px 22px;font-family:'Sarabun',sans-serif;font-size:.84rem;font-weight:500;
+  color:var(--muted);cursor:pointer;border:none;background:none;
+  border-bottom:3px solid transparent;margin-bottom:-1px;transition:.17s
+}
+.tab.on{color:var(--c1);border-bottom-color:var(--gold);font-weight:600}
+.tab:hover:not(.on){color:var(--c2)}
+
+/* MAIN */
+.main{padding:20px 32px 56px;max-width:1500px;margin:0 auto}
+
+/* FILTER BAR */
+.fbar{
+  display:flex;gap:10px;flex-wrap:wrap;align-items:center;
+  background:var(--w);border:1px solid var(--bdr);border-radius:var(--r);
+  padding:12px 18px;margin-bottom:16px;box-shadow:var(--sh2)
+}
+.fl{font-size:.78rem;color:#374151;font-weight:700;white-space:nowrap;letter-spacing:.02em;text-transform:uppercase}
+.fsel{
+  font-family:'Sarabun',sans-serif;font-size:.82rem;padding:6px 10px;
+  border:1px solid var(--bdr);border-radius:8px;background:#fff;
+  color:var(--c1);cursor:pointer;outline:none;transition:.15s
+}
+.fsel:focus{border-color:var(--c1);box-shadow:0 0 0 3px rgba(27,58,107,.08)}
+.fbtn{
+  font-family:'Sarabun',sans-serif;font-size:.78rem;padding:6px 14px;
+  border:1px solid var(--bdr);border-radius:8px;background:#fff;
+  color:var(--muted);cursor:pointer;transition:.15s
+}
+.fbtn:hover{border-color:var(--c1);color:var(--c1)}
+.fsep{width:1px;height:22px;background:var(--bdr);margin:0 4px}
+.finfo{margin-left:auto;font-size:.73rem;color:var(--muted)}
+
+/* KPI */
+.krow{display:grid;grid-template-columns:repeat(6,1fr);gap:14px;margin-bottom:10px}
+.kpi{
+  border-radius:var(--r);padding:20px 20px 16px;
+  border:none;display:flex;flex-direction:column;gap:5px;
+  position:relative;overflow:hidden;
+  background:linear-gradient(140deg,#1a1a6e 0%,#2e2ea8 100%);
+  box-shadow:0 3px 10px rgba(26,26,110,.22)
+}
+.kpi::after{
+  content:'';position:absolute;right:-20px;bottom:-20px;
+  width:100px;height:100px;border-radius:50%;
+  background:rgba(255,255,255,.07);pointer-events:none
+}
+.kpi::before{
+  content:'';position:absolute;left:-10px;top:-10px;
+  width:60px;height:60px;border-radius:50%;
+  background:rgba(255,255,255,.04);pointer-events:none
+}
+.kpi-accent{width:40px;height:3px;border-radius:2px;background:rgba(255,255,255,.35);margin-bottom:6px}
+.kpi.kp{background:linear-gradient(140deg,#1e3a8a 0%,#3b82f6 100%);box-shadow:0 3px 10px rgba(30,58,138,.28)}
+.kpi.ke{background:linear-gradient(140deg,#14532d 0%,#16a34a 100%);box-shadow:0 3px 10px rgba(22,163,74,.22)}
+.kpi.kg{background:linear-gradient(140deg,#78350f 0%,#d97706 100%);box-shadow:0 3px 10px rgba(217,119,6,.22)}
+.kpi.ko{background:linear-gradient(140deg,#4c1d95 0%,#7c3aed 100%);box-shadow:0 3px 10px rgba(124,58,237,.22)}
+.kpi.ka{background:linear-gradient(140deg,#7f1d1d 0%,#b91c1c 100%);box-shadow:0 3px 10px rgba(185,28,28,.25)}
+.kl{font-size:.79rem;color:rgba(255,255,255,.8);font-weight:600;letter-spacing:.02em}
+.kv{font-size:1.85rem;font-weight:700;color:#fff;line-height:1;font-family:'Prompt',sans-serif;text-shadow:0 1px 6px rgba(0,0,0,.18)}
+.ksub{font-size:.72rem;color:rgba(255,255,255,.6)}
+
+/* KPI COMPARISON ROW */
+.krow2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px}
+.kcmp{
+  background:var(--w);border-radius:var(--r);padding:16px 20px;
+  border:1px solid var(--bdr);box-shadow:var(--sh2);display:flex;flex-direction:column;gap:10px;
+  border-top:4px solid #3B82F6;
+  background:linear-gradient(160deg,#fff 0%,#EFF6FF 100%)
+}
+.kcmp:last-child{border-top-color:#10B981;background:linear-gradient(160deg,#fff 0%,#ECFDF5 100%)}
+.kcmp-title{font-family:'Prompt',sans-serif;font-size:.9rem;font-weight:700;color:#1a1a2e;margin-bottom:2px}
+.kcmp-tag{display:inline-block;font-size:.65rem;padding:1px 7px;border-radius:10px;font-weight:600;margin-left:6px;vertical-align:middle}
+.kcmp-body{display:grid;grid-template-columns:1fr 1fr 1fr;gap:0}
+.kcmp-col{display:flex;flex-direction:column;gap:3px;padding:0 10px}
+.kcmp-col:first-child{padding-left:0}
+.kcmp-col:not(:first-child){border-left:1px solid var(--bdr)}
+.kcmp-lbl{font-size:.76rem;color:#4B5563;font-weight:500}
+.kcmp-val{font-family:'Prompt',sans-serif;font-size:1.35rem;font-weight:700;color:#1a1a2e;line-height:1.1}
+.kcmp-val.gap{color:#b91c1c}
+.kcmp-bar-wrap{height:8px;background:var(--light);border-radius:4px;overflow:hidden}
+.kcmp-bar-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,#3B82F6,#60A5FA);transition:width .6s cubic-bezier(.4,0,.2,1)}
+
+/* CHART GRID */
+.cgrid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+.cc{background:var(--w);border-radius:var(--r);padding:20px 22px;border:1px solid var(--bdr);box-shadow:var(--sh2);display:flex;flex-direction:column}
+.cch{margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid var(--light);flex-shrink:0}
+.cct{font-family:'Prompt',sans-serif;font-size:.93rem;font-weight:700;color:var(--c1);display:flex;align-items:center;gap:8px}
+.ccd{width:10px;height:10px;border-radius:50%;background:var(--c1);flex-shrink:0;box-shadow:0 0 0 3px rgba(26,26,110,.12)}
+.ccs{font-size:.77rem;color:#4B5563;margin-top:4px;font-weight:500}
+.ccw{position:relative;flex:1;min-height:230px}
+
+/* TABLE CARD */
+.tc{background:var(--w);border-radius:var(--r);border:1px solid var(--bdr);box-shadow:var(--sh2);margin-top:14px;overflow:hidden}
+.tc-hdr{padding:13px 20px;display:flex;align-items:center;justify-content:space-between;border-bottom:2px solid var(--light);border-left:4px solid var(--gold);background:linear-gradient(135deg,rgba(200,168,75,.05) 0%,transparent 50%)}
+.tc-ttl{font-family:'Prompt',sans-serif;font-size:.97rem;font-weight:700;color:var(--c1)}
+.tc-srch{
+  font-family:'Sarabun',sans-serif;font-size:.79rem;padding:6px 11px;
+  border:1px solid var(--bdr);border-radius:8px;outline:none;
+  width:220px;background:var(--light);color:var(--c1);transition:.15s
+}
+.tc-srch:focus{background:#fff;border-color:var(--c2);box-shadow:0 0 0 3px rgba(124,58,237,.10)}
+table{width:100%;border-collapse:collapse}
+th{background:var(--light);font-size:.78rem;font-weight:700;color:var(--c1);padding:9px 13px;text-align:left;border-bottom:1px solid var(--bdr);white-space:nowrap;letter-spacing:.01em}
+th.r,td.r{text-align:right}th.c,td.c{text-align:center}
+td{font-size:.84rem;font-weight:500;padding:8px 13px;border-bottom:1px solid var(--light);color:#111}
+
+/* 3-level rows */
+.tr-g1 td{background:rgba(27,58,107,.08);font-family:'Prompt',sans-serif;font-size:.87rem;font-weight:700;color:var(--c1);cursor:pointer}
+.tr-g1:hover td{background:rgba(27,58,107,.14)!important}
+.tr-g2 td{background:rgba(26,26,110,.04);font-size:.85rem;font-weight:700;color:#2929a0;cursor:pointer}
+.tr-g2:hover td{background:rgba(27,58,107,.09)!important}
+.tr-u{cursor:pointer}.tr-u:hover td{background:#E8EFF9!important}
+.tr-g2 td:first-child{padding-left:24px}
+.tr-u td:first-child{padding-left:46px}
+.tr-dir{cursor:pointer}.tr-dir td:first-child{padding-left:24px}
+.tr-dir:hover td{background:#E8EFF9!important}
+
+/* PEOPLE MODAL */
+#ppl-modal{position:fixed;inset:0;z-index:500;display:none}
+.ppl-overlay{position:absolute;inset:0;background:rgba(0,0,0,.38)}
+.ppl-panel{position:absolute;right:0;top:0;height:100%;width:500px;background:var(--w);display:flex;flex-direction:column;box-shadow:-4px 0 24px rgba(27,58,107,.16)}
+.ppl-hdr{padding:16px 20px;background:linear-gradient(135deg,#0d0d4a 0%,#1a1a6e 100%);display:flex;justify-content:space-between;align-items:flex-start;flex-shrink:0}
+.ppl-hdr-nm{font-family:'Prompt',sans-serif;font-size:.96rem;font-weight:600;color:#fff;margin-bottom:7px}
+.ppl-hdr-sub{display:flex;gap:5px;flex-wrap:wrap}
+.ppl-close{background:rgba(255,255,255,.15);border:none;color:#fff;width:28px;height:28px;border-radius:6px;cursor:pointer;font-size:.88rem;flex-shrink:0;margin-left:8px}
+.ppl-close:hover{background:rgba(255,255,255,.28)}
+.ppl-search-wrap{padding:11px 14px;border-bottom:1px solid var(--bdr);flex-shrink:0}
+.ppl-search{width:100%;font-family:'Sarabun',sans-serif;font-size:.82rem;padding:7px 11px;border:1px solid var(--bdr);border-radius:8px;background:var(--light);color:var(--c1);outline:none}
+.ppl-search:focus{background:#fff;border-color:var(--c1)}
+.ppl-body{overflow-y:auto;flex:1}
+.ppl-body table{width:100%;border-collapse:collapse}
+.ppl-body th{background:var(--light);font-size:.72rem;font-weight:700;color:var(--c1);padding:7px 11px;text-align:left;border-bottom:1px solid var(--bdr);position:sticky;top:0;white-space:nowrap}
+.ppl-body td{font-size:.78rem;font-weight:500;padding:7px 11px;border-bottom:1px solid var(--light);color:#111}
+.ppl-body tr:hover td{background:var(--light)}
+.ppl-count{padding:8px 14px;font-size:.75rem;color:var(--muted);background:var(--light);border-top:1px solid var(--bdr);flex-shrink:0;text-align:right}
+.ppl-empty{padding:40px 20px;text-align:center;color:var(--muted);font-size:.82rem}
+.hide{display:none}
+.tog{display:inline-flex;align-items:center;justify-content:center;width:15px;height:15px;border:1.5px solid currentColor;border-radius:4px;font-size:.6rem;margin-right:6px;flex-shrink:0;vertical-align:middle;cursor:pointer;opacity:.7}
+
+/* BADGES */
+.badge{display:inline-block;padding:2px 8px;border-radius:6px;font-size:.66rem;font-weight:600;margin:1px;letter-spacing:.01em}
+.bn{background:#eaeaf6;color:#1a1a6e;border:1px solid #c0c0e0}
+.bg{background:#E8F5F0;color:#1A5C40;border:1px solid #B0D9C8}
+.be{background:#F3EEF9;color:#5B2D8A;border:1px solid #D4BEF0}
+.bp{background:#FEF3E8;color:#8A4A00;border:1px solid #F0CCA0}
+.ba{background:#FEE2E2;color:#991B1B;border:1px solid #FCA5A5}
+
+/* PEOPLE */
+.ptbl-sc{max-height:500px;overflow-y:auto}
+
+/* BUTTONS */
+.btn{font-family:'Sarabun',sans-serif;padding:7px 15px;border-radius:7px;font-size:.81rem;font-weight:600;cursor:pointer;border:none;transition:.17s;display:inline-flex;align-items:center;gap:5px}
+.btn-n{background:var(--c1);color:#fff}.btn-n:hover{background:var(--c2)}
+.btn-o{background:var(--w);color:var(--c1);border:1.5px solid var(--c1)}.btn-o:hover{background:var(--light)}
+.btn-g{background:var(--c1);color:#fff;font-weight:700}.btn-g:hover{background:var(--c2)}
+
+/* LOADING */
+#loading{text-align:center;padding:80px 20px;color:var(--muted)}
+.spin{width:34px;height:34px;border:3px solid var(--light);border-top-color:var(--c1);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 14px}
+@keyframes spin{to{transform:rotate(360deg)}}
+#content{display:none}
+
+/* PRINT VIEW */
+#pview{display:none;font-family:'Sarabun',sans-serif;background:#F0F2F5;min-height:100vh}
+.pctrl{padding:11px 26px;background:var(--w);border-bottom:1px solid var(--bdr);display:flex;align-items:center;gap:12px;flex-wrap:wrap;box-shadow:var(--sh2);position:sticky;top:0;z-index:200}
+.pctrl-title{font-family:'Prompt',sans-serif;font-size:.91rem;font-weight:600;color:var(--c1);flex:1}
+.ptwrap{padding:20px 28px;display:flex;flex-direction:column;align-items:center;gap:16px;zoom:.82}
+.ppage{background:#fff;width:297mm;box-shadow:0 4px 24px rgba(0,0,0,.10);border-radius:4px;padding:13mm 15mm;position:relative}
+.ptbl{width:100%;border-collapse:collapse;font-size:.84rem}
+.ptbl th,.ptbl td{border:1px solid #b0b8c8;padding:6px 8px;text-align:center;color:#000}
+.ptbl th{background:#1B3A6B;color:#fff;font-weight:700;font-size:.82rem;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.ptbl th.sth{background:#2B4F8A;color:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.ptbl .tr-gr td{background:#D6E4F0;font-weight:700;color:#000;font-size:.85rem;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.ptbl .tr-l2 td{background:#EEF4FB;font-weight:600;color:#000;font-size:.83rem;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.ptbl .tr-ur td{color:#000;font-weight:400;background:#fff}
+.ptbl .tr-tot td{background:#BFD3E8;font-weight:700;color:#000;font-size:.85rem;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.ptbl .z{color:#888;font-size:.78rem}
+/* phdr - styled like pview2 header */
+.phdr{text-align:center;margin-bottom:8mm;padding-bottom:5mm;border-bottom:2.5px solid #1B3A6B}
+.phdr-row{display:flex;align-items:center;justify-content:center;gap:11px;margin-bottom:6px}
+.phdr-emblem{width:46px;height:46px;background:linear-gradient(135deg,#0F2347,#2D5FA8);border-radius:9px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:.9rem;font-family:'Prompt',sans-serif;flex-shrink:0;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.phdr-org{font-size:.95rem;font-weight:700;color:#0F2347;text-align:left}
+.phdr-org-en{font-size:.67rem;color:#6B82A0;text-align:left;margin-top:1px}
+.phdr-title{font-size:1.05rem;font-weight:700;color:#1B3A6B;margin-top:4px}
+.phdr-date{font-size:.75rem;color:#6B82A0;margin-top:2px}
+.pnote{font-size:.72rem;color:#555;margin-top:8px;text-align:right;font-style:italic}
+.ppage-num{text-align:right;font-size:.65rem;color:#9BA8C0;margin-top:4mm;border-top:1px solid #E8EFF9;padding-top:2mm}
+
+/* PDF DROPDOWN */
+.pdf-btn-wrap{position:relative}
+.pdf-menu{
+  display:none;position:absolute;right:0;top:38px;background:#fff;
+  border:1px solid #D0DCF0;border-radius:10px;box-shadow:0 6px 24px rgba(27,58,107,.15);
+  z-index:300;min-width:230px;padding:5px 0;animation:fadeIn .1s ease
+}
+@keyframes fadeIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+.pdf-menu-item{
+  padding:10px 16px;cursor:pointer;font-size:.83rem;color:#1a2744;
+  display:flex;align-items:center;gap:10px;border-left:3px solid transparent;transition:.12s
+}
+.pdf-menu-item:hover{background:#F4F7FC;border-left-color:var(--c1)}
+.pdf-menu-item .pm-icon{font-size:1.1rem}
+.pdf-menu-item .pm-lbl{flex:1}
+.pdf-menu-item .pm-sub{font-size:.68rem;color:#9BA8C0;display:block;margin-top:1px}
+.pdf-divider{height:1px;background:#E8EFF9;margin:4px 0}
+
+/* PVIEW2 — formal report */
+#pview2{display:none;font-family:'Sarabun',sans-serif;background:#F0F2F5;min-height:100vh}
+.p2ctrl{padding:11px 26px;background:#fff;border-bottom:1px solid var(--bdr);display:flex;align-items:center;gap:10px;flex-wrap:wrap;box-shadow:var(--sh2);position:sticky;top:0;z-index:200}
+.p2ctrl-title{font-family:'Prompt',sans-serif;font-size:.91rem;font-weight:600;color:var(--c1);flex:1}
+.p2pages{padding:20px 28px;display:flex;flex-direction:column;align-items:center;gap:16px}
+.p2page{
+  background:#fff;width:297mm;box-shadow:0 4px 24px rgba(0,0,0,.10);border-radius:4px;
+  padding:13mm 15mm;position:relative
+}
+.p2-ph{text-align:center;margin-bottom:8mm;padding-bottom:5mm;border-bottom:2.5px solid #1B3A6B}
+.p2-ph-row{display:flex;align-items:center;justify-content:center;gap:11px;margin-bottom:5px}
+.p2-emblem{
+  width:46px;height:46px;background:linear-gradient(135deg,#0F2347,#2D5FA8);border-radius:9px;
+  display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:.9rem;
+  -webkit-print-color-adjust:exact;print-color-adjust:exact
+}
+.p2-org-th{font-size:.95rem;font-weight:700;color:#0F2347;text-align:left}
+.p2-org-en{font-size:.67rem;color:#6B82A0;text-align:left;margin-top:1px}
+.p2-title{font-size:1.0rem;font-weight:700;color:#1B3A6B;margin-top:5px}
+.p2-date{font-size:.75rem;color:#6B82A0;margin-top:2px}
+.p2-krow{display:flex;gap:8px;margin-bottom:6mm}
+.p2-kbox{
+  flex:1;background:#F4F7FC;border:1px solid #D0DCF0;border-radius:7px;
+  padding:7px 10px;text-align:center;border-top:3px solid #1B3A6B;
+  -webkit-print-color-adjust:exact;print-color-adjust:exact
+}
+.p2-kbox.k2{border-top-color:#2C5282}.p2-kbox.k3{border-top-color:#2C5282}
+.p2-kbox.k4{border-top-color:#2C5282}.p2-kbox.kt{border-top-color:#1B3A6B;background:#EBF2FC}
+.p2-knum{font-size:1.4rem;font-weight:700;color:#1B3A6B;line-height:1.1}
+.p2-kbox.k2 .p2-knum{color:#1B3A6B}.p2-kbox.k3 .p2-knum{color:#1B3A6B}
+.p2-kbox.k4 .p2-knum{color:#1B3A6B}.p2-kbox.kt .p2-knum{color:#0F2347;font-size:1.6rem}
+.p2-klbl{font-size:.65rem;color:#6B82A0;margin-top:2px}
+.p2-sec{
+  font-size:.8rem;font-weight:700;color:#fff;background:#1B3A6B;
+  padding:4px 11px;border-radius:5px;margin-bottom:4px;margin-top:5mm;
+  -webkit-print-color-adjust:exact;print-color-adjust:exact
+}
+.p2-sec:first-of-type{margin-top:0}
+.p2tbl{width:100%;border-collapse:collapse;font-size:.69rem}
+.p2tbl th,.p2tbl td{border:1px solid #C8D6EE;padding:3px 4px;text-align:center;line-height:1.25}
+.p2tbl thead th{background:#1B3A6B;color:#fff;font-weight:600;font-size:.65rem;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.p2tbl thead th.st{background:#2D5FA8;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.p2tbl thead th.st2{background:#3A74C4;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.p2tbl tbody tr:nth-child(even) td{background:#F4F7FC}
+.p2tbl .rh{text-align:left;font-weight:600;background:#EBF2FC!important;color:#1B3A6B;padding-left:7px}
+.p2tbl .rb{text-align:left;font-weight:700;background:#1B3A6B!important;color:#fff;padding-left:7px;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.p2tbl .rs{text-align:left;padding-left:14px;color:#374151;font-size:.64rem}
+.p2tbl .rz{color:#c4cad8}
+.p2tbl .rtot td{background:#1B3A6B!important;color:#fff!important;font-weight:700;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.p2-pf{margin-top:6mm;border-top:1px solid #D0DCF0;padding-top:3mm;display:flex;justify-content:space-between;font-size:.62rem;color:#9BA8C0}
+
+@media print{
+  body.printing-v1 #screen-view{display:none!important}
+  body.printing-v1 #pview{display:block!important}
+  body.printing-v2 #screen-view{display:none!important}
+  body.printing-v2 #pview2{display:block!important}
+  body:not(.printing-v1):not(.printing-v2) #screen-view{display:none!important}
+  body:not(.printing-v1):not(.printing-v2) #pview{display:block!important}
+  #pview,#pview2{min-height:0!important;background:none!important}
+  .pctrl{display:none!important}
+  .p2ctrl{display:none!important}
+  .ptwrap{padding:0;max-height:none;overflow:visible;display:block!important;zoom:1!important}
+  .ppage{width:100%!important;box-shadow:none!important;border-radius:0!important;padding:0!important}
+  .p2pages{padding:0;background:none;gap:0}
+  .p2page{box-shadow:none;border-radius:0;width:100%;padding:8mm 10mm;page-break-after:always}
+  .p2page:last-child{page-break-after:auto}
+  body{background:#fff;color:#000;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  @page{size:A4 landscape;margin:0}
+  .ptbl{font-size:.76rem}
+  .ptbl th,.ptbl td{padding:4px 5px;color:#000}
+  .ptbl th{color:#fff!important;background:#1B3A6B!important}
+  .ptbl th.sth{color:#fff!important;background:#2B4F8A!important}
+  .ptbl .tr-gr td{background:#D6E4F0!important;color:#000!important}
+  .ptbl .tr-l2 td{background:#EEF4FB!important;color:#000!important}
+  .ptbl .tr-ur td{background:#fff!important;color:#000!important}
+  .ptbl .tr-tot td{background:#BFD3E8!important;color:#000!important}
+  .phdr h2{font-size:1.05rem;color:#000}
+  .phdr p{font-size:.85rem;color:#000}
+}
+@media(max-width:900px){
+  .krow{grid-template-columns:repeat(3,1fr)}
+  .cgrid{grid-template-columns:1fr}
+}
+
+/* ===== HOVER / ANIMATION ===== */
+.cc{transition:transform .18s,box-shadow .18s}
+.cc:hover{transform:translateY(-3px);box-shadow:0 12px 32px rgba(26,26,110,.15)}
+.kpi{transition:transform .16s,box-shadow .16s}
+.kpi:hover{transform:translateY(-3px);box-shadow:0 12px 32px rgba(0,0,0,.22)!important}
+.kcmp{transition:transform .15s,box-shadow .15s}
+.kcmp:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(26,26,110,.12)}
+.tab{transition:color .15s,border-bottom-color .15s}
+
+/* ===== COLLAPSIBLE TABLE ===== */
+.tc-hdr-toggle{cursor:pointer;user-select:none;transition:background .15s}
+.tc-hdr-toggle:hover{background:#f5f7ff}
+.tc-body-wrap{max-height:0;overflow:hidden;transition:max-height .4s cubic-bezier(.4,0,.2,1)}
+.tc-body-wrap.open{max-height:9000px}
+.tc-toggle-arrow{color:var(--muted);transition:transform .25s ease;display:inline-block;font-size:.72rem;margin-right:2px}
+.tc-toggle-arrow.open{transform:rotate(90deg)}
+.tc-toggle-hint{font-size:.72rem;color:var(--muted);font-style:italic;white-space:nowrap}
+.tc-row-count{font-size:.72rem;background:var(--light);color:var(--muted);padding:2px 8px;border-radius:12px;margin-left:8px}
+
+/* ===== PVIEW2 SCREEN SCALE ===== */
+@media screen{
+  .p2pages{zoom:.76}
+}
+
+/* ===== DESIGN: CHART CARD ACCENT BARS ===== */
+.cc{border-top:4px solid transparent;transition:transform .18s,box-shadow .18s}
+.cgrid:nth-child(1) .cc:nth-child(1){border-top-color:#3B82F6}
+.cgrid:nth-child(1) .cc:nth-child(2){border-top-color:#10B981}
+.cgrid:nth-child(2) .cc:nth-child(1){border-top-color:#6366F1}
+.cgrid:nth-child(2) .cc:nth-child(2){border-top-color:#F59E0B}
+.cc.full-w{border-top-color:#F472B6}
+.cch{border-bottom:1px solid var(--light)}
+.cct{font-size:.95rem}
+.fbar{
+  background:linear-gradient(135deg,#fff 0%,#f5f7fd 100%);
+  border-left:4px solid var(--gold);
+  box-shadow:0 2px 10px rgba(200,168,75,.08)
+}
+.kcmp-title{font-size:.92rem;letter-spacing:.01em}
+/* Main background subtle gradient */
+body{background:linear-gradient(160deg,#eaecf5 0%,#f0f2f8 60%,#e8edf6 100%);min-height:100vh}
+
+/* ===== SECTION PULSE on load ===== */
+@keyframes kpiIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.kpi{animation:kpiIn .4s ease both}
+.kpi:nth-child(2){animation-delay:.05s}.kpi:nth-child(3){animation-delay:.1s}
+.kpi:nth-child(4){animation-delay:.15s}.kpi:nth-child(5){animation-delay:.2s}
+
+/* ===== PRINT — TABLE PROPORTIONS ===== */
+@media print{
+  body.printing-v1 .ptwrap{padding:0!important;max-height:none!important;overflow:visible!important;zoom:1!important;display:block!important}
+  /* PDF1 — lock แต่ละ .ppage เป็น 1 หน้า A4 landscape พอดี */
+  body.printing-v1 .ppage{
+    width:100%!important;box-shadow:none!important;border-radius:0!important;
+    padding:8mm 12mm!important;margin:0!important;
+    height:210mm!important;box-sizing:border-box!important;overflow:hidden!important;
+    page-break-after:always;display:block!important;
+  }
+  body.printing-v1 .ppage:last-child{page-break-after:auto}
+  body.printing-v1 .ppage-num{display:none}
+  body.printing-v1 .ptbl{font-size:.72rem;color:#111}
+  body.printing-v1 .ptbl th{padding:3px 5px;font-weight:700;letter-spacing:.01em}
+  body.printing-v1 .ptbl td{padding:2px 5px;font-weight:500}
+  body.printing-v1 .ptbl .tr-gr td{font-weight:700;font-size:.73rem}
+  body.printing-v1 .ptbl .tr-l2 td{font-weight:650}
+  body.printing-v1 .phdr{margin-bottom:4px!important}
+  /* PDF2 — lock แต่ละ .p2page เป็น 1 หน้า A4 landscape และ push footer ลงล่าง */
+  .p2pages{zoom:1!important}
+  .p2page{
+    height:210mm!important;box-sizing:border-box!important;overflow:hidden!important;
+    padding:7mm 10mm!important;display:flex!important;flex-direction:column!important;
+  }
+  .p2-pf{margin-top:auto!important;padding-top:2mm!important}
+  .p2-ph{margin-bottom:4mm!important;padding-bottom:3mm!important}
+  .p2-krow{margin-bottom:3mm!important}
+  .p2-sec{margin-top:3mm!important;padding:3px 9px!important}
+  .p2tbl th{padding:3px 5px!important;font-size:.65rem!important;font-weight:700!important;letter-spacing:.01em}
+  .p2tbl td{padding:2px 5px!important;font-size:.65rem!important;font-weight:500!important;color:#111!important}
+  .rz{color:#333!important}
+}
+/* ===== FORECAST KPI CARDS ===== */
+.kpi.kf1{background:linear-gradient(140deg,#7f1d1d 0%,#dc2626 100%);box-shadow:0 4px 14px rgba(220,38,38,.30)}
+.kpi.kf3{background:linear-gradient(140deg,#9a3412 0%,#ea580c 100%);box-shadow:0 4px 14px rgba(234,88,12,.28)}
+.kpi.kf5{background:linear-gradient(140deg,#854d0e 0%,#d97706 100%);box-shadow:0 4px 14px rgba(217,119,6,.26)}
+.kpi.kf10{background:linear-gradient(140deg,#1e3a8a 0%,#2563eb 100%);box-shadow:0 4px 14px rgba(37,99,235,.24)}
+.kpi.kfa{background:linear-gradient(140deg,#0f766e 0%,#0d9488 100%);box-shadow:0 4px 14px rgba(13,148,136,.24)}
+/* Urgency heat bar at bottom */
+.kpi.kf1::after,.kpi.kf3::after,.kpi.kf5::after,.kpi.kf10::after{
+  content:'';position:absolute;bottom:0;left:0;height:3px;border-radius:0 3px 0 0;background:rgba(255,255,255,.35)
+}
+.kpi.kf1::after{width:25%}.kpi.kf3::after{width:50%}.kpi.kf5::after{width:75%}.kpi.kf10::after{width:100%}
+
+/* Forecast retirement urgency badges */
+.fc-badge{display:inline-block;padding:3px 9px;border-radius:20px;font-size:.68rem;font-weight:700;white-space:nowrap;letter-spacing:.02em}
+.fc-b1{background:#fee2e2;color:#991b1b;border:1px solid #fca5a5}
+.fc-b3{background:#ffedd5;color:#9a3412;border:1px solid #fdba74}
+.fc-b5{background:#fef9c3;color:#854d0e;border:1px solid #fde047}
+.fc-b10{background:#dbeafe;color:#1e40af;border:1px solid #93c5fd}
+
+/* ===== FORECAST HERO BANNER ===== */
+.fc-hero{
+  background:linear-gradient(135deg,#0f172a 0%,#1e3a8a 55%,#4338ca 100%);
+  border-radius:var(--r);padding:22px 28px;margin-bottom:16px;
+  display:flex;align-items:center;justify-content:space-between;
+  box-shadow:0 6px 24px rgba(15,23,42,.28);position:relative;overflow:hidden;
+}
+.fc-hero::before{content:'';position:absolute;top:-50px;right:60px;width:220px;height:220px;
+  border-radius:50%;background:rgba(255,255,255,.04);}
+.fc-hero::after{content:'';position:absolute;bottom:-60px;right:-20px;width:180px;height:180px;
+  border-radius:50%;background:rgba(255,255,255,.035);}
+.fc-hero-left{position:relative;z-index:1}
+.fc-hero-ttl{font-family:'Prompt',sans-serif;font-size:1.25rem;font-weight:700;color:#fff;margin-bottom:5px;letter-spacing:.01em}
+.fc-hero-sub{font-size:.81rem;color:rgba(255,255,255,.6);line-height:1.5}
+.fc-hero-right{display:flex;gap:12px;position:relative;z-index:1;flex-shrink:0}
+.fc-hero-stat{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.12);
+  border-radius:14px;padding:10px 20px;color:#fff;text-align:center;min-width:90px;
+  backdrop-filter:blur(4px)}
+.fc-hero-stat-num{font-family:'Prompt',sans-serif;font-size:1.7rem;font-weight:700;color:#FCD34D;display:block;line-height:1.1}
+.fc-hero-stat-lbl{font-size:.71rem;color:rgba(255,255,255,.65);margin-top:2px;display:block}
+
+/* ===== FORECAST SECTION DIVIDERS ===== */
+.fc-section{display:flex;align-items:center;gap:10px;margin:18px 0 12px}
+.fc-section-line{flex:1;height:1px;background:linear-gradient(90deg,var(--bdr),transparent)}
+.fc-section-ttl{font-family:'Prompt',sans-serif;font-size:.77rem;font-weight:700;
+  color:var(--muted);text-transform:uppercase;letter-spacing:.09em;white-space:nowrap}
+
+/* ===== FORECAST CHART ACCENT COLORS ===== */
+#view-forecast .cgrid .cc:nth-child(1){border-top-color:#EF4444}
+#view-forecast .cgrid .cc:nth-child(2){border-top-color:#F97316}
+#view-forecast .cgrid .cc:nth-child(3){border-top-color:#6366F1}
+#view-forecast .cgrid .cc:nth-child(4){border-top-color:#0EA5E9}
+
+/* ===== FORECAST TABLE ROWS ===== */
+#fc-table tbody tr:nth-child(even){background:#fafbff}
+#fc-table tbody tr:hover{background:linear-gradient(90deg,rgba(99,102,241,.06) 0%,transparent 70%);transition:background .15s}
+#fc-table thead th{background:linear-gradient(135deg,#f0f2fa 0%,#e8edf6 100%);font-weight:700;letter-spacing:.02em}
+
+/* ===== FBAR FORECAST SPECIFIC ===== */
+#view-forecast .fbar{
+  background:linear-gradient(135deg,#fff 0%,#f5f7fd 100%);
+  border-left:4px solid #6366F1;
+  box-shadow:0 2px 10px rgba(99,102,241,.08)
+}
+
+/* ===== DASHBOARD 1 HERO ===== */
+.dash-hero{
+  background:linear-gradient(135deg,#0f1c4d 0%,#1a1a6e 35%,#23267a 60%,#8a6d15 100%);
+  border-radius:var(--r);padding:0;margin-bottom:16px;
+  display:flex;align-items:stretch;
+  box-shadow:0 6px 28px rgba(15,28,77,.32);position:relative;overflow:hidden;
+}
+.dash-hero::before{content:'';position:absolute;top:-60px;right:220px;width:260px;height:260px;
+  border-radius:50%;background:rgba(200,168,75,.07);}
+.dash-hero::after{content:'';position:absolute;bottom:-80px;right:-30px;width:220px;height:220px;
+  border-radius:50%;background:rgba(255,255,255,.03);}
+.dash-hero-left{
+  flex:1;padding:22px 30px;position:relative;z-index:1;
+  border-right:1px solid rgba(255,255,255,.1)
+}
+.dash-hero-ttl{font-family:'Prompt',sans-serif;font-size:1.3rem;font-weight:700;color:#fff;
+  margin-bottom:4px;letter-spacing:.01em}
+.dash-hero-sub{font-size:.81rem;color:rgba(255,255,255,.58);line-height:1.55}
+.dash-hero-tags{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+.dash-hero-tag{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);
+  border-radius:20px;padding:3px 12px;font-size:.72rem;color:rgba(255,255,255,.8);font-weight:600}
+.dash-hero-tag.gold{background:rgba(200,168,75,.22);border-color:rgba(200,168,75,.45);color:#fcd34d}
+.dash-hero-right{
+  display:flex;padding:20px 24px;gap:16px;align-items:center;position:relative;z-index:1;flex-shrink:0
+}
+.dash-stat{text-align:center;min-width:78px;padding:10px 14px;
+  background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);
+  border-radius:12px;backdrop-filter:blur(4px)}
+.dash-stat-num{font-family:'Prompt',sans-serif;font-size:1.65rem;font-weight:700;
+  color:#FCD34D;display:block;line-height:1.1}
+.dash-stat-lbl{font-size:.69rem;color:rgba(255,255,255,.62);margin-top:3px;display:block;
+  white-space:nowrap}
+.dash-stat.alert .dash-stat-num{color:#FCA5A5}
+
+/* ===== DASHBOARD 1 SECTION DIVIDERS ===== */
+.ds-section{display:flex;align-items:center;gap:10px;margin:16px 0 10px}
+.ds-section-line{flex:1;height:1px;background:linear-gradient(90deg,rgba(26,26,110,.2),transparent)}
+.ds-section-ttl{font-family:'Prompt',sans-serif;font-size:.77rem;font-weight:700;
+  color:#1a1a6e;text-transform:uppercase;letter-spacing:.09em;white-space:nowrap;
+  display:flex;align-items:center;gap:5px}
+.ds-section-ttl::before{content:'';width:6px;height:6px;border-radius:50%;
+  background:var(--gold);display:inline-block}
+
+/* ===== CHART CARD IMPROVEMENTS ===== */
+.cc:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(26,26,110,.13)}
+.ccw canvas{max-height:100%}
+
+/* ===== KCMP IMPROVED ===== */
+.kcmp{transition:transform .15s,box-shadow .15s}
+.kcmp:hover{transform:translateY(-1px);box-shadow:0 4px 16px rgba(26,26,110,.10)}
+
+/* ===== DEPT TABLE ROWS ===== */
+#dept-table tbody tr:nth-child(even){background:#fafbff}
+#dept-table tbody tr.tr-gr{background:linear-gradient(90deg,#f0f2fa,#f5f7fd)!important}
+#dept-table tbody tr:hover{background:linear-gradient(90deg,rgba(26,26,110,.04),transparent)!important}
+
+/* ===== LOGIN OVERLAY ===== */
+@keyframes blob1{0%,100%{transform:translate(0,0) scale(1)}33%{transform:translate(30px,-50px) scale(1.1)}66%{transform:translate(-20px,20px) scale(0.9)}}
+@keyframes blob2{0%,100%{transform:translate(0,0) scale(1)}33%{transform:translate(-40px,30px) scale(1.05)}66%{transform:translate(20px,-30px) scale(0.95)}}
+@keyframes blob3{0%,100%{transform:translate(0,0) scale(1)}33%{transform:translate(20px,40px) scale(0.95)}66%{transform:translate(-30px,-20px) scale(1.05)}}
+@keyframes loginBoxIn{from{opacity:0;transform:translateY(28px) scale(.96)}to{opacity:1;transform:none}}
+@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-10px)}40%{transform:translateX(10px)}60%{transform:translateX(-7px)}80%{transform:translateX(7px)}}
+@keyframes wlcLogoIn{from{opacity:0;transform:scale(.65)}to{opacity:1;transform:scale(1)}}
+@keyframes wlcFadeUp{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:none}}
+@keyframes wlcBar{from{width:0}to{width:64px}}
+@keyframes ringPulse{0%,100%{box-shadow:0 0 0 0 rgba(59,130,246,.4),0 16px 48px rgba(0,0,0,.5)}50%{box-shadow:0 0 0 14px rgba(59,130,246,.0),0 16px 48px rgba(0,0,0,.5)}}
+
+#login-overlay{
+  position:fixed;inset:0;z-index:9999;
+  background:#04091a;
+  display:flex;align-items:center;justify-content:center;
+  overflow:hidden;transition:opacity .55s ease;
+}
+#login-overlay.fade-out{opacity:0;pointer-events:none}
+
+.login-blobs{position:absolute;inset:0;pointer-events:none}
+.login-blob{position:absolute;border-radius:50%;filter:blur(90px);opacity:.4}
+.blob1{width:550px;height:550px;background:#1e3a8a;top:-160px;left:-160px;animation:blob1 12s ease-in-out infinite}
+.blob2{width:420px;height:420px;background:#1d4ed8;bottom:-100px;right:-120px;animation:blob2 15s ease-in-out infinite}
+.blob3{width:320px;height:320px;background:#2563eb;top:45%;left:55%;animation:blob3 10s ease-in-out infinite}
+
+.login-box{
+  position:relative;z-index:1;
+  background:rgba(255,255,255,.05);
+  backdrop-filter:blur(32px);-webkit-backdrop-filter:blur(32px);
+  border:1px solid rgba(255,255,255,.18);
+  border-radius:28px;padding:44px 48px 36px;width:420px;max-width:92vw;text-align:center;
+  box-shadow:0 40px 100px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.18);
+  animation:loginBoxIn .7s cubic-bezier(.22,1,.36,1) both;
+}
+.login-box.shake{animation:shake .45s ease both}
+
+.login-logo-ring{
+  width:100px;height:100px;border-radius:50%;background:#fff;
+  display:flex;align-items:center;justify-content:center;margin:0 auto 22px;
+  animation:ringPulse 3s ease-in-out infinite;
+}
+.login-logo-ring img{width:76px;height:76px;object-fit:contain}
+
+.login-badge{
+  display:inline-block;background:rgba(59,130,246,.18);border:1px solid rgba(59,130,246,.32);
+  color:#93c5fd;font-size:.7rem;letter-spacing:.1em;padding:3px 12px;border-radius:20px;
+  margin-bottom:12px;font-weight:600;
+}
+.login-title{color:#fff;font-size:1.05rem;font-weight:700;margin-bottom:6px;line-height:1.45;white-space:nowrap}
+.login-org{color:rgba(255,255,255,.42);font-size:.78rem;line-height:1.65;margin-bottom:0}
+.login-divider{display:flex;align-items:center;gap:10px;margin:20px 0 14px}
+.login-divider::before,.login-divider::after{content:'';flex:1;height:1px;background:rgba(255,255,255,.1)}
+.login-divider span{color:rgba(255,255,255,.2);font-size:.7rem;letter-spacing:.08em}
+
+.login-field-lbl{text-align:left;color:rgba(255,255,255,.45);font-size:.73rem;margin-bottom:6px;letter-spacing:.06em}
+.login-input-wrap{position:relative}
+.login-input{
+  width:100%;box-sizing:border-box;padding:13px 48px 13px 18px;
+  background:rgba(255,255,255,.08);border:1.5px solid rgba(255,255,255,.15);
+  border-radius:14px;color:#fff;font-family:'Sarabun',sans-serif;font-size:1rem;
+  letter-spacing:3px;outline:none;transition:border .2s,background .2s,box-shadow .2s;
+}
+.login-input::placeholder{color:rgba(255,255,255,.25);letter-spacing:0}
+.login-input:focus{border-color:rgba(99,160,255,.75);background:rgba(255,255,255,.12);box-shadow:0 0 0 4px rgba(59,130,246,.18)}
+.login-eye{
+  position:absolute;right:13px;top:50%;transform:translateY(-50%);
+  background:none;border:none;cursor:pointer;
+  color:rgba(255,255,255,.35);font-size:1.05rem;padding:4px;line-height:1;
+  transition:color .15s;
+}
+.login-eye:hover{color:rgba(255,255,255,.8)}
+.login-btn{
+  margin-top:14px;width:100%;padding:14px;
+  background:linear-gradient(135deg,#1d4ed8 0%,#3b82f6 60%,#60a5fa 100%);
+  border:none;border-radius:14px;color:#fff;
+  font-family:'Sarabun',sans-serif;font-size:1rem;font-weight:700;
+  cursor:pointer;letter-spacing:.04em;
+  box-shadow:0 8px 24px rgba(37,99,235,.55);
+  transition:transform .15s,box-shadow .15s,opacity .15s;
+}
+.login-btn:hover{transform:translateY(-2px);box-shadow:0 12px 32px rgba(37,99,235,.65)}
+.login-btn:active{transform:translateY(0);opacity:.9}
+.login-err{color:#fca5a5;font-size:.82rem;margin-top:10px;min-height:18px}
+.login-footer{color:rgba(255,255,255,.16);font-size:.69rem;margin-top:20px;line-height:1.7}
+
+/* ===== WELCOME SPLASH — CINEMA CURTAIN ===== */
+@keyframes curtainLeft{0%{transform:scaleX(1)}100%{transform:scaleX(0);transform-origin:left}}
+@keyframes curtainRight{0%{transform:scaleX(1)}100%{transform:scaleX(0);transform-origin:right}}
+@keyframes wlcBigIn{0%{opacity:0;transform:scale(.7) translateY(30px)}100%{opacity:1;transform:none}}
+@keyframes wlcLogoZoom{0%{opacity:0;transform:scale(.4)}100%{opacity:1;transform:scale(1)}}
+@keyframes wlcSubIn{0%{opacity:0;letter-spacing:.5em}100%{opacity:1;letter-spacing:.18em}}
+@keyframes wlcGlowPulse{0%,100%{text-shadow:0 0 40px rgba(96,165,250,.4)}50%{text-shadow:0 0 80px rgba(96,165,250,.8),0 0 120px rgba(59,130,246,.4)}}
+@keyframes wlcScan{0%{top:-100%}100%{top:100%}}
+
+#welcome-screen{
+  position:fixed;inset:0;z-index:10000;
+  background:#fff;
+  display:none;align-items:center;justify-content:center;
+  overflow:hidden;
+}
+#welcome-screen.show{display:flex}
+#welcome-screen.fade-out{opacity:0;pointer-events:none;transition:opacity .9s ease}
+
+.wlc-curtain-left,.wlc-curtain-right{
+  position:absolute;top:0;width:50%;height:100%;z-index:2;
+  background:linear-gradient(160deg,#1e40af 0%,#1d4ed8 50%,#2563eb 100%);
+  transform-origin:left center;
+}
+.wlc-curtain-left{left:0;transform-origin:left center}
+.wlc-curtain-right{right:0;transform-origin:right center}
+#welcome-screen.show .wlc-curtain-left{animation:curtainLeft 1.3s 1.2s cubic-bezier(.76,0,.24,1) forwards}
+#welcome-screen.show .wlc-curtain-right{animation:curtainRight 1.3s 1.2s cubic-bezier(.76,0,.24,1) forwards}
+
+.wlc-stage{
+  position:relative;z-index:1;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;padding:40px;
+}
+.wlc-scan-line{
+  position:absolute;left:0;width:100%;height:2px;
+  background:linear-gradient(90deg,transparent,rgba(29,78,216,.4),transparent);
+  animation:wlcScan 3s linear infinite;pointer-events:none;z-index:3;
+}
+.wlc-ring{
+  width:130px;height:130px;border-radius:50%;
+  background:linear-gradient(135deg,#eff6ff,#dbeafe);
+  border:3px solid #bfdbfe;
+  display:flex;align-items:center;justify-content:center;margin-bottom:32px;
+  box-shadow:0 8px 32px rgba(29,78,216,.15),0 0 0 10px rgba(219,234,254,.4);
+  animation:wlcLogoZoom .8s .2s cubic-bezier(.22,1,.36,1) both;
+}
+.wlc-ring img{width:88px;height:88px;object-fit:contain;display:block;margin:auto}
+.wlc-greet{
+  color:#64748b;font-size:.95rem;letter-spacing:.25em;
+  text-transform:uppercase;margin-bottom:16px;
+  animation:wlcSubIn .9s .6s ease both;
+}
+.wlc-title{
+  color:#1e3a8a;font-size:clamp(2rem,5vw,4.5rem);font-weight:700;
+  line-height:1.15;margin-bottom:16px;
+  animation:wlcBigIn .8s .7s cubic-bezier(.22,1,.36,1) both;
+}
+.wlc-org{
+  color:#475569;font-size:clamp(.9rem,2vw,1.15rem);
+  line-height:1.8;max-width:580px;
+  animation:wlcBigIn .8s .85s cubic-bezier(.22,1,.36,1) both;
+}
+.wlc-divline{
+  width:0;height:2px;background:linear-gradient(90deg,transparent,#1d4ed8,#60a5fa,transparent);
+  margin:28px auto;animation:wlcBar 1s 1s ease both;
+}
+.wlc-hint{
+  color:rgba(255,255,255,.2);font-size:.8rem;letter-spacing:.12em;
+  animation:wlcFadeUp .6s 1.1s ease both;
+}
+
+/* ===== SCENARIO MODAL ===== */
+#scenario-backdrop{
+  position:fixed;inset:0;z-index:8000;background:rgba(4,9,26,.75);
+  display:none;align-items:center;justify-content:center;
+  backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);
+  animation:none;
+}
+#scenario-backdrop.open{display:flex}
+#scenario-modal{
+  background:#fff;border-radius:22px;padding:32px 36px;width:500px;max-width:95vw;
+  box-shadow:0 32px 80px rgba(0,0,0,.35);
+  animation:loginBoxIn .4s cubic-bezier(.22,1,.36,1) both;
+}
+.sc-title{font-size:1.1rem;font-weight:700;color:#1e3a8a;margin-bottom:4px;display:flex;align-items:center;gap:10px}
+.sc-sub{font-size:.8rem;color:#64748b;margin-bottom:24px}
+.sc-section{margin-bottom:20px}
+.sc-lbl{font-size:.8rem;font-weight:600;color:#374151;margin-bottom:6px;display:flex;justify-content:space-between}
+.sc-lbl span{color:#3b82f6;font-weight:700;font-size:.9rem}
+.sc-slider{width:100%;accent-color:#3b82f6;height:6px;cursor:pointer}
+.sc-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:20px}
+.sc-kpi{border-radius:14px;padding:14px 16px;text-align:center}
+.sc-kpi.current{background:#f0f9ff;border:1.5px solid #bae6fd}
+.sc-kpi.projected{background:#f0fdf4;border:1.5px solid #bbf7d0}
+.sc-kpi.approved{background:#fef3c7;border:1.5px solid #fde68a}
+.sc-kpi-label{font-size:.72rem;color:#64748b;margin-bottom:4px;font-weight:600;letter-spacing:.04em}
+.sc-kpi-val{font-size:1.4rem;font-weight:700}
+.sc-kpi.current .sc-kpi-val{color:#0369a1}
+.sc-kpi.projected .sc-kpi-val{color:#15803d}
+.sc-kpi.approved .sc-kpi-val{color:#92400e}
+.sc-note{font-size:.75rem;color:#94a3b8;margin-top:14px;text-align:center}
+.sc-footer{display:flex;justify-content:flex-end;margin-top:20px}
+.sc-close-btn{padding:10px 24px;background:#1d4ed8;color:#fff;border:none;border-radius:10px;
+  font-family:'Sarabun',sans-serif;font-size:.9rem;font-weight:600;cursor:pointer;
+  transition:background .15s}
+.sc-close-btn:hover{background:#1e40af}
+.sc-delta{font-size:.72rem;font-weight:600;margin-top:2px}
+.sc-delta.up{color:#16a34a}.sc-delta.dn{color:#dc2626}
+
+/* TTS button */
+.btn-tts{background:#7c3aed;color:#fff;border:none;border-radius:8px;padding:7px 14px;
+  font-family:'Sarabun',sans-serif;font-size:.82rem;font-weight:600;cursor:pointer;
+  display:flex;align-items:center;gap:6px;transition:background .15s,transform .1s}
+.btn-tts:hover{background:#6d28d9}
+.btn-tts:active{transform:scale(.97)}
+.btn-tts.reading{background:#dc2626}
+.btn-tts.reading:hover{background:#b91c1c}
+.btn-scenario{background:linear-gradient(135deg,#1d4ed8,#3b82f6);color:#fff;border:none;
+  border-radius:8px;padding:7px 14px;font-family:'Sarabun',sans-serif;font-size:.82rem;
+  font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;
+  box-shadow:0 3px 10px rgba(37,99,235,.35);transition:transform .1s,box-shadow .1s}
+.btn-scenario:hover{transform:translateY(-1px);box-shadow:0 5px 16px rgba(37,99,235,.45)}
+.btn-scenario:active{transform:none}
+.btn-logout{background:rgba(255,255,255,.12);color:rgba(255,255,255,.75);border:1px solid rgba(255,255,255,.2);
+  border-radius:8px;padding:7px 14px;font-family:'Sarabun',sans-serif;font-size:.82rem;
+  font-weight:600;cursor:pointer;transition:background .15s,color .15s}
+.btn-logout:hover{background:rgba(220,38,38,.7);color:#fff;border-color:transparent}
+</style>
+</head>
+<body>
+
+<!-- ===== LOGIN OVERLAY ===== -->
+<div id="login-overlay">
+  <div class="login-blobs">
+    <div class="login-blob blob1"></div>
+    <div class="login-blob blob2"></div>
+    <div class="login-blob blob3"></div>
+  </div>
+  <div class="login-box">
+    <div class="login-logo-ring">
+      <img src="tistr-logo.png" alt="วว." onerror="this.parentNode.innerHTML='<span style=\'font-size:2.8rem\'>🏛️</span>'">
+    </div>
+    <div class="login-badge">HRIS · ระบบสารสนเทศอัตรากำลัง</div>
+    <div class="login-title" style="white-space:normal;font-size:1rem">สถาบันวิจัยวิทยาศาสตร์และเทคโนโลยีแห่งประเทศไทย (วว.)</div>
+    <div class="login-org">Thailand Institute of Scientific<br>and Technological Research</div>
+    <div class="login-divider"><span>กรอกรหัสผ่านเพื่อเข้าใช้งาน</span></div>
+    <div class="login-field-lbl">รหัสผ่าน (Password)</div>
+    <div class="login-input-wrap">
+      <input id="login-pwd" class="login-input" type="password" placeholder="••••••••" maxlength="20"
+        onkeydown="if(event.key==='Enter')doLogin()">
+      <button class="login-eye" id="login-eye-btn" onclick="togglePwd()" type="button">👁</button>
+    </div>
+    <button class="login-btn" onclick="doLogin()">เข้าสู่ระบบ</button>
+    <div class="login-err" id="login-err"></div>
+    <div class="login-footer">เฉพาะเจ้าหน้าที่ที่ได้รับอนุญาตเท่านั้น<br>© สถาบันวิจัยวิทยาศาสตร์และเทคโนโลยีแห่งประเทศไทย</div>
+  </div>
+</div>
+
+<!-- ===== WELCOME SPLASH — CINEMA CURTAIN ===== -->
+<div id="welcome-screen">
+  <div class="wlc-curtain-left"></div>
+  <div class="wlc-curtain-right"></div>
+  <div class="wlc-scan-line"></div>
+  <div class="wlc-stage">
+    <div class="wlc-ring">
+      <img src="tistr-logo.png" alt="วว." onerror="this.parentNode.innerHTML='<span style=\'font-size:3rem\'>🏛️</span>'">
+    </div>
+    <div class="wlc-greet">ยินดีต้อนรับสู่</div>
+    <div class="wlc-title">ระบบสารสนเทศอัตรากำลัง<br><span style="color:#1d4ed8">สถาบันวิจัยวิทยาศาสตร์และเทคโนโลยี<br>แห่งประเทศไทย</span></div>
+    <div class="wlc-divline"></div>
+    <div class="wlc-org">
+      Thailand Institute of Scientific and Technological Research
+    </div>
+    <div class="wlc-hint" style="margin-top:28px">กำลังโหลดข้อมูล กรุณารอสักครู่...</div>
+  </div>
+</div>
+
+<!-- ===== SCENARIO MODAL ===== -->
+<div id="scenario-backdrop" onclick="if(event.target===this)closeScenario()">
+  <div id="scenario-modal">
+    <div class="sc-title">🎯 Scenario Simulator — จำลองสถานการณ์อัตรากำลัง</div>
+    <div class="sc-sub">ปรับ slider เพื่อดูผลกระทบต่ออัตรากำลังแบบ real-time</div>
+    <div class="sc-section">
+      <div class="sc-lbl">จ้างพนักงาน / ผู้บริหารเพิ่ม <span id="sc-val-emp">+0 คน</span></div>
+      <input type="range" class="sc-slider" id="sc-emp" min="-50" max="150" value="0" oninput="updateScenario()">
+    </div>
+    <div class="sc-section">
+      <div class="sc-lbl">จ้างลูกจ้างประจำเพิ่ม <span id="sc-val-perm">+0 คน</span></div>
+      <input type="range" class="sc-slider" id="sc-perm" min="-30" max="80" value="0" oninput="updateScenario()">
+    </div>
+    <div class="sc-section">
+      <div class="sc-lbl">จ้างลูกจ้างทั่วไป/เฉพาะกิจเพิ่ม <span id="sc-val-other">+0 คน</span></div>
+      <input type="range" class="sc-slider" id="sc-other" min="-50" max="100" value="0" oninput="updateScenario()">
+    </div>
+    <div class="sc-grid">
+      <div class="sc-kpi current">
+        <div class="sc-kpi-label">ปัจจุบัน</div>
+        <div class="sc-kpi-val" id="sc-cur">—</div>
+        <div style="font-size:.72rem;color:#64748b">คน</div>
+      </div>
+      <div class="sc-kpi projected">
+        <div class="sc-kpi-label">หลังปรับ</div>
+        <div class="sc-kpi-val" id="sc-proj">—</div>
+        <div class="sc-delta" id="sc-delta">—</div>
+      </div>
+      <div class="sc-kpi approved">
+        <div class="sc-kpi-label">ได้รับอนุมัติ</div>
+        <div class="sc-kpi-val" id="sc-appr">—</div>
+        <div style="font-size:.72rem;color:#92400e">คน (อัตรา)</div>
+      </div>
+    </div>
+    <div class="sc-note" id="sc-note">ปรับ slider เพื่อจำลองการเปลี่ยนแปลงอัตรากำลัง</div>
+    <div class="sc-footer">
+      <button class="sc-close-btn" onclick="resetScenario()">🔄 รีเซ็ต</button>
+      &nbsp;
+      <button class="sc-close-btn" style="background:#64748b" onclick="closeScenario()">ปิด</button>
+    </div>
+  </div>
+</div>
+
+<!-- SCREEN VIEW -->
+<div id="screen-view">
+<div class="hdr">
+  <div class="hdr-brand">
+    <img src="tistr-logo.png" alt="วว." class="hdr-logo">
+    <div>
+      <div class="hdr-title">ระบบสารสนเทศอัตรากำลัง — วว.</div>
+      <div class="hdr-sub">Thailand Institute of Scientific and Technological Research · Human Resource Information System</div>
+    </div>
+  </div>
+  <div style="display:flex;gap:8px;align-items:center">
+    <button class="btn-scenario" onclick="openScenario()">🎯 จำลองสถานการณ์</button>
+    <button class="btn-tts" id="tts-btn" onclick="toggleTTS()">🔊 อ่านสรุป</button>
+    <div class="pdf-btn-wrap">
+      <button class="btn btn-g" onclick="togglePdfMenu(event)">🖨 ออกรายงาน PDF ▾</button>
+      <div class="pdf-menu" id="pdf-menu">
+        <div class="pdf-menu-item" onclick="showPrintView();closePdfMenu()">
+          <span class="pm-icon">📋</span>
+          <span class="pm-lbl">รายงานแบบตาราง<span class="pm-sub">รายชื่อบุคลากร × สังกัด</span></span>
+        </div>
+        <div class="pdf-divider"></div>
+        <div class="pdf-menu-item" onclick="showPrintView2();closePdfMenu()">
+          <span class="pm-icon">📊</span>
+          <span class="pm-lbl">รายงานอัตรากำลัง<span class="pm-sub">Band + การศึกษา + กลุ่ม</span></span>
+        </div>
+      </div>
+    </div>
+    <button class="btn-logout" onclick="doLogout()" title="ออกจากระบบ">🔓 ออกจากระบบ</button>
+  </div>
+</div>
+
+<div class="tabs">
+  <button class="tab on" id="tab-dash" onclick="switchTab('dash')">📊 ภาพรวมอัตรากำลัง</button>
+  <button class="tab" id="tab-forecast" onclick="switchTab('forecast')">📅 แผนอัตรากำลัง</button>
+  <button class="tab" id="tab-people" onclick="switchTab('people')">👤 รายชื่อบุคลากร</button>
+</div>
+
+<div id="loading"><div class="spin"></div><div style="font-size:.9rem">กำลังโหลดข้อมูลจาก Google Sheets...</div></div>
+
+<div id="content">
+<!-- DASHBOARD TAB -->
+<div id="view-dash" class="main">
+
+  <!-- Hero Banner -->
+  <div class="dash-hero">
+    <div class="dash-hero-left">
+      <div style="display:flex;align-items:center;gap:14px;margin-bottom:6px">
+        <img src="tistr-logo.png" alt="วว." class="hero-logo">
+        <div class="dash-hero-ttl" style="margin-bottom:0">ภาพรวมอัตรากำลัง วว.</div>
+      </div>
+      <div class="dash-hero-sub">Thailand Institute of Scientific and Technological Research · Human Resource Information System<br>ข้อมูลอัตรากำลังบุคลากรทุกประเภท จำแนกตามกลุ่มงาน สายงาน และระดับ Band</div>
+      <div class="dash-hero-tags">
+        <span class="dash-hero-tag gold">วว. · TISTR</span>
+        <span class="dash-hero-tag" id="dash-hero-updated">กำลังโหลด...</span>
+        <span class="dash-hero-tag">อัตรากำลังที่ได้รับอนุมัติ 732 คน</span>
+      </div>
+    </div>
+    <div class="dash-hero-right">
+      <div class="dash-stat">
+        <span class="dash-stat-num" id="dash-stat-total">—</span>
+        <span class="dash-stat-lbl">บุคลากรรวม</span>
+      </div>
+      <div class="dash-stat">
+        <span class="dash-stat-num" id="dash-stat-research">—</span>
+        <span class="dash-stat-lbl">สายวิจัย</span>
+      </div>
+      <div class="dash-stat">
+        <span class="dash-stat-num" id="dash-stat-support">—</span>
+        <span class="dash-stat-lbl">สายสนับสนุน</span>
+      </div>
+      <div class="dash-stat alert">
+        <span class="dash-stat-num" id="dash-stat-vacant">—</span>
+        <span class="dash-stat-lbl">อัตราว่างรวม</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filter bar -->
+  <div class="fbar">
+    <span class="fl">กลุ่มงาน</span>
+    <select class="fsel" id="f-group" onchange="onDashGroupChange()"><option value="">ทั้งหมด</option></select>
+    <span class="fl">หน่วยงาน</span>
+    <select class="fsel" id="f-dept" onchange="applyFilters()" style="min-width:175px"><option value="">ทั้งหมด</option></select>
+    <div class="fsep"></div>
+    <span class="fl">ประเภท</span>
+    <select class="fsel" id="f-pos" onchange="applyFilters()">
+      <option value="">ทั้งหมด</option>
+      <option>ผู้บริหาร</option>
+      <option>พนักงาน</option><option>ลูกจ้างประจำ</option>
+      <option>ลูกจ้างทั่วไป</option><option>ลูกจ้างเฉพาะกิจ</option>
+    </select>
+    <span class="fl">Band</span>
+    <select class="fsel" id="f-band" onchange="applyFilters()">
+      <option value="">ทั้งหมด</option>
+      <option value="1">Band 1</option><option value="2">Band 2</option>
+      <option value="3">Band 3</option><option value="4">Band 4</option>
+    </select>
+    <button class="fbtn" onclick="resetFilters()">✕ รีเซ็ต</button>
+    <span class="finfo" id="f-info"></span>
+  </div>
+
+  <!-- Section: KPI -->
+  <div class="ds-section">
+    <span class="ds-section-ttl">สรุปจำนวนบุคลากรตามประเภท</span>
+    <div class="ds-section-line"></div>
+  </div>
+
+  <div class="krow">
+    <div class="kpi"><div class="kpi-accent"></div><div class="kl">👥 บุคลากรรวมทั้งหมด</div><div class="kv" id="k-total">—</div><div class="ksub">คน</div></div>
+    <div class="kpi ka"><div class="kpi-accent"></div><div class="kl">👑 ผู้บริหาร</div><div class="kv" id="k-admin">—</div><div class="ksub">คน</div></div>
+    <div class="kpi kp"><div class="kpi-accent"></div><div class="kl">🏢 พนักงาน</div><div class="kv" id="k-emp">—</div><div class="ksub">คน</div></div>
+    <div class="kpi ke"><div class="kpi-accent"></div><div class="kl">📋 ลูกจ้างประจำ</div><div class="kv" id="k-perm">—</div><div class="ksub">คน</div></div>
+    <div class="kpi kg"><div class="kpi-accent"></div><div class="kl">📁 ลูกจ้างทั่วไป</div><div class="kv" id="k-gen">—</div><div class="ksub">คน</div></div>
+    <div class="kpi ko"><div class="kpi-accent"></div><div class="kl">⚡ ลูกจ้างเฉพาะกิจ</div><div class="kv" id="k-spec">—</div><div class="ksub">คน</div></div>
+  </div>
+
+  <!-- Section: Comparison -->
+  <div class="ds-section">
+    <span class="ds-section-ttl">เปรียบเทียบกับอัตราที่ได้รับอนุมัติ</span>
+    <div class="ds-section-line"></div>
+  </div>
+
+  <!-- KPI Comparison Row -->
+  <div class="krow2">
+    <div class="kcmp">
+      <div><span class="kcmp-title">อัตรากำลังพนักงาน (รวมผู้บริหาร)</span><span class="kcmp-tag" style="background:rgba(26,26,110,.12);color:#1a1a6e">ที่ได้รับอนุมัติ</span></div>
+      <div class="kcmp-body">
+        <div class="kcmp-col">
+          <div class="kcmp-lbl">อัตราที่ได้รับอนุมัติ</div>
+          <div class="kcmp-val">665</div>
+          <div class="kcmp-lbl">คน</div>
+        </div>
+        <div class="kcmp-col">
+          <div class="kcmp-lbl">มีอยู่จริง (ปัจจุบัน)</div>
+          <div class="kcmp-val" id="kcmp-emp-cur">—</div>
+          <div class="kcmp-lbl">คน</div>
+        </div>
+        <div class="kcmp-col">
+          <div class="kcmp-lbl">ขาด / ว่าง</div>
+          <div class="kcmp-val gap" id="kcmp-emp-gap">—</div>
+          <div class="kcmp-lbl">คน</div>
+        </div>
+      </div>
+      <div class="kcmp-bar-wrap"><div class="kcmp-bar-fill" id="kcmp-emp-bar" style="width:0%"></div></div>
+      <div style="font-size:.67rem;color:var(--muted)" id="kcmp-emp-pct">—</div>
+    </div>
+    <div class="kcmp">
+      <div><span class="kcmp-title">อัตรากำลังลูกจ้างประจำ</span><span class="kcmp-tag" style="background:rgba(26,90,56,.12);color:#1a5a38">ที่ได้รับอนุมัติ</span></div>
+      <div class="kcmp-body">
+        <div class="kcmp-col">
+          <div class="kcmp-lbl">อัตราที่ได้รับอนุมัติ</div>
+          <div class="kcmp-val">67</div>
+          <div class="kcmp-lbl">คน</div>
+        </div>
+        <div class="kcmp-col">
+          <div class="kcmp-lbl">มีอยู่จริง (ปัจจุบัน)</div>
+          <div class="kcmp-val" id="kcmp-perm-cur">—</div>
+          <div class="kcmp-lbl">คน</div>
+        </div>
+        <div class="kcmp-col">
+          <div class="kcmp-lbl">ขาด / ว่าง</div>
+          <div class="kcmp-val gap" id="kcmp-perm-gap">—</div>
+          <div class="kcmp-lbl">คน</div>
+        </div>
+      </div>
+      <div class="kcmp-bar-wrap"><div class="kcmp-bar-fill" id="kcmp-perm-bar" style="width:0%;background:linear-gradient(90deg,#059669,#10B981)"></div></div>
+      <div style="font-size:.67rem;color:var(--muted)" id="kcmp-perm-pct">—</div>
+    </div>
+  </div>
+
+  <!-- Section: Charts -->
+  <div class="ds-section">
+    <span class="ds-section-ttl">วิเคราะห์อัตรากำลัง 4 มิติ</span>
+    <div class="ds-section-line"></div>
+  </div>
+
+  <div class="cgrid">
+    <div class="cc">
+      <div class="cch">
+        <div class="cct"><span class="ccd" style="background:#EF4444"></span>สัดส่วนตามประเภทการจ้างงาน</div>
+        <div class="ccs">ผู้บริหาร / พนักงาน / ลูกจ้างประจำ / ลูกจ้างทั่วไป / ลูกจ้างเฉพาะกิจ</div>
+      </div>
+      <div class="ccw" style="min-height:240px"><canvas id="ch-pos"></canvas></div>
+    </div>
+    <div class="cc">
+      <div class="cch">
+        <div class="cct"><span class="ccd" style="background:#3B82F6"></span>อัตรากำลังแยกตามกลุ่มงาน</div>
+        <div class="ccs">จำนวนบุคลากรในแต่ละกลุ่ม แยกตามประเภทการจ้างงาน</div>
+      </div>
+      <div class="ccw" style="min-height:240px"><canvas id="ch-grp"></canvas></div>
+    </div>
+  </div>
+
+  <div class="cgrid">
+    <div class="cc">
+      <div class="cch">
+        <div class="cct"><span class="ccd" style="background:#6366F1"></span>การกระจายตาม Band (บุคลากรทั้งหมด)</div>
+        <div class="ccs">Band 1 = บริหาร/อาวุโส · Band 2 = วิจัย · Band 3 = ยุทธศาสตร์ · Band 4 = ปฏิบัติงาน</div>
+      </div>
+      <div class="ccw" style="min-height:240px"><canvas id="ch-band"></canvas></div>
+    </div>
+    <div class="cc">
+      <div class="cch">
+        <div class="cct"><span class="ccd" style="background:#F59E0B"></span>ระดับการศึกษา แยกตามประเภทบุคลากร</div>
+        <div class="ccs">ปริญญาตรี / โท / เอก — จำแนกตามประเภทการจ้างงาน</div>
+      </div>
+      <div class="ccw" style="min-height:240px"><canvas id="ch-edu"></canvas></div>
+    </div>
+  </div>
+
+  <!-- Section: Gender + Dept Table -->
+  <div class="ds-section">
+    <span class="ds-section-ttl">จำแนกตามเพศและหน่วยงาน</span>
+    <div class="ds-section-line"></div>
+  </div>
+
+  <div class="cc full-w" style="margin-bottom:14px">
+    <div class="cch">
+      <div class="cct"><span class="ccd" style="background:#0EA5E9"></span>อัตรากำลังแยกตามเพศ รายกลุ่มงาน</div>
+      <div class="ccs">ชาย / หญิง ในแต่ละกลุ่มงาน — จำแนกทุกประเภทบุคลากร</div>
+    </div>
+    <div class="ccw" style="min-height:210px"><canvas id="ch-gender"></canvas></div>
+  </div>
+
+  <div class="tc">
+    <div class="tc-hdr tc-hdr-toggle" onclick="toggleDashTable()">
+      <div style="display:flex;align-items:center">
+        <span class="tc-toggle-arrow" id="tc-arrow">▶</span>
+        <div class="tc-ttl">ตารางอัตรากำลังแยกตามหน่วยงาน</div>
+        <span class="tc-row-count" id="tc-row-count"></span>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px" onclick="event.stopPropagation()">
+        <input class="tc-srch" type="text" placeholder="🔍 ค้นหาหน่วยงาน..." oninput="searchTable(this.value)" id="tbl-srch">
+        <span class="tc-toggle-hint" id="tc-toggle-hint">คลิกเพื่อขยาย</span>
+      </div>
+    </div>
+    <div class="tc-body-wrap" id="tc-body-wrap">
+      <div style="overflow-x:auto">
+        <table id="dept-table">
+          <thead><tr>
+            <th style="width:34%">หน่วยงาน</th>
+            <th class="c">ประเภทบุคลากร</th>
+            <th class="r">ผู้บริหาร</th><th class="r">พนักงาน</th><th class="r">ลูกจ้างประจำ</th>
+            <th class="r">ลูกจ้างทั่วไป</th><th class="r">ลูกจ้างเฉพาะกิจ</th>
+            <th class="r">รวม</th>
+          </tr></thead>
+          <tbody id="dept-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div><!-- /view-dash -->
+
+<!-- PEOPLE TAB -->
+<div id="view-people" class="main" style="display:none">
+  <div class="fbar">
+    <span class="fl">กลุ่มงาน</span>
+    <select class="fsel" id="pf-group" onchange="applyPeopleFilters()"><option value="">ทั้งหมด</option></select>
+    <span class="fl">ประเภท</span>
+    <select class="fsel" id="pf-pos" onchange="applyPeopleFilters()">
+      <option value="">ทั้งหมด</option>
+      <option>ผู้บริหาร</option><option>พนักงาน</option><option>ลูกจ้างประจำ</option>
+      <option>ลูกจ้างทั่วไป</option><option>ลูกจ้างเฉพาะกิจ</option>
+    </select>
+    <span class="fl">Band</span>
+    <select class="fsel" id="pf-band" onchange="applyPeopleFilters()" style="min-width:95px">
+      <option value="">ทั้งหมด</option>
+      <option>1</option><option>2</option><option>3</option>
+      <option>4</option><option>5</option><option>6</option><option>7</option>
+    </select>
+    <input class="fsel" style="width:200px" type="text" placeholder="🔍 ชื่อ / หน่วยงาน..." oninput="applyPeopleFilters()" id="pf-name">
+    <button class="fbtn" onclick="resetPeopleFilters()">✕ รีเซ็ต</button>
+    <span class="finfo" id="pf-info"></span>
+  </div>
+  <div class="tc">
+    <div class="tc-hdr"><div class="tc-ttl">รายชื่อบุคลากร</div></div>
+    <div class="ptbl-sc" style="overflow-x:auto">
+      <table id="people-table">
+        <thead><tr>
+          <th style="width:4%">#</th><th style="width:26%">ชื่อ-สกุล</th>
+          <th style="width:22%">ตำแหน่งใหม่</th><th class="c">ประเภท</th>
+          <th class="c">Band</th><th class="c">SB</th>
+          <th>หน่วยงาน</th><th class="c">กลุ่มงาน</th>
+        </tr></thead>
+        <tbody id="people-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div><!-- /view-people -->
+
+<!-- FORECAST TAB -->
+<div id="view-forecast" class="main" style="display:none">
+
+  <!-- Hero Banner -->
+  <div class="fc-hero">
+    <div class="fc-hero-left">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:6px">
+        <img src="tistr-logo.png" alt="วว." class="hero-logo">
+        <div class="fc-hero-ttl" style="margin-bottom:0">แผนอัตรากำลัง &amp; การเกษียณอายุ</div>
+      </div>
+      <div class="fc-hero-sub">วิเคราะห์แนวโน้มการเกษียณอายุบุคลากร วว. · จำแนกตามกลุ่ม Band และระดับการศึกษา</div>
+    </div>
+    <div class="fc-hero-right">
+      <div class="fc-hero-stat">
+        <span class="fc-hero-stat-num" id="fc-hero-1yr">—</span>
+        <span class="fc-hero-stat-lbl">เกษียณปีนี้</span>
+      </div>
+      <div class="fc-hero-stat">
+        <span class="fc-hero-stat-num" id="fc-hero-3yr">—</span>
+        <span class="fc-hero-stat-lbl">เกษียณใน 3 ปี</span>
+      </div>
+      <div class="fc-hero-stat">
+        <span class="fc-hero-stat-num" id="fc-hero-10yr">—</span>
+        <span class="fc-hero-stat-lbl">เกษียณใน 10 ปี</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filter bar -->
+  <div class="fbar">
+    <span class="fl">กลุ่มงาน</span>
+    <select class="fsel" id="fc-group" onchange="applyForecastFilters()"><option value="">ทั้งหมด</option></select>
+    <span class="fl">ประเภท</span>
+    <select class="fsel" id="fc-pos" onchange="applyForecastFilters()">
+      <option value="">ทั้งหมด</option>
+      <option>ผู้บริหาร</option>
+      <option>พนักงาน</option>
+      <option>ลูกจ้างประจำ</option>
+      <option>ลูกจ้างทั่วไป</option>
+      <option>ลูกจ้างเฉพาะกิจ</option>
+    </select>
+    <div class="fsep"></div>
+    <span class="fl">📅 เกษียณภายใน</span>
+    <select class="fsel" id="fc-yrs" onchange="applyForecastFilters()">
+      <option value="1">1 ปี</option>
+      <option value="3">3 ปี</option>
+      <option value="5">5 ปี</option>
+      <option value="10" selected>10 ปี</option>
+    </select>
+    <span class="fl">Band</span>
+    <select class="fsel" id="fc-band" onchange="applyForecastFilters()" style="min-width:95px">
+      <option value="">ทั้งหมด</option>
+      <option>1</option><option>2</option><option>3</option>
+      <option>4</option><option>5</option><option>6</option><option>7</option>
+    </select>
+    <button class="fbtn" onclick="resetForecastFilters()">✕ รีเซ็ต</button>
+    <span class="finfo" id="fc-info"></span>
+  </div>
+
+  <!-- Section: KPI countdown -->
+  <div class="fc-section">
+    <span class="fc-section-ttl">⏳ นับถอยหลังเกษียณอายุรายปี</span>
+    <div class="fc-section-line"></div>
+  </div>
+
+  <!-- KPI row — แสดงตามปี พ.ศ. (4 ปีถัดไป + อายุเฉลี่ย) -->
+  <div class="krow" id="fc-krow" style="grid-template-columns:repeat(5,1fr)">
+    <div class="kpi kf1" style="position:relative;overflow:hidden">
+      <div class="kpi-accent"></div>
+      <div class="kl" id="fc-k1-lbl">📅 พ.ศ. —</div>
+      <div class="kv" id="fc-k1">—</div>
+      <div class="ksub">คน · เกษียณปีงบประมาณนี้</div>
+    </div>
+    <div class="kpi kf3" style="position:relative;overflow:hidden">
+      <div class="kpi-accent"></div>
+      <div class="kl" id="fc-k2-lbl">📋 ภายใน 3 ปี</div>
+      <div class="kv" id="fc-k3">—</div>
+      <div class="ksub">คน · วางแผนสืบทอดตำแหน่ง</div>
+    </div>
+    <div class="kpi kf5" style="position:relative;overflow:hidden">
+      <div class="kpi-accent"></div>
+      <div class="kl" id="fc-k3-lbl">📅 ภายใน 5 ปี</div>
+      <div class="kv" id="fc-k5">—</div>
+      <div class="ksub">คน · วางแผนสรรหาระยะกลาง</div>
+    </div>
+    <div class="kpi kf10" style="position:relative;overflow:hidden">
+      <div class="kpi-accent"></div>
+      <div class="kl" id="fc-k4-lbl">🔭 ภายใน 10 ปี</div>
+      <div class="kv" id="fc-k10">—</div>
+      <div class="ksub">คน · วิสัยทัศน์ระยะยาว</div>
+    </div>
+    <div class="kpi kfa" style="position:relative;overflow:hidden">
+      <div class="kpi-accent"></div>
+      <div class="kl">👤 อายุเฉลี่ยบุคลากร</div>
+      <div class="kv" id="fc-kavg">—</div>
+      <div class="ksub">ปี (ทั้งหมดในกลุ่ม)</div>
+    </div>
+  </div>
+
+  <!-- Section: Charts -->
+  <div class="fc-section">
+    <span class="fc-section-ttl">📊 วิเคราะห์การเกษียณอายุ 4 มิติ</span>
+    <div class="fc-section-line"></div>
+  </div>
+
+  <!-- Charts 2x2 -->
+  <div class="cgrid">
+    <div class="cc">
+      <div class="cch">
+        <div class="cct"><span class="ccd" style="background:#EF4444"></span>การเกษียณอายุรายปี</div>
+        <div class="ccs">จำนวนบุคลากรที่จะเกษียณในแต่ละปี (10 ปีข้างหน้า)</div>
+      </div>
+      <div class="ccw" style="height:220px"><canvas id="ch-retire-yr"></canvas></div>
+    </div>
+    <div class="cc">
+      <div class="cch">
+        <div class="cct"><span class="ccd" style="background:#F97316"></span>เกษียณแยกตามกลุ่มงาน</div>
+        <div class="ccs">จำนวนที่จะเกษียณภายใน <span id="fc-grp-yrs-lbl">10</span> ปี แยกตามกลุ่ม</div>
+      </div>
+      <div class="ccw" style="height:220px"><canvas id="ch-retire-grp"></canvas></div>
+    </div>
+    <div class="cc">
+      <div class="cch">
+        <div class="cct"><span class="ccd" style="background:#6366F1"></span>เกษียณแยกตาม Band</div>
+        <div class="ccs">สายงานที่จะสูญเสียบุคลากรภายใน <span id="fc-band-yrs-lbl">10</span> ปี</div>
+      </div>
+      <div class="ccw" style="height:220px"><canvas id="ch-retire-band"></canvas></div>
+    </div>
+    <div class="cc">
+      <div class="cch">
+        <div class="cct"><span class="ccd" style="background:#0EA5E9"></span>เกษียณแยกตามระดับการศึกษา</div>
+        <div class="ccs">จำแนกวุฒิการศึกษาของบุคลากรที่จะเกษียณ</div>
+      </div>
+      <div class="ccw" style="height:220px"><canvas id="ch-retire-edu"></canvas></div>
+    </div>
+  </div>
+
+  <!-- Section: Table -->
+  <div class="fc-section">
+    <span class="fc-section-ttl">📋 รายชื่อบุคลากรที่จะเกษียณอายุ</span>
+    <div class="fc-section-line"></div>
+  </div>
+
+  <!-- Retirement list table -->
+  <div class="tc" style="margin-top:0">
+    <div class="tc-hdr" style="border-left-color:#6366F1">
+      <div style="display:flex;align-items:center;gap:10px">
+        <div class="tc-ttl">ภายใน <span id="fc-tbl-yrs">10</span> ปี</div>
+        <span id="fc-tbl-count" style="font-size:.72rem;background:#ede9fe;color:#5b21b6;padding:3px 12px;border-radius:20px;font-weight:700;border:1px solid #ddd6fe"></span>
+      </div>
+      <div style="display:flex;align-items:center;gap:6px">
+        <input type="text" id="fc-search" placeholder="🔍  ค้นหาชื่อ / ตำแหน่ง / หน่วยงาน…" class="tc-srch" oninput="renderForecastTable(parseInt(document.getElementById('fc-yrs')?.value||'10'))" style="width:260px">
+      </div>
+    </div>
+    <div style="overflow-x:auto;overflow-y:auto;max-height:520px">
+      <table id="fc-table">
+        <thead>
+          <tr>
+            <th style="width:3%;text-align:center">#</th>
+            <th style="width:22%">ชื่อ-สกุล</th>
+            <th style="width:20%">ตำแหน่งใหม่</th>
+            <th class="c" style="width:10%">ประเภท</th>
+            <th class="c" style="width:6%">Band</th>
+            <th style="width:8%">กลุ่มงาน</th>
+            <th style="width:15%">หน่วยงาน</th>
+            <th class="c" style="width:10%">วันเกษียณ</th>
+            <th class="c" style="width:6%">นับถอยหลัง</th>
+          </tr>
+        </thead>
+        <tbody id="fc-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div><!-- /view-forecast -->
+
+</div><!-- /content -->
+
+<!-- PEOPLE MODAL -->
+<div id="ppl-modal">
+  <div class="ppl-overlay" onclick="closePplModal()"></div>
+  <div class="ppl-panel">
+    <div class="ppl-hdr">
+      <div style="flex:1">
+        <div class="ppl-hdr-nm" id="ppl-title">—</div>
+        <div class="ppl-hdr-sub" id="ppl-sub"></div>
+      </div>
+      <button class="ppl-close" onclick="closePplModal()">✕</button>
+    </div>
+    <div class="ppl-search-wrap">
+      <input class="ppl-search" type="text" placeholder="🔍 ค้นหาชื่อ / ตำแหน่ง..." oninput="filterPplModal(this.value)" id="ppl-search-inp">
+    </div>
+    <div class="ppl-body" id="ppl-body"></div>
+    <div class="ppl-count" id="ppl-count"></div>
+  </div>
+</div>
+
+</div><!-- /screen-view -->
+
+<!-- PRINT VIEW -->
+<div id="pview">
+  <div class="pctrl">
+    <div class="pctrl-title">ตารางสรุปอัตรากำลัง — สถาบันวิจัยวิทยาศาสตร์และเทคโนโลยีแห่งประเทศไทย (วว.)</div>
+    <span class="fl">กลุ่มงาน</span>
+    <select class="fsel" id="pv-group" onchange="onPvGroupChange()"><option value="">ทั้งหมด</option></select>
+    <span class="fl">หน่วยงาน</span>
+    <select class="fsel" id="pv-dept" onchange="renderPrintTable()" style="min-width:185px"><option value="">ทั้งหมด</option></select>
+    <button class="btn btn-n" onclick="doPrintV1()">🖨 พิมพ์ / บันทึก PDF</button>
+    <button class="btn btn-o" onclick="exportToExcel()">📥 ดาวน์โหลด Excel</button>
+    <button class="btn btn-o" onclick="hidePrintView()">← กลับแดชบอร์ด</button>
+  </div>
+  <div class="ptwrap">
+    <div id="print-pages"></div>
+  </div>
+</div>
+
+<!-- PVIEW2: FORMAL REPORT -->
+<div id="pview2">
+  <div class="p2ctrl">
+    <div class="p2ctrl-title">รายงานอัตรากำลัง — สถาบันวิจัยวิทยาศาสตร์และเทคโนโลยีแห่งประเทศไทย (วว.)</div>
+    <span class="fl">กลุ่มงาน</span>
+    <select class="fsel" id="r2-group" onchange="onR2GroupChange()"><option value="">ทั้งหมด</option></select>
+    <span class="fl">หน่วยงาน</span>
+    <select class="fsel" id="r2-dept" onchange="renderFormalReport()" style="min-width:185px"><option value="">ทั้งหมด</option></select>
+    <button class="btn btn-o" onclick="resetR2Filters()">↺ รีเซ็ต</button>
+    <div style="width:1px;height:22px;background:var(--bdr);margin:0 2px"></div>
+    <button class="btn btn-n" onclick="doPrintV2()">🖨 พิมพ์ / บันทึก PDF</button>
+    <button class="btn btn-o" onclick="exportFormalReportToExcel()">📥 ดาวน์โหลด Excel</button>
+    <button class="btn btn-o" onclick="hidePrintView2()">← กลับแดชบอร์ด</button>
+  </div>
+  <div class="p2pages" id="p2pages"></div>
+</div>
+
+<script>
+// ============================================================
+// CONFIG
+// ============================================================
+const SHEET_ID   = '1I2ujJYdHvnhMJ562EI5NHDzqpFV9x4pywZPtl6CGsaQ';
+const SHEET_NAME = 'DataEmployee';
+
+const GROUP_ORDER  = ['ขึ้นตรง ผวว.','อช.','พย.','ยธ.','บอ.','บห.'];
+const POS_LIST     = ['ผู้บริหาร','พนักงาน','ลูกจ้างประจำ','ลูกจ้างทั่วไป','ลูกจ้างเฉพาะกิจ'];
+const POS_COLORS   = ['#EF4444','#3B82F6','#10B981','#F59E0B','#8B5CF6'];
+const BAND_COLORS  = ['#6366F1','#3B82F6','#0EA5E9','#06B6D4'];
+const GROUP_COLORS = ['#3B82F6','#10B981','#F59E0B','#8B5CF6','#EF4444','#14B8A6'];
+const EDU_ORDER    = ['ต่ำกว่าปริญญาตรี','ปริญญาตรี','ปริญญาโท','ปริญญาเอก'];
+function normEduDash(e){
+  if(!e||e.trim()==='') return 'ต่ำกว่าปริญญาตรี';
+  const s=e.trim();
+  if(/เอก|Ph\.?D|ดร\./i.test(s)) return 'ปริญญาเอก';
+  if(/โท|M\.?S|M\.?A|M\.?Ed/i.test(s)) return 'ปริญญาโท';
+  if(/ตรี|B\.?S|B\.?A|B\.?Ed/i.test(s)) return 'ปริญญาตรี';
+  if(/ม\.ปลาย|มัธยมปลาย|ม6|ม\.6|ปวช|ปวส|ม\.3|ม3|ประถม|ป\.|อนุปริญญา|ต่ำกว่า/i.test(s)) return 'ต่ำกว่าปริญญาตรี';
+  return 'ต่ำกว่าปริญญาตรี';
+}
+const EDU_COLORS   = ['#F59E0B','#3B82F6','#8B5CF6','#10B981','#EF4444','#64748B'];
+const FONT         = {family:"'Sarabun',sans-serif",size:11};
+const PBADGE={
+  ผู้บริหาร:'<span class="badge ba">ผู้บริหาร</span>',
+  พนักงาน:'<span class="badge bn">พนักงาน</span>',
+  ลูกจ้างประจำ:'<span class="badge bg">ลจ.ประจำ</span>',
+  ลูกจ้างทั่วไป:'<span class="badge be">ลจ.ทั่วไป</span>',
+  ลูกจ้างเฉพาะกิจ:'<span class="badge bp">ลจ.เฉพาะ</span>',
+};
+
+const GROUP_FULL = {
+  'ขึ้นตรง ผวว.':'กลุ่มภายใต้สังกัดผู้ว่าการ',
+  'อช.':'กลุ่มวิจัยและพัฒนา ด้านอุตสาหกรรมชีวภาพ (อช.)',
+  'พย.':'กลุ่มวิจัยและพัฒนา ด้านพัฒนาอย่างยั่งยืน (พย.)',
+  'ยธ.':'กลุ่มยุทธศาสตร์และจัดการนวัตกรรม (ยธ.)',
+  'บอ.':'กลุ่มบริการอุตสาหกรรม (บอ.)',
+  'บห.':'กลุ่มบริหาร (บห.)',
+};
+const GROUP_CODES = {
+  'ขึ้นตรง ผวว.':'ผวว.','อช.':'อช.','พย.':'พย.',
+  'ยธ.':'ยธ.','บอ.':'บอ.','บห.':'บห.'
+};
+
+// L3 → L2 (child → parent) from TISTR org chart
+const PARENT_MAP = {
+  // ขึ้นตรง ผวว.
+  'กลข.':'สผวว.','กวส.':'สผวว.',
+  'กสน.':'สสอ.', 'กปส.':'สสอ.',
+  // ยธ.
+  'กนผ.':'สยศ.','กตป.':'สยศ.','กพร.':'สยศ.',
+  'กบน.':'สจท.','กพน.':'สจท.',
+  // บห.
+  'กบค.':'สทบ.','กพค.':'สทบ.',
+  'กงบ.':'สกค.','กพด.':'สกค.',
+  'กพท.':'สทส.','กจค.':'สทส.',
+  'กกล.':'สบก.','กบร.':'สบก.',
+  // บอ.
+  'หป.ฟอ.':'ศทม.','หป.สอ.':'ศทม.','หป.วก.':'ศทม.',
+  'หป.ทฟ.':'ศทม.','หป.คม.':'ศทม.','หป.ชจ.':'ศทม.',
+  'หป.สส.':'ศพว.','หป.สป.':'ศพว.','หป.สช.':'ศพว.',
+  'หป.ทบ.':'ศบท.','หป.พบ.':'ศบท.',
+  'หป.พร.':'ศทร.',
+  'กปร.':'สรร.','กจบ.':'สรร.','กปผ.':'สรร.',
+  // อช.
+  'สลค.':'ศนก.',
+  // พย.
+  'สสส.':'ศนพ.',
+};
+const L2_SET      = new Set(Object.values(PARENT_MAP));
+// L2 units with no L3 children (standalone sections/centres)
+const L2_EXPLICIT = new Set(['สตส.','ศนอ.','ศนส.','ศคช.','ศนว.','ศนย.']);
+
+let allData=[], filtered=[], charts={}, pendingResolve=null, _todayDateStr='';
+
+// ============================================================
+// GVIZ LOADER
+// ============================================================
+window.google=window.google||{};
+window.google.visualization=window.google.visualization||{};
+window.google.visualization.Query=window.google.visualization.Query||{};
+window.google.visualization.Query.setResponse=r=>{ if(pendingResolve){pendingResolve(r);pendingResolve=null;} };
+
+function loadData(){
+  pendingResolve=r=>onDataLoad(r);
+  const s=document.createElement('script');
+  s.src=`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(SHEET_NAME)}`;
+  s.onerror=()=>{ pendingResolve=null; document.getElementById('loading').innerHTML='<p style="color:#dc2626">❌ โหลดไม่สำเร็จ — ตรวจสอบ Internet หรือสิทธิ์ Google Sheets</p>'; };
+  document.head.appendChild(s);
+}
+
+// Parse BE year from "30 กันยายน 2577"
+function parseRetireYearBE(s){
+  if(!s) return null;
+  const m=String(s).match(/(\d{4})/);
+  return m?parseInt(m[1]):null;
+}
+// Parse countdown years from "8 ปี" or numeric
+function parseCountdownYrs(s){
+  if(s===null||s===undefined||s==='') return null;
+  const n=Number(s);
+  if(!isNaN(n)) return Math.round(n);
+  const m=String(s).match(/^(-?\d+)/);
+  return m?parseInt(m[0]):null;
+}
+// Parse age/years from "52 ปี"
+function parseAgeYrs(s){
+  if(!s) return null;
+  const n=Number(s);
+  if(!isNaN(n)) return Math.round(n);
+  const m=String(s).match(/(\d+)/);
+  return m?parseInt(m[1]):null;
+}
+
+function onDataLoad(resp){
+  const cols=resp.table.cols, cmap={};
+  cols.forEach((c,i)=>{ if(c.label) cmap[c.label.trim()]=i; });
+  const g=(r,k)=>{ const i=cmap[k]; return i!==undefined?(r.c[i]?.v??null):null; };
+
+  allData=resp.table.rows.map(r=>({
+    name:       g(r,'ชื่อ-ชื่อสกุล'), prefix:  g(r,'คำนำหน้า'),
+    empId:      g(r,'เลขบัตร 6 ตัว')||g(r,'เลขบัตร'),
+    position:   g(r,'ตำแหน่ง'),     posNew:      g(r,'ตำแหน่งใหม่'),
+    positioning:g(r,'positioning'),  band:        g(r,'Band'),
+    sb:         g(r,'SB'),           deptCode:    normCode(g(r,'สังกัด')),
+    deptName:   g(r,'สังกัดหน่วยงาน'), group:    g(r,'กลุ่มงาน'),
+    code:       g(r,'รหัส'),         edu:         g(r,'ระดับการศึกษา'),
+    retireDate: g(r,'วันเกษียณอายุ'),
+    retireYearBE: parseRetireYearBE(g(r,'วันเกษียณอายุ')),
+    retireCountdown: parseCountdownYrs(g(r,'นับถอยหลัง (ปีเกษียณ)')),
+    ageYrs:     parseAgeYrs(g(r,'อายุ')),
+  })).filter(r=>r.name&&r.name.trim());
+
+  filtered=[...allData];
+  populateAllFilters();
+  setTodayDate();
+  renderAll();
+  document.getElementById('loading').style.display='none';
+  document.getElementById('content').style.display='block';
+}
+
+function setTodayDate(){
+  const d=new Date();
+  try{ _todayDateStr=new Intl.DateTimeFormat('th-TH',{day:'numeric',month:'long',year:'numeric',calendar:'buddhist'}).format(d);
+  }catch(e){ _todayDateStr=d.toLocaleDateString('th-TH'); }
+}
+function buildPrintPageHeader(){
+  return `<div class="phdr">
+    <div class="phdr-row">
+      <img src="tistr-logo.png" alt="วว." style="width:44px;height:44px;object-fit:contain;-webkit-print-color-adjust:exact;print-color-adjust:exact">
+      <div>
+        <div class="phdr-org">สถาบันวิจัยวิทยาศาสตร์และเทคโนโลยีแห่งประเทศไทย (วว.)</div>
+        <div class="phdr-org-en">Thailand Institute of Scientific and Technological Research (TISTR)</div>
+      </div>
+    </div>
+    <div class="phdr-title">ตารางสรุปข้อมูลอัตรากำลัง</div>
+    <div class="phdr-date">ข้อมูล ณ วันที่ ${_todayDateStr}</div>
+  </div>`;
+}
+
+// ============================================================
+// FILTER POPULATION
+// ============================================================
+function populateAllFilters(){
+  const groups=[...new Set(allData.map(r=>r.group).filter(Boolean))];
+  const ordered=GROUP_ORDER.filter(g=>groups.includes(g));
+  groups.forEach(g=>{ if(!ordered.includes(g)) ordered.push(g); });
+  ['f-group','pf-group','pv-group','r2-group','fc-group'].forEach(id=>{
+    const sel=document.getElementById(id); if(!sel) return;
+    ordered.forEach(g=>{ const o=document.createElement('option'); o.value=g; o.textContent=g; sel.appendChild(o); });
+  });
+  populateDashDept(''); populatePvDept(''); populateR2Dept('');
+}
+
+function populateDashDept(grpF){
+  const sel=document.getElementById('f-dept'); if(!sel) return;
+  const cur=sel.value; sel.innerHTML='<option value="">ทั้งหมด</option>';
+  const depts=[...new Map(allData.filter(r=>(!grpF||r.group===grpF)&&r.deptCode&&r.deptName)
+    .map(r=>[r.deptCode,{code:r.deptCode,name:r.deptName}])).values()]
+    .sort((a,b)=>a.name.localeCompare(b.name,'th'));
+  depts.forEach(d=>{ const o=document.createElement('option'); o.value=d.code; o.textContent=d.code===d.name?d.code:(d.name&&d.name.trim()&&d.name.trim()!==d.code.trim()?`${d.code} ${d.name}`:d.code); sel.appendChild(o); });
+  if([...sel.options].some(o=>o.value===cur)) sel.value=cur;
+}
+
+function populatePvDept(grpF){
+  const sel=document.getElementById('pv-dept'); if(!sel) return;
+  sel.innerHTML='<option value="">ทั้งหมด</option>';
+  const depts=[...new Map(allData.filter(r=>(!grpF||r.group===grpF)&&r.deptCode&&r.deptName)
+    .map(r=>[r.deptCode,{code:r.deptCode,name:r.deptName}])).values()]
+    .sort((a,b)=>a.name.localeCompare(b.name,'th'));
+  depts.forEach(d=>{ const o=document.createElement('option'); o.value=d.code; o.textContent=d.code===d.name?d.code:(d.name&&d.name.trim()&&d.name.trim()!==d.code.trim()?`${d.code} ${d.name}`:d.code); sel.appendChild(o); });
+}
+
+function onDashGroupChange(){ populateDashDept(document.getElementById('f-group').value); applyFilters(); }
+function onPvGroupChange(){ populatePvDept(document.getElementById('pv-group').value); renderPrintTable(); }
+
+function populateR2Dept(grpF){
+  const sel=document.getElementById('r2-dept'); if(!sel) return;
+  sel.innerHTML='<option value="">ทั้งหมด</option>';
+  const depts=[...new Map(allData.filter(r=>(!grpF||r.group===grpF)&&r.deptCode&&r.deptName)
+    .map(r=>[r.deptCode,{code:r.deptCode,name:r.deptName}])).values()]
+    .sort((a,b)=>a.name.localeCompare(b.name,'th'));
+  depts.forEach(d=>{ const o=document.createElement('option'); o.value=d.code; o.textContent=d.code===d.name?d.code:(d.name&&d.name.trim()&&d.name.trim()!==d.code.trim()?`${d.code} ${d.name}`:d.code); sel.appendChild(o); });
+}
+function onR2GroupChange(){ populateR2Dept(document.getElementById('r2-group').value); renderFormalReport(); }
+function resetR2Filters(){
+  document.getElementById('r2-group').value='';
+  populateR2Dept('');
+  renderFormalReport();
+}
+
+// ============================================================
+// CLASSIFICATION
+// ============================================================
+function isResearch(posNew,band){
+  // ตำแหน่งพิเศษที่เป็นสายวิจัยเสมอ (override Band)
+  if(posNew&&/นักบริหารพิเศษ|ผู้เชี่ยวชาญพิเศษ/.test(posNew)) return true;
+  const b=Number(band);
+  if(!isNaN(b)&&b>0) return b===2;
+  if(!posNew) return false;
+  if(/บัญชี|การเงิน|พัสดุ|ประชาสัมพันธ์|ทรัพยากรบุคคล|กฎหมาย|นิติกร|ธุรการ|สารบรรณ|วิเคราะห์นโยบาย|จัดการงานทั่วไป/.test(posNew)) return false;
+  if(/วิจัย|วิทยาศาสตร์|เชี่ยวชาญ|เทคนิค|วิศวกร|ปฏิบัติการทาง|นักเคมี|นักฟิสิกส์|นักชีว/.test(posNew)) return true;
+  return false;
+}
+
+// ============================================================
+// FILTERS
+// ============================================================
+function applyFilters(){
+  const g=document.getElementById('f-group').value;
+  const d=document.getElementById('f-dept').value;
+  const p=document.getElementById('f-pos').value;
+  const b=document.getElementById('f-band').value;
+  filtered=allData.filter(r=>(!g||r.group===g)&&(!d||r.deptCode===d)&&(!p||r.positioning===p)&&(!b||String(r.band)===b));
+  const info=document.getElementById('f-info');
+  if(g||d||p||b) info.textContent=`แสดง ${filtered.length.toLocaleString('th-TH')} จาก ${allData.length.toLocaleString('th-TH')} คน`;
+  else info.textContent='';
+  renderAll();
+}
+
+function resetFilters(){
+  ['f-group','f-dept','f-pos','f-band'].forEach(id=>{ const s=document.getElementById(id); if(s) s.value=''; });
+  populateDashDept('');
+  filtered=[...allData];
+  document.getElementById('f-info').textContent='';
+  renderAll();
+}
+
+// ============================================================
+// APPROVED HEADCOUNT (hardcoded — from ministry approval)
+// ============================================================
+const APPROVED = { emp: 665, perm: 67 };
+
+// ============================================================
+// RENDER ALL
+// ============================================================
+function renderAll(){ renderKPIs(); renderCharts(); renderDeptTable(); }
+
+function renderKPIs(){
+  const cnt={total:0,'ผู้บริหาร':0,'พนักงาน':0,'ลูกจ้างประจำ':0,'ลูกจ้างทั่วไป':0,'ลูกจ้างเฉพาะกิจ':0};
+  filtered.forEach(r=>{ cnt.total++; const p=r.positioning||'พนักงาน'; if(cnt[p]!==undefined) cnt[p]++; });
+  const n=x=>x.toLocaleString('th-TH');
+  animateCountUp(document.getElementById('k-total'), cnt.total);
+  animateCountUp(document.getElementById('k-admin'), cnt['ผู้บริหาร']);
+  animateCountUp(document.getElementById('k-emp'), cnt['พนักงาน']);
+  animateCountUp(document.getElementById('k-perm'), cnt['ลูกจ้างประจำ']);
+  animateCountUp(document.getElementById('k-gen'), cnt['ลูกจ้างทั่วไป']);
+  animateCountUp(document.getElementById('k-spec'), cnt['ลูกจ้างเฉพาะกิจ']);
+
+  // Comparison cards (actual vs approved) — รวมผู้บริหารเข้ากับพนักงาน
+  const empCur=cnt['พนักงาน']+cnt['ผู้บริหาร'], empGap=APPROVED.emp-empCur;
+  const permCur=cnt['ลูกจ้างประจำ'], permGap=APPROVED.perm-permCur;
+  const empPct=Math.round((empCur/APPROVED.emp)*100);
+  const permPct=Math.round((permCur/APPROVED.perm)*100);
+
+  const se=(id,v)=>{ const el=document.getElementById(id); if(el) el.textContent=v; };
+  const sw=(id,v)=>{ const el=document.getElementById(id); if(el) el.style.width=v+'%'; };
+  se('kcmp-emp-cur',  n(empCur));
+  se('kcmp-emp-gap',  (empGap>0?'+':'')+n(Math.abs(empGap))+(empGap>0?' (ว่าง)':empGap<0?' (เกิน)':''));
+  se('kcmp-emp-pct',  `บรรจุแล้ว ${empPct}% จากอัตรา ${n(APPROVED.emp)} คน`);
+  sw('kcmp-emp-bar',  Math.min(empPct,100));
+  se('kcmp-perm-cur', n(permCur));
+  se('kcmp-perm-gap', (permGap>0?'+':'')+n(Math.abs(permGap))+(permGap>0?' (ว่าง)':permGap<0?' (เกิน)':''));
+  se('kcmp-perm-pct', `บรรจุแล้ว ${permPct}% จากอัตรา ${n(APPROVED.perm)} คน`);
+  sw('kcmp-perm-bar', Math.min(permPct,100));
+
+  // Color gap: red = vacant, green = overfilled
+  ['kcmp-emp-gap','kcmp-perm-gap'].forEach((id,i)=>{
+    const el=document.getElementById(id); if(!el) return;
+    const gap=i===0?empGap:permGap;
+    el.style.color = gap>0?'#b91c1c':gap<0?'#059669':'#374151';
+  });
+
+  // Hero dashboard stats
+  const research=filtered.filter(r=>isResearch(r.posNew||r.position,r.band)).length;
+  const support=filtered.length-research;
+  const totalVacant=(empGap>0?empGap:0)+(permGap>0?permGap:0);
+  se('dash-stat-total',n(filtered.length));
+  se('dash-stat-research',n(research));
+  se('dash-stat-support',n(support));
+  se('dash-stat-vacant',n(totalVacant));
+  const dtag=document.getElementById('dash-hero-updated');
+  if(dtag){const now=new Date();dtag.textContent='ข้อมูล ณ '+now.toLocaleDateString('th-TH',{day:'numeric',month:'long',year:'numeric'});}
+}
+
+// ============================================================
+// CHARTS
+// ============================================================
+function dc(id){ if(charts[id]){try{charts[id].destroy();}catch(e){} charts[id]=null;} }
+function renderCharts(){ renderPosChart(); renderGroupChart(); renderBandChart(); renderEduChart(); renderGenderChart(); }
+
+function renderPosChart(){
+  dc('pos');
+  const cnt={};
+  filtered.forEach(r=>{ const p=r.positioning||'พนักงาน'; cnt[p]=(cnt[p]||0)+1; });
+  const labels=POS_LIST.filter(p=>cnt[p]);
+  const data=labels.map(p=>cnt[p]||0);
+  const colors=labels.map(p=>POS_COLORS[POS_LIST.indexOf(p)]);
+  const total=filtered.length;
+
+  charts['pos']=new Chart(document.getElementById('ch-pos').getContext('2d'),{
+    type:'doughnut',
+    data:{labels,datasets:[{data,backgroundColor:colors,borderWidth:3,borderColor:'#fff',hoverOffset:10}]},
+    options:{
+      responsive:true,maintainAspectRatio:false,cutout:'56%',
+      plugins:{
+        legend:{position:'bottom',labels:{font:{...FONT,size:11},padding:14,boxWidth:13,usePointStyle:true,pointStyleWidth:10}},
+        tooltip:{callbacks:{label:c=>` ${c.label}: ${c.raw.toLocaleString('th-TH')} คน (${((c.raw/total)*100).toFixed(1)}%)`}}
+      },
+      animation:{duration:700,easing:'easeOutQuart'}
+    },
+    plugins:[{
+      id:'posLbls',
+      afterDatasetsDraw(chart){
+        const ctx=chart.ctx,meta=chart.getDatasetMeta(0),tot=data.reduce((a,b)=>a+b,0);
+        if(!tot) return;
+        meta.data.forEach((arc,i)=>{
+          const val=data[i]; if(!val||val/tot<0.04) return;
+          const angle=(arc.startAngle+arc.endAngle)/2;
+          const r2=(arc.innerRadius+arc.outerRadius)/2;
+          const x=arc.x+Math.cos(angle)*r2, y=arc.y+Math.sin(angle)*r2;
+          ctx.save();
+          ctx.font="700 11px 'Sarabun',sans-serif"; ctx.fillStyle='rgba(255,255,255,.95)';
+          ctx.textAlign='center'; ctx.textBaseline='middle';
+          ctx.fillText(val.toLocaleString('th-TH'),x,y-5);
+          ctx.font="400 9.5px 'Sarabun',sans-serif"; ctx.fillStyle='rgba(255,255,255,.8)';
+          ctx.fillText(((val/tot)*100).toFixed(0)+'%',x,y+6);
+          ctx.restore();
+        });
+      }
+    }]
+  });
+}
+
+function renderGroupChart(){
+  dc('grp');
+  const groups=GROUP_ORDER.filter(g=>filtered.some(r=>r.group===g));
+  const datasets=POS_LIST.map((pos,i)=>({
+    label:pos,
+    data:groups.map(g=>filtered.filter(r=>r.group===g&&(r.positioning||'พนักงาน')===pos).length),
+    backgroundColor:POS_COLORS[i],borderRadius:3,borderSkipped:false,
+  })).filter(ds=>ds.data.some(v=>v>0));
+
+  charts['grp']=new Chart(document.getElementById('ch-grp').getContext('2d'),{
+    type:'bar',
+    data:{labels:groups,datasets},
+    options:{
+      responsive:true,maintainAspectRatio:false,layout:{padding:{top:30,left:4,right:4}},
+      scales:{
+        x:{stacked:true,ticks:{font:FONT},grid:{display:false},border:{display:false}},
+        y:{stacked:true,ticks:{font:FONT},beginAtZero:true,grid:{color:'rgba(0,0,0,.04)'},border:{display:false}}
+      },
+      plugins:{
+        legend:{position:'bottom',labels:{font:{...FONT,size:11},padding:12,boxWidth:13,usePointStyle:true,pointStyleWidth:10}},
+        tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${c.raw.toLocaleString('th-TH')} คน`}}
+      },
+      animation:{duration:700,easing:'easeOutQuart'},
+    },
+    plugins:[{
+      id:'grpTotals',
+      afterDatasetsDraw(chart){
+        const ctx=chart.ctx,dss=chart.data.datasets;
+        if(!dss.length) return;
+        const lastMeta=chart.getDatasetMeta(dss.length-1);
+        lastMeta.data.forEach((bar,i)=>{
+          const tot=dss.reduce((s,ds)=>s+(ds.data[i]||0),0);
+          if(!tot) return;
+          ctx.save(); ctx.font="700 11px 'Sarabun',sans-serif";
+          ctx.fillStyle='#374151'; ctx.textAlign='center'; ctx.textBaseline='bottom';
+          ctx.fillText(tot.toLocaleString('th-TH'),bar.x,bar.y-2); ctx.restore();
+        });
+      }
+    }]
+  });
+}
+
+function renderBandChart(){
+  dc('band');
+  const cnt={1:0,2:0,3:0,4:0};
+  filtered.forEach(r=>{ if(r.band) cnt[r.band]=(cnt[r.band]||0)+1; });
+  const labels=['Band 1\n(บริหาร/อาวุโส)','Band 2\n(สายวิจัย)','Band 3\n(ยุทธศาสตร์)','Band 4\n(ปฏิบัติงาน)'];
+  const vals=[cnt[1],cnt[2],cnt[3],cnt[4]];
+
+  charts['band']=new Chart(document.getElementById('ch-band').getContext('2d'),{
+    type:'bar',
+    data:{labels,datasets:[{label:'จำนวนพนักงาน',data:vals,backgroundColor:BAND_COLORS,borderRadius:7,borderSkipped:false}]},
+    options:{
+      responsive:true,maintainAspectRatio:false,layout:{padding:{top:30,left:4,right:4}},
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${c.raw.toLocaleString('th-TH')} คน`}}},
+      scales:{
+        x:{ticks:{font:{...FONT,weight:'600'}},grid:{display:false},border:{display:false}},
+        y:{beginAtZero:true,ticks:{font:FONT},grid:{color:'rgba(0,0,0,.04)'},border:{display:false}}
+      },
+      animation:{duration:700,easing:'easeOutQuart'},
+    },
+    plugins:[{
+      id:'bandLbls',
+      afterDatasetsDraw(chart){
+        const ctx=chart.ctx;
+        chart.getDatasetMeta(0).data.forEach((bar,i)=>{
+          const val=vals[i]; if(!val) return;
+          ctx.save(); ctx.font="700 11px 'Sarabun',sans-serif";
+          ctx.fillStyle='#374151'; ctx.textAlign='center'; ctx.textBaseline='bottom';
+          ctx.fillText(val.toLocaleString('th-TH'),bar.x,bar.y-2); ctx.restore();
+        });
+      }
+    }]
+  });
+}
+
+function renderEduChart(){
+  dc('edu');
+  const eduCnt={};
+  POS_LIST.forEach(p=>{ eduCnt[p]={}; });
+  filtered.forEach(r=>{
+    const p=r.positioning||'พนักงาน';
+    const e=normEduDash(r.edu);
+    if(!eduCnt[p]) eduCnt[p]={};
+    eduCnt[p][e]=(eduCnt[p][e]||0)+1;
+  });
+  const eduSet=new Set(filtered.map(r=>normEduDash(r.edu)));
+  const edus=[...EDU_ORDER.filter(e=>eduSet.has(e)), ...[...eduSet].filter(e=>!EDU_ORDER.includes(e))];
+  if(!edus.length) return;
+
+  const datasets=POS_LIST.map((pos,i)=>({
+    label:pos, data:edus.map(e=>eduCnt[pos]?.[e]||0),
+    backgroundColor:POS_COLORS[i], borderRadius:3, borderSkipped:false,
+  })).filter(ds=>ds.data.some(v=>v>0));
+
+  charts['edu']=new Chart(document.getElementById('ch-edu').getContext('2d'),{
+    type:'bar',
+    data:{labels:edus,datasets},
+    options:{
+      indexAxis:'y', responsive:true, maintainAspectRatio:false, layout:{padding:{right:48}},
+      scales:{
+        x:{stacked:true,ticks:{font:FONT},beginAtZero:true,grid:{color:'rgba(0,0,0,.04)'},border:{display:false}},
+        y:{stacked:true,ticks:{font:FONT},grid:{display:false},border:{display:false}}
+      },
+      plugins:{
+        legend:{position:'bottom',labels:{font:FONT,padding:10,boxWidth:12}},
+        tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${c.raw.toLocaleString('th-TH')} คน`}}
+      },
+      animation:{duration:350},
+    },
+    plugins:[{
+      id:'eduTotals',
+      afterDatasetsDraw(chart){
+        const ctx=chart.ctx,dss=chart.data.datasets;
+        if(!dss.length) return;
+        const lastMeta=chart.getDatasetMeta(dss.length-1);
+        lastMeta.data.forEach((bar,i)=>{
+          const tot=dss.reduce((s,ds)=>s+(ds.data[i]||0),0);
+          if(!tot) return;
+          ctx.save();ctx.font="700 11px 'Sarabun',sans-serif";
+          ctx.fillStyle='#374151';ctx.textAlign='left';ctx.textBaseline='middle';
+          ctx.fillText(tot.toLocaleString('th-TH')+' คน',bar.x+7,bar.y);ctx.restore();
+        });
+      }
+    }]
+  });
+}
+
+// ============================================================
+// DEPT LEVEL CLASSIFIER
+// ============================================================
+function normCode(c){
+  if(!c) return c;
+  c=c.trim();
+  // Ensure trailing dot (org chart codes all end with '.')
+  if(c && !c.endsWith('.')) c=c+'.';
+  return c;
+}
+
+function deptLevel(code,name,grpCode){
+  const nc=normCode(code);
+  if(nc===grpCode)           return 'root';
+  if(PARENT_MAP[nc])         return 'l3';
+  if(L2_SET.has(nc))         return 'l2';
+  if(L2_EXPLICIT.has(nc))    return 'l2';
+  if(/^(สำนัก|ศูนย์|สถาบัน|สถานีวิจัย)/.test(name||'')) return 'l2';
+  // "กลุ่มภายใต้ ..." หรือ deptCode ขึ้นต้น "กลุ่ม " (เช่น "กลุ่ม อช.", "กลุ่ม พย.")
+  // = ตัวกลุ่มเอง → นับรวมใน root ไม่แสดง row แยก
+  if(/^กลุ่มภายใต้/.test(name||'')) return 'root';
+  // รหัส/ชื่อที่ลงท้ายด้วย grpCode = หน่วยงานระดับกลุ่มนั้นเอง → root
+  if(grpCode&&nc!==grpCode&&nc.endsWith(grpCode)) return 'root';
+  if(grpCode&&(name||'').endsWith(grpCode)) return 'root';
+  return 'direct';
+}
+
+// ============================================================
+// DEPT TABLE (3-level)
+// ============================================================
+function renderDeptTable(){
+  const tbody=document.getElementById('dept-tbody');
+  tbody.innerHTML='';
+  const BADGE={
+    ผู้บริหาร:'<span class="badge ba">ผู้บริหาร</span>',
+    พนักงาน:'<span class="badge bn">พนักงาน</span>',
+    ลูกจ้างประจำ:'<span class="badge bg">ลจ.ประจำ</span>',
+    ลูกจ้างทั่วไป:'<span class="badge be">ลจ.ทั่วไป</span>',
+    ลูกจ้างเฉพาะกิจ:'<span class="badge bp">ลจ.เฉพาะ</span>',
+  };
+  const posB=(pos)=>POS_LIST.filter(p=>pos[p]).map(p=>BADGE[p]).join('')||'<span style="color:#c4cad8">—</span>';
+  const nf=v=>v>0?v.toLocaleString('th-TH'):'<span style="color:#c4cad8">—</span>';
+
+  // Build group→code→{name,pos}
+  const grpMap={};
+  filtered.forEach(r=>{
+    const g=r.group||'(ไม่ระบุ)',d=r.deptCode||'?';
+    if(!grpMap[g]) grpMap[g]={};
+    if(!grpMap[g][d]) grpMap[g][d]={name:r.deptName||d,pos:{}};
+    const p=r.positioning||'พนักงาน';
+    grpMap[g][d].pos[p]=(grpMap[g][d].pos[p]||0)+1;
+  });
+  const dTot=dv=>Object.values(dv.pos).reduce((s,v)=>s+v,0);
+
+  const groups=GROUP_ORDER.filter(g=>grpMap[g]);
+  Object.keys(grpMap).forEach(g=>{ if(!groups.includes(g)) groups.push(g); });
+
+  groups.forEach(grp=>{
+    if(!grpMap[grp]) return;
+    const depts=Object.entries(grpMap[grp]);
+    const grpCode=GROUP_CODES[grp]||'';
+    const gId='g1-'+grp.replace(/\W/g,'_');
+
+    // Classify
+    const l2u={};
+    const dirU=[];
+    let rootDv=null; // merged root entry
+    depts.forEach(([code,dv])=>{
+      const lv=deptLevel(code,dv.name,grpCode);
+      if(lv==='root'){
+        if(!rootDv){rootDv={codes:[code],pos:{...dv.pos}};}
+        else{rootDv.codes.push(code);Object.entries(dv.pos).forEach(([p,c])=>{rootDv.pos[p]=(rootDv.pos[p]||0)+c;});}
+      } else if(lv==='l3'){
+        const pc=PARENT_MAP[normCode(code)];
+        if(!l2u[pc]) l2u[pc]={name:pc,ownPos:{},children:[]};
+        l2u[pc].children.push({code,dv});
+      } else if(lv==='l2'){
+        if(!l2u[code]) l2u[code]={name:dv.name,ownPos:{},children:[]};
+        l2u[code].name=dv.name;
+        Object.entries(dv.pos).forEach(([p,c])=>{ l2u[code].ownPos[p]=(l2u[code].ownPos[p]||0)+c; });
+      } else {dirU.push({code,dv});}
+    });
+
+    // Group totals
+    const gPos={};
+    const addP=(src)=>Object.entries(src).forEach(([p,c])=>{ gPos[p]=(gPos[p]||0)+c; });
+    if(rootDv) addP(rootDv.pos);
+    Object.values(l2u).forEach(u=>{ addP(u.ownPos); u.children.forEach(c=>addP(c.dv.pos)); });
+    dirU.forEach(u=>addP(u.dv.pos));
+    const gTot=Object.values(gPos).reduce((s,v)=>s+v,0);
+
+    // L1: Group row
+    const allGroupCodes=depts.map(([c])=>c);
+    const gtr=document.createElement('tr'); gtr.className='tr-g1'; gtr.dataset.gid=gId;
+    gtr.innerHTML=`
+      <td><span class="tog" id="tog-${gId}" onclick="event.stopPropagation();toggleG1('${gId}')">−</span>${GROUP_FULL[grp]||grp}</td>
+      <td class="c">${posB(gPos)}</td>
+      <td class="r">${nf(gPos['ผู้บริหาร']||0)}</td>
+      <td class="r">${nf(gPos['พนักงาน']||0)}</td>
+      <td class="r">${nf(gPos['ลูกจ้างประจำ']||0)}</td>
+      <td class="r">${nf(gPos['ลูกจ้างทั่วไป']||0)}</td>
+      <td class="r">${nf(gPos['ลูกจ้างเฉพาะกิจ']||0)}</td>
+      <td class="r"><b>${gTot.toLocaleString('th-TH')}</b></td>`;
+    gtr.onclick=()=>showDeptPeople(allGroupCodes, GROUP_FULL[grp]||grp, grp);
+    tbody.appendChild(gtr);
+
+    // Root row (merged all root-level deptCodes)
+    if(rootDv){
+      const tot=Object.values(rootDv.pos).reduce((s,v)=>s+v,0); if(tot>0){
+        const tr=document.createElement('tr'); tr.className='tr-u'; tr.dataset.gid=gId;
+        tr.onclick=()=>showDeptPeople(rootDv.codes,`ขึ้นตรง ${grpCode}`,grp);
+        tr.innerHTML=`
+          <td style="padding-left:22px;color:var(--muted);font-style:italic">ขึ้นตรง ${grpCode}</td>
+          <td class="c">${posB(rootDv.pos)}</td>
+          <td class="r">${nf(rootDv.pos['ผู้บริหาร']||0)}</td>
+          <td class="r">${nf(rootDv.pos['พนักงาน']||0)}</td>
+          <td class="r">${nf(rootDv.pos['ลูกจ้างประจำ']||0)}</td>
+          <td class="r">${nf(rootDv.pos['ลูกจ้างทั่วไป']||0)}</td>
+          <td class="r">${nf(rootDv.pos['ลูกจ้างเฉพาะกิจ']||0)}</td>
+          <td class="r">${tot.toLocaleString('th-TH')}</td>`;
+        tbody.appendChild(tr);
+      }
+    }
+
+    // L2 + L3
+    const l2s=Object.entries(l2u).sort((a,b)=>{
+      const ta=Object.values(a[1].ownPos).reduce((s,v)=>s+v,0)+a[1].children.reduce((s,c)=>s+dTot(c.dv),0);
+      const tb=Object.values(b[1].ownPos).reduce((s,v)=>s+v,0)+b[1].children.reduce((s,c)=>s+dTot(c.dv),0);
+      return tb-ta;
+    });
+    l2s.forEach(([l2code,l2d])=>{
+      const l2Id='g2-'+l2code.replace(/\W/g,'_');
+      const l2pos={...l2d.ownPos};
+      l2d.children.forEach(c=>{ Object.entries(c.dv.pos).forEach(([p,v])=>{ l2pos[p]=(l2pos[p]||0)+v; }); });
+      const l2tot=Object.values(l2pos).reduce((s,v)=>s+v,0);
+      const hasCh=l2d.children.length>0;
+
+      const l2Codes=[l2code,...l2d.children.map(c=>c.code)];
+      const l2tr=document.createElement('tr'); l2tr.className='tr-g2'; l2tr.dataset.gid=gId; l2tr.dataset.l2id=l2Id;
+      l2tr.innerHTML=`
+        <td>${hasCh?`<span class="tog" id="tog-${l2Id}" onclick="event.stopPropagation();toggleL2('${l2Id}')">−</span>`:''}<b>${l2d.name}</b></td>
+        <td class="c">${posB(l2pos)}</td>
+        <td class="r">${nf(l2pos['ผู้บริหาร']||0)}</td>
+        <td class="r">${nf(l2pos['พนักงาน']||0)}</td>
+        <td class="r">${nf(l2pos['ลูกจ้างประจำ']||0)}</td>
+        <td class="r">${nf(l2pos['ลูกจ้างทั่วไป']||0)}</td>
+        <td class="r">${nf(l2pos['ลูกจ้างเฉพาะกิจ']||0)}</td>
+        <td class="r"><b>${l2tot.toLocaleString('th-TH')}</b></td>`;
+      l2tr.onclick=()=>showDeptPeople(l2Codes,l2d.name,grp);
+      tbody.appendChild(l2tr);
+
+      l2d.children.sort((a,b)=>dTot(b.dv)-dTot(a.dv)).forEach(({code,dv})=>{
+        const tot=dTot(dv); if(!tot) return;
+        const posTypes=POS_LIST.filter(p=>dv.pos[p]);
+        const tr=document.createElement('tr'); tr.className='tr-u'; tr.dataset.gid=gId; tr.dataset.l2id=l2Id;
+        tr.onclick=()=>showDeptPeople([code],dv.name,grp);
+        tr.innerHTML=`
+          <td>${dv.name}</td>
+          <td class="c">${posTypes.map(p=>BADGE[p]).join('')}</td>
+          <td class="r">${nf(dv.pos['ผู้บริหาร']||0)}</td>
+          <td class="r">${nf(dv.pos['พนักงาน']||0)}</td>
+          <td class="r">${nf(dv.pos['ลูกจ้างประจำ']||0)}</td>
+          <td class="r">${nf(dv.pos['ลูกจ้างทั่วไป']||0)}</td>
+          <td class="r">${nf(dv.pos['ลูกจ้างเฉพาะกิจ']||0)}</td>
+          <td class="r">${tot.toLocaleString('th-TH')}</td>`;
+        tbody.appendChild(tr);
+      });
+    });
+
+    // Direct units (L2-level, not nested under any section)
+    dirU.sort((a,b)=>dTot(b.dv)-dTot(a.dv)).forEach(({code,dv})=>{
+      const tot=dTot(dv); if(!tot) return;
+      const posTypes=POS_LIST.filter(p=>dv.pos[p]);
+      const tr=document.createElement('tr'); tr.className='tr-dir'; tr.dataset.gid=gId;
+      tr.onclick=()=>showDeptPeople([code],dv.name,grp);
+      tr.innerHTML=`
+        <td>${dv.name}</td>
+        <td class="c">${posTypes.map(p=>BADGE[p]).join('')}</td>
+        <td class="r">${nf(dv.pos['ผู้บริหาร']||0)}</td>
+        <td class="r">${nf(dv.pos['พนักงาน']||0)}</td>
+        <td class="r">${nf(dv.pos['ลูกจ้างประจำ']||0)}</td>
+        <td class="r">${nf(dv.pos['ลูกจ้างทั่วไป']||0)}</td>
+        <td class="r">${nf(dv.pos['ลูกจ้างเฉพาะกิจ']||0)}</td>
+        <td class="r">${tot.toLocaleString('th-TH')}</td>`;
+      tbody.appendChild(tr);
+    });
+  });
+  updateTcRowCount();
+}
+
+function toggleG1(gId){
+  const rows=document.querySelectorAll(`tr[data-gid="${gId}"]:not(.tr-g1)`);
+  const tog=document.getElementById('tog-'+gId);
+  const hide=rows.length&&!rows[0].classList.contains('hide');
+  rows.forEach(r=>r.classList.toggle('hide',hide));
+  if(tog) tog.textContent=hide?'+':'−';
+}
+function toggleL2(l2Id){
+  const rows=document.querySelectorAll(`tr.tr-u[data-l2id="${l2Id}"]`);
+  const tog=document.getElementById('tog-'+l2Id);
+  const hide=rows.length&&!rows[0].classList.contains('hide');
+  rows.forEach(r=>r.classList.toggle('hide',hide));
+  if(tog) tog.textContent=hide?'+':'−';
+}
+function toggleDashTable(){
+  const wrap=document.getElementById('tc-body-wrap');
+  const arrow=document.getElementById('tc-arrow');
+  const hint=document.getElementById('tc-toggle-hint');
+  const isOpen=wrap.classList.toggle('open');
+  arrow.classList.toggle('open',isOpen);
+  hint.textContent=isOpen?'คลิกเพื่อพับ':'คลิกเพื่อขยาย';
+}
+function updateTcRowCount(){
+  const rows=document.querySelectorAll('#dept-tbody tr.tr-g1');
+  const el=document.getElementById('tc-row-count');
+  if(el) el.textContent=rows.length+' หน่วยงาน';
+}
+function searchTable(q){
+  q=q.toLowerCase();
+  document.querySelectorAll('#dept-tbody tr:not(.tr-g1)').forEach(tr=>{
+    tr.style.display=(!q||tr.textContent.toLowerCase().includes(q))?'':'none';
+  });
+  document.querySelectorAll('#dept-tbody .tr-g1').forEach(gtr=>{
+    const gid=gtr.dataset.gid;
+    const anyVis=[...document.querySelectorAll(`tr[data-gid="${gid}"]:not(.tr-g1)`)].some(r=>r.style.display!=='none');
+    gtr.style.display=(!q||anyVis)?'':'none';
+  });
+}
+
+// ============================================================
+// PEOPLE TAB
+// ============================================================
+function switchTab(tab){
+  ['dash','people','forecast'].forEach(t=>{
+    document.getElementById('view-'+t).style.display=t===tab?'':'none';
+    document.getElementById('tab-'+t).classList.toggle('on',t===tab);
+  });
+  if(tab==='people') renderPeopleTable(filtered);
+  if(tab==='forecast'){ populateFcGroupFilter(); applyForecastFilters(); }
+}
+function applyPeopleFilters(){
+  const g=document.getElementById('pf-group').value;
+  const p=document.getElementById('pf-pos').value;
+  const b=document.getElementById('pf-band')?.value||'';
+  const n=(document.getElementById('pf-name').value||'').toLowerCase();
+  const rows=allData.filter(r=>
+    (!g||r.group===g)&&(!p||r.positioning===p)&&
+    (!b||String(r.band)===b)&&
+    (!n||(r.name||'').toLowerCase().includes(n)||(r.deptName||'').toLowerCase().includes(n))
+  );
+  document.getElementById('pf-info').textContent=`แสดง ${rows.length.toLocaleString('th-TH')} คน`;
+  renderPeopleTable(rows);
+}
+function resetPeopleFilters(){
+  ['pf-group','pf-pos','pf-band'].forEach(id=>{ const s=document.getElementById(id); if(s) s.value=''; });
+  document.getElementById('pf-name').value='';
+  document.getElementById('pf-info').textContent='';
+  renderPeopleTable(allData);
+}
+function renderPeopleTable(rows){
+  const tbody=document.getElementById('people-tbody'); tbody.innerHTML='';
+  rows.slice(0,500).forEach((r,i)=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML=`
+      <td class="c" style="color:var(--muted);font-size:.72rem">${i+1}</td>
+      <td>${(r.prefix||'')+' '+(r.name||'')}</td>
+      <td style="font-size:.73rem">${r.posNew||r.position||'—'}</td>
+      <td class="c">${PBADGE[r.positioning]||r.positioning||'—'}</td>
+      <td class="c">${r.band||'—'}</td><td class="c">${r.sb||'—'}</td>
+      <td style="font-size:.73rem">${r.deptName||r.deptCode||'—'}</td>
+      <td class="c">${r.group||'—'}</td>`;
+    tbody.appendChild(tr);
+  });
+  if(rows.length>500){
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td colspan="8" style="text-align:center;color:var(--muted);padding:12px;font-size:.78rem">แสดง 500 รายการแรก จากทั้งหมด ${rows.length} คน — ใช้ตัวกรองเพื่อจำกัดผลลัพธ์</td>`;
+    tbody.appendChild(tr);
+  }
+}
+
+// ============================================================
+// PRINT VIEW
+// ============================================================
+function showPrintView(){
+  document.getElementById('screen-view').style.display='none';
+  document.getElementById('pview').style.display='block';
+  document.body.classList.add('printing-v1');
+  renderPrintTable();
+}
+function hidePrintView(){
+  document.getElementById('pview').style.display='none';
+  document.getElementById('screen-view').style.display='block';
+  document.body.classList.remove('printing-v1');
+}
+
+// ===== PDF DROPDOWN =====
+function togglePdfMenu(e){
+  e.stopPropagation();
+  const m=document.getElementById('pdf-menu');
+  m.style.display=m.style.display==='block'?'none':'block';
+}
+function closePdfMenu(){ document.getElementById('pdf-menu').style.display='none'; }
+document.addEventListener('click',()=>closePdfMenu());
+
+// ===== PVIEW2 — FORMAL REPORT =====
+const R2_GROUPS = ['อช.','พย.','ยธ.','บอ.','ขึ้นตรง ผวว.','บห.'];
+const R2_GRP_SHORT = {'อช.':'อช.','พย.':'พย.','ยธ.':'ยธ.','บอ.':'บอ.','ขึ้นตรง ผวว.':'ผวว.','บห.':'บห.'};
+const R2_POS = ['ผู้บริหาร','พนักงาน','ลูกจ้างประจำ','ลูกจ้างทั่วไป','ลูกจ้างเฉพาะกิจ'];
+const R2_POS_SHORT = {'ผู้บริหาร':'ผู้บริหาร','พนักงาน':'พนักงาน','ลูกจ้างประจำ':'ลจ.ประจำ','ลูกจ้างทั่วไป':'ลจ.ทั่วไป','ลูกจ้างเฉพาะกิจ':'ลจ.เฉพาะ'};
+const R2_EDU_MAP = {'ป.เอก':'ป.เอก','ป.โท':'ป.โท','ป.โท(ก)':'ป.โท','ป.โท(ข)':'ป.โท','ป.ตรี':'ป.ตรี'};
+const R2_EDU_ORDER = ['ป.เอก','ป.โท','ป.ตรี','ต่ำกว่าป.ตรี'];
+const R2_BAND_LBL = {'1':'Band 1  บริหาร','2':'Band 2  วิจัย/บริการ','3':'Band 3  วิชาการสนับสนุน','4':'Band 4  ปฏิบัติการ'};
+const R2_SB_LBL = {
+  '1-1':'ผอ.กอง / หป. / สถานี','1-2':'ผอ.ฝ่าย / ศูนย์ / สำนัก','1-3':'นบพ. / รอง ผวว.',
+  '2-1':'นักทดลองวิทยาศาสตร์วิจัย/บริการ','2-2':'นักวิจัย / นักวิชาการ',
+  '2-3':'นักวิจัย / นักวิชาการอาวุโส','2-4':'ผู้เชี่ยวชาญวิจัย/วิชาการ','2-5':'ผชพ.',
+  '3-1':'เจ้าหน้าที่','3-2':'นักวิเคราะห์และวางแผน','3-3':'นักวิเคราะห์และวางแผนอาวุโส',
+  '4-1':'เจ้าหน้าที่ปฏิบัติการ','4-2':'เจ้าหน้าที่','4-3':'นักบริหารการเงิน การคลัง','4-4':'นักบริหารการเงิน การคลังอาวุโส',
+};
+const R2_SB_ORDER = {'1':['1-3','1-2','1-1'],'2':['2-5','2-4','2-3','2-2','2-1'],'3':['3-3','3-2','3-1'],'4':['4-4','4-3','4-2','4-1']};
+
+function r2EduGroup(e){
+  if(!e) return 'ต่ำกว่าป.ตรี';
+  const v=R2_EDU_MAP[(e||'').trim()]; if(v) return v;
+  if(e.includes('เอก')) return 'ป.เอก';
+  if(e.includes('โท')) return 'ป.โท';
+  if(e.includes('ตรี')) return 'ป.ตรี';
+  return 'ต่ำกว่าป.ตรี';
+}
+function r2Gender(prefix){
+  const p=(prefix||'').trim(); return p==='นาย'?'M':'F';
+}
+function r2cnt(rows,filterFn){
+  const r={M:0,F:0,tot:0};
+  rows.filter(filterFn).forEach(d=>{ const g=r2Gender(d.prefix); r[g]=(r[g]||0)+1; r.tot++; });
+  return r;
+}
+function r2z(n){ return n===0?`<td class="rz">—</td>`:`<td>${n}</td>`; }
+
+function showPrintView2(){
+  document.getElementById('screen-view').style.display='none';
+  document.getElementById('pview2').style.display='block';
+  renderFormalReport();
+}
+function hidePrintView2(){
+  document.getElementById('pview2').style.display='none';
+  document.getElementById('screen-view').style.display='block';
+  document.body.classList.remove('printing-v2');
+}
+function _injectPageStyle(id,css){
+  let el=document.getElementById(id);
+  if(!el){el=document.createElement('style');el.id=id;document.head.appendChild(el);}
+  el.textContent=css;
+}
+function _removePageStyle(id){ const el=document.getElementById(id);if(el)el.remove(); }
+
+function doPrintV1(){
+  _injectPageStyle('pgSt1','@page{size:A4 landscape;margin:0}');
+  window.print();
+  setTimeout(()=>_removePageStyle('pgSt1'),1500);
+}
+function doPrintV2(){
+  document.body.classList.add('printing-v2');
+  _injectPageStyle('pgSt2','@page{size:A4 landscape;margin:0}');
+  window.print();
+  setTimeout(()=>{ document.body.classList.remove('printing-v2'); _removePageStyle('pgSt2'); },1500);
+}
+
+function renderFormalReport(){
+  const grpF = document.getElementById('r2-group')?.value || '';
+  const dptF = document.getElementById('r2-dept')?.value || '';
+  const data = allData.filter(r=>(!grpF||r.group===grpF)&&(!dptF||r.deptCode===dptF));
+
+  // Dynamic columns: if group filter active → show only that group; else show all
+  const activeGroups = grpF ? [grpF] : R2_GROUPS;
+
+  const asOf = (()=>{
+    try{ return new Intl.DateTimeFormat('th-TH',{day:'numeric',month:'long',year:'numeric',calendar:'buddhist'}).format(new Date()); }
+    catch(e){ return new Date().toLocaleDateString('th-TH'); }
+  })();
+  const filterNote = grpF ? ` — กลุ่ม ${grpF}${dptF?' / '+dptF:''}` : (dptF?' — '+dptF:'');
+
+  const totB=data.filter(d=>d.positioning==='ผู้บริหาร').length;
+  const totE=data.filter(d=>d.positioning==='พนักงาน').length;
+  const totP=data.filter(d=>d.positioning==='ลูกจ้างประจำ').length;
+  const totG=data.filter(d=>d.positioning==='ลูกจ้างทั่วไป').length;
+  const totS=data.filter(d=>d.positioning==='ลูกจ้างเฉพาะกิจ').length;
+  const totA=data.length;
+
+  const ph=`<div class="p2-ph">
+    <div class="p2-ph-row">
+      <img src="tistr-logo.png" alt="วว." style="width:46px;height:46px;object-fit:contain;-webkit-print-color-adjust:exact;print-color-adjust:exact" onerror="this.outerHTML='<div class=\"p2-emblem\">วว.</div>'">
+      <div><div class="p2-org-th">สถาบันวิจัยวิทยาศาสตร์และเทคโนโลยีแห่งประเทศไทย (วว.)</div>
+      <div class="p2-org-en">Thailand Institute of Scientific and Technological Research (TISTR)</div></div>
+    </div>
+    <div class="p2-title">สรุปจำนวนพนักงานและลูกจ้าง${filterNote}</div>
+    <div class="p2-date">ข้อมูล ณ วันที่ ${asOf}</div>
+  </div>`;
+
+  const pf=(n)=>`<div class="p2-pf"><span>วว. — รายงานอัตรากำลัง ณ วันที่ ${asOf}</span><span>หน้า ${n}</span></div>`;
+
+  const krow=`<div class="p2-krow">
+    ${totB>0?`<div class="p2-kbox" style="border-top-color:#0F2347"><div class="p2-knum" style="color:#0F2347">${totB}</div><div class="p2-klbl">ผู้บริหาร</div></div>`:''}
+    <div class="p2-kbox"><div class="p2-knum">${totE}</div><div class="p2-klbl">พนักงาน</div></div>
+    <div class="p2-kbox k2"><div class="p2-knum">${totP}</div><div class="p2-klbl">ลูกจ้างประจำ</div></div>
+    <div class="p2-kbox k3"><div class="p2-knum">${totG}</div><div class="p2-klbl">ลูกจ้างทั่วไป</div></div>
+    <div class="p2-kbox k4"><div class="p2-knum">${totS}</div><div class="p2-klbl">ลูกจ้างเฉพาะกิจ</div></div>
+    <div class="p2-kbox kt"><div class="p2-knum">${totA}</div><div class="p2-klbl">รวมทั้งสิ้น</div></div>
+  </div>`;
+
+  const pages=document.getElementById('p2pages');
+  pages.innerHTML='';
+
+  // PAGE 1 — Summary + Gender
+  const p1=document.createElement('div'); p1.className='p2page';
+  p1.innerHTML=`${ph}${krow}
+    <div class="p2-sec">1. สรุปจำนวนพนักงานและลูกจ้าง แยกตามกลุ่มและประเภท</div>
+    ${r2SummaryTable(data,activeGroups)}
+    <div style="margin-top:5mm">
+      <div class="p2-sec">2. แบ่งตามเพศ</div>
+      ${r2GenderTable(data,activeGroups)}
+    </div>
+    ${pf(1)}`;
+  pages.appendChild(p1);
+
+  // PAGE 2 — Education (all types)
+  const p2=document.createElement('div'); p2.className='p2page';
+  p2.innerHTML=`${ph}
+    <div class="p2-sec">3. แยกตามระดับการศึกษา (พนักงานและลูกจ้างทุกประเภท)</div>
+    ${r2EduTable(data,activeGroups)}
+    ${pf(2)}`;
+  pages.appendChild(p2);
+
+  // PAGE 3 — Band
+  const p3=document.createElement('div'); p3.className='p2page';
+  p3.innerHTML=`${ph}
+    <div class="p2-sec">4. พนักงาน แยกตามตำแหน่ง (Band / Sub band)</div>
+    ${r2BandTable(data,activeGroups)}
+    ${pf(3)}`;
+  pages.appendChild(p3);
+}
+
+function r2TableHead(extra='', groups=R2_GROUPS){
+  // If only 1 group (filtered), skip gender split for that group — just show M/F/total
+  const showGender = true;
+  let h=`<thead><tr><th rowspan="2" style="text-align:left;min-width:110px">${extra}</th>`;
+  groups.forEach(g=>{ h+=`<th colspan="2" class="st">${R2_GRP_SHORT[g]||g}</th>`; });
+  if(groups.length>1) h+=`<th colspan="2" class="st">รวม</th><th rowspan="2" class="st">รวมทั้งสิ้น</th>`;
+  else h+=`<th rowspan="2" class="st">รวมทั้งสิ้น</th>`;
+  h+=`</tr><tr>`;
+  for(let i=0;i<groups.length;i++) h+=`<th class="st2">ช.</th><th class="st2">ญ.</th>`;
+  if(groups.length>1) h+=`<th class="st2">ช.</th><th class="st2">ญ.</th>`;
+  return h+'</tr></thead>';
+}
+
+function r2SummaryTable(data, groups=R2_GROUPS){
+  const multi = groups.length > 1;
+  let body='<tbody>'; let gM=0,gF=0;
+  R2_POS.forEach(pos=>{
+    const rows=data.filter(d=>d.positioning===pos);
+    let rM=0,rF=0,cells='';
+    groups.forEach(g=>{
+      const c=r2cnt(rows,d=>d.group===g);
+      cells+=r2z(c.M)+r2z(c.F); rM+=c.M; rF+=c.F;
+    });
+    if(multi) cells+=`<td><b>${rM}</b></td><td><b>${rF}</b></td>`;
+    cells+=`<td><b>${rM+rF}</b></td>`;
+    gM+=rM; gF+=rF;
+    body+=`<tr><td class="rh">${R2_POS_SHORT[pos]}</td>${cells}</tr>`;
+  });
+  let gc='';
+  groups.forEach(g=>{ const c=r2cnt(data,d=>d.group===g); gc+=`<td>${c.M}</td><td>${c.F}</td>`; });
+  if(multi) gc+=`<td>${gM}</td><td>${gF}</td>`;
+  gc+=`<td>${gM+gF}</td>`;
+  body+=`<tr class="rtot"><td>รวมทั้งสิ้น</td>${gc}</tr></tbody>`;
+  return `<table class="p2tbl">${r2TableHead('ประเภทบุคลากร',groups)}${body}</table>`;
+}
+
+function r2EduTable(data, groups=R2_GROUPS){
+  // Shows ALL positioning types (not just พนักงาน)
+  const multi = groups.length > 1;
+  const allPos = R2_POS; // includes ผู้บริหาร, พนักงาน, ลจ.ทุกประเภท
+
+  // Build header: กลุ่ม × (ช./ญ.) per group + ลูกจ้างรวม + รวมทั้งสิ้น
+  // For each edu level, show rows per positioning type
+  const eduPosOrder = ['ผู้บริหาร','พนักงาน','ลูกจ้างประจำ','ลูกจ้างทั่วไป','ลูกจ้างเฉพาะกิจ'];
+
+  // Simpler layout: rows = edu level, cols = group×gender for ALL types combined
+  let body='<tbody>'; let gM=0,gF=0;
+  R2_EDU_ORDER.forEach(edu=>{
+    const rows=data.filter(d=>r2EduGroup(d.edu||'')===edu);
+    if(!rows.length) return;
+
+    // Main row for this edu level (all types combined)
+    let rM=0,rF=0,cells='';
+    groups.forEach(g=>{
+      const c=r2cnt(rows,d=>d.group===g);
+      cells+=r2z(c.M)+r2z(c.F); rM+=c.M; rF+=c.F;
+    });
+    if(multi) cells+=`<td><b>${rM}</b></td><td><b>${rF}</b></td>`;
+    cells+=`<td><b>${rM+rF}</b></td>`;
+    gM+=rM; gF+=rF;
+    body+=`<tr style="background:#F0F4FA"><td class="rh" style="font-weight:700;color:#1B3A6B">${edu}</td>${cells}</tr>`;
+
+    // Sub-rows per positioning type (only if has data)
+    eduPosOrder.forEach(pos=>{
+      const pRows=rows.filter(d=>d.positioning===pos);
+      if(!pRows.length) return;
+      let pM=0,pF=0,pCells='';
+      groups.forEach(g=>{
+        const c=r2cnt(pRows,d=>d.group===g);
+        pCells+=r2z(c.M)+r2z(c.F); pM+=c.M; pF+=c.F;
+      });
+      if(multi) pCells+=`<td>${pM||'—'}</td><td>${pF||'—'}</td>`;
+      pCells+=`<td>${pM+pF}</td>`;
+      body+=`<tr><td class="rs" style="padding-left:18px;color:#6B82A0">↳ ${R2_POS_SHORT[pos]||pos}</td>${pCells}</tr>`;
+    });
+  });
+
+  let gc='';
+  groups.forEach(g=>{ const c=r2cnt(data,d=>d.group===g); gc+=`<td>${c.M}</td><td>${c.F}</td>`; });
+  if(multi) gc+=`<td>${gM}</td><td>${gF}</td>`;
+  gc+=`<td>${gM+gF}</td>`;
+  body+=`<tr class="rtot"><td>รวมทั้งสิ้น</td>${gc}</tr></tbody>`;
+  return `<table class="p2tbl">${r2TableHead('ระดับการศึกษา',groups)}${body}</table>`;
+}
+
+function r2GenderTable(data, groups=R2_GROUPS){
+  const multi = groups.length > 1;
+  const allPosTypes = ['ผู้บริหาร','พนักงาน','ลูกจ้างประจำ','ลูกจ้างทั่วไป','ลูกจ้างเฉพาะกิจ'];
+  const posLabels = {'ผู้บริหาร':'ผู้บริหาร','พนักงาน':'พนักงาน','ลูกจ้างประจำ':'ลจ.ประจำ','ลูกจ้างทั่วไป':'ลจ.ทั่วไป','ลูกจ้างเฉพาะกิจ':'ลจ.เฉพาะกิจ'};
+
+  // Header: ประเภท | กลุ่ม…(ช./ญ.) | รวม(ช./ญ./รวม)
+  let hdr=`<thead><tr><th rowspan="2" style="text-align:left;min-width:100px">ประเภท</th>`;
+  groups.forEach(g=>{ hdr+=`<th colspan="2" class="st">${R2_GRP_SHORT[g]||g}</th>`; });
+  hdr+=`<th colspan="3" class="st">รวม</th></tr><tr>`;
+  for(let i=0;i<groups.length;i++) hdr+=`<th class="st2">ช.</th><th class="st2">ญ.</th>`;
+  hdr+=`<th class="st2">ช.</th><th class="st2">ญ.</th><th class="st2">รวม</th></tr></thead>`;
+
+  let body='<tbody>'; let totM=0,totF=0;
+  allPosTypes.forEach(pos=>{
+    const rows=data.filter(d=>d.positioning===pos);
+    let rM=0,rF=0,cells='';
+    groups.forEach(g=>{
+      const c=r2cnt(rows,d=>d.group===g);
+      cells+=r2z(c.M)+r2z(c.F); rM+=c.M; rF+=c.F;
+    });
+    cells+=`<td><b>${rM||'—'}</b></td><td><b>${rF||'—'}</b></td><td><b>${(rM+rF)||'—'}</b></td>`;
+    totM+=rM; totF+=rF;
+    // Highlight ผู้บริหาร row differently
+    const rowStyle = pos==='ผู้บริหาร' ? ' style="background:#EBF2FC"' : '';
+    body+=`<tr${rowStyle}><td class="rh">${posLabels[pos]||pos}</td>${cells}</tr>`;
+  });
+
+  // grand total
+  let gc='';
+  groups.forEach(g=>{ const c=r2cnt(data,d=>d.group===g); gc+=`<td>${c.M}</td><td>${c.F}</td>`; });
+  gc+=`<td>${totM}</td><td>${totF}</td><td>${totM+totF}</td>`;
+  body+=`<tr class="rtot"><td>รวมทั้งสิ้น</td>${gc}</tr></tbody>`;
+  return `<table class="p2tbl">${hdr}${body}</table>`;
+}
+
+function r2BandTable(data, groups=R2_GROUPS){
+  const multi = groups.length > 1;
+  const emp=data.filter(d=>d.positioning==='พนักงาน'||d.positioning==='ผู้บริหาร');
+  let hdr=`<thead><tr>
+    <th style="width:28px">Band</th><th style="width:26px">SB</th>
+    <th style="text-align:left;min-width:170px">ตำแหน่ง</th>`;
+  groups.forEach(g=>{ hdr+=`<th class="st" style="width:42px">${R2_GRP_SHORT[g]||g}</th>`; });
+  hdr+=`<th class="st">รวม</th></tr></thead>`;
+
+  let body='<tbody>';
+  ['1','2','3','4'].forEach(band=>{
+    const bRows=emp.filter(d=>String(d.band)===band);
+    if(!bRows.length) return;
+    let bCells='';
+    groups.forEach(g=>{ const n=bRows.filter(d=>d.group===g).length; bCells+=`<td><b>${n||'—'}</b></td>`; });
+    bCells+=`<td><b>${bRows.length}</b></td>`;
+    body+=`<tr><td class="rb" colspan="3">${R2_BAND_LBL[band]}</td>${bCells}</tr>`;
+    (R2_SB_ORDER[band]||[]).forEach((sbKey,idx)=>{
+      const sbNum=sbKey.split('-')[1];
+      const seqNo=idx+1;
+      const sbRows=bRows.filter(d=>String(d.sb)===sbNum);
+      let sCells='';
+      groups.forEach(g=>{ const n=sbRows.filter(d=>d.group===g).length; sCells+=n?`<td>${n}</td>`:`<td class="rz">—</td>`; });
+      sCells+=sbRows.length?`<td>${sbRows.length}</td>`:`<td class="rz">—</td>`;
+      body+=`<tr><td style="text-align:center;color:#9BA8C0;font-size:.8rem">·</td><td style="text-align:center;font-size:.64rem;color:#6B82A0">${seqNo}</td><td class="rs">${R2_SB_LBL[sbKey]||'Sub band '+sbNum}</td>${sCells}</tr>`;
+    });
+  });
+  let gCells='';
+  groups.forEach(g=>{ gCells+=`<td>${emp.filter(d=>d.group===g).length}</td>`; });
+  gCells+=`<td>${emp.length}</td>`;
+  body+=`<tr class="rtot"><td colspan="3">รวม</td>${gCells}</tr></tbody>`;
+  return `<table class="p2tbl">${hdr}${body}</table>`;
+}
+
+const EMPTY_AGG=()=>({total:0,emp:{r:0,s:0},perm:{r:0,s:0},gen:{r:0,s:0},spec:{r:0,s:0}});
+const POS_KEYS={พนักงาน:'emp',ลูกจ้างประจำ:'perm',ลูกจ้างทั่วไป:'gen',ลูกจ้างเฉพาะกิจ:'spec'};
+function addAgg(d,s){d.total+=s.total;['emp','perm','gen','spec'].forEach(k=>{d[k].r+=s[k].r;d[k].s+=s[k].s;});}
+
+const ROWS_PER_PAGE=17;
+const PRINT_THEAD=`<thead><tr>
+  <th rowspan="2" style="width:4%">ลำดับ</th>
+  <th rowspan="2" style="width:33%;text-align:left;padding-left:6px">หน่วยงาน</th>
+  <th colspan="2">พนักงาน</th><th colspan="2">ลูกจ้างประจำ</th>
+  <th colspan="2">ลูกจ้างทั่วไป</th><th colspan="2">ลูกจ้างเฉพาะกิจ</th>
+  <th rowspan="2">รวม</th>
+</tr><tr>
+  <th class="sth">วิจัย/<br>วิชาการ</th><th class="sth">สนับ-<br>สนุน</th>
+  <th class="sth">วิจัย/<br>วิชาการ</th><th class="sth">สนับ-<br>สนุน</th>
+  <th class="sth">วิจัย/<br>วิชาการ</th><th class="sth">สนับ-<br>สนุน</th>
+  <th class="sth">วิจัย/<br>วิชาการ</th><th class="sth">สนับ-<br>สนุน</th>
+</tr></thead>`;
+
+function renderPrintTable(){
+  const grpF=document.getElementById('pv-group')?.value||'';
+  const dptF=document.getElementById('pv-dept')?.value||'';
+  const src=allData.filter(r=>(!grpF||r.group===grpF)&&(!dptF||r.deptCode===dptF));
+
+  const grpMap={};
+  src.forEach(r=>{
+    const g=r.group||'(ไม่ระบุ)',d=r.deptCode||'?';
+    if(!grpMap[g]) grpMap[g]={};
+    if(!grpMap[g][d]) grpMap[g][d]={name:r.deptName||d,agg:EMPTY_AGG()};
+    const a=grpMap[g][d].agg,k=POS_KEYS[r.positioning]||'emp';
+    a.total++; a[k][isResearch(r.posNew,r.band)?'r':'s']++;
+  });
+
+  const nv=v=>v>0?v:'<span class="z">—</span>';
+  const aC=agg=>['emp','perm','gen','spec'].map(k=>`<td>${nv(agg[k].r)}</td><td>${nv(agg[k].s)}</td>`).join('');
+  const totAll=EMPTY_AGG();
+  let rowNo=0;
+  const allRows=[];
+
+  const groups=GROUP_ORDER.filter(g=>grpMap[g]);
+  Object.keys(grpMap).forEach(g=>{ if(!groups.includes(g)) groups.push(g); });
+
+  groups.forEach(grp=>{
+    if(!grpMap[grp]) return;
+
+    // ── พิเศษ: ขึ้นตรง ผวว. → นักบริหารพิเศษ/ผู้เชี่ยวชาญพิเศษ ขึ้นก่อน แล้วตามด้วยหน่วยงาน ──
+    if(grp==='ขึ้นตรง ผวว.'){
+      const SPECIAL_POS=['นักบริหารพิเศษ','ผู้เชี่ยวชาญพิเศษ'];
+      // deptCode ที่เป็น group-code ของกลุ่มอื่น (อช., พย., ยธ., บอ., บห.) = รวก./เจ้าหน้าที่ขึ้นตรง
+      const OTHER_GRP_CODES=new Set(Object.values(GROUP_CODES).filter(c=>c!=='ผวว.'));
+      const isCrossGrp=r=>OTHER_GRP_CODES.has(normCode(r.deptCode||''));
+
+      const pvvSrc=src.filter(r=>r.group===grp);
+      const specialPVV  = pvvSrc.filter(r=>SPECIAL_POS.includes(r.posNew));
+      const crossGrpPVV = pvvSrc.filter(r=>!SPECIAL_POS.includes(r.posNew)&&isCrossGrp(r));
+      const regularPVV  = pvvSrc.filter(r=>!SPECIAL_POS.includes(r.posNew)&&!isCrossGrp(r));
+
+      // Aggregate special positions
+      const posCnt={};
+      specialPVV.forEach(r=>{
+        const pos=r.posNew||'(ไม่ระบุ)';
+        if(!posCnt[pos]) posCnt[pos]=EMPTY_AGG();
+        const k=POS_KEYS[r.positioning]||'emp';
+        posCnt[pos].total++; posCnt[pos][k][isResearch(r.posNew,r.band)?'r':'s']++;
+      });
+
+      // Cross-group people → รวมเป็น 1 row "รองผู้ว่าการและขึ้นตรง"
+      const crossAgg=EMPTY_AGG();
+      crossGrpPVV.forEach(r=>{ const k=POS_KEYS[r.positioning]||'emp'; crossAgg.total++; crossAgg[k][isResearch(r.posNew,r.band)?'r':'s']++; });
+
+      // Dept map — เฉพาะ regularPVV (org units ที่จริงๆ ขึ้นตรง ผวว.)
+      const pvvDeptMap={};
+      regularPVV.forEach(r=>{
+        const d=r.deptCode||'?';
+        if(!pvvDeptMap[d]) pvvDeptMap[d]={name:r.deptName||d,agg:EMPTY_AGG()};
+        const k=POS_KEYS[r.positioning]||'emp';
+        pvvDeptMap[d].agg.total++; pvvDeptMap[d].agg[k][isResearch(r.posNew,r.band)?'r':'s']++;
+      });
+
+      // Total (all people)
+      const gSub=EMPTY_AGG();
+      pvvSrc.forEach(r=>{ const k=POS_KEYS[r.positioning]||'emp'; gSub.total++; gSub[k][isResearch(r.posNew,r.band)?'r':'s']++; });
+      addAgg(totAll,gSub);
+
+      // Group header
+      allRows.push(`<tr class="tr-gr"><td></td><td style="text-align:left;padding-left:4px;font-weight:700">${GROUP_FULL[grp]||grp}</td>${aC(gSub)}<td><b>${gSub.total||'—'}</b></td></tr>`);
+
+      // Special position rows first (fixed order)
+      SPECIAL_POS.forEach(sp=>{
+        if(!posCnt[sp]||!posCnt[sp].total) return;
+        rowNo++;
+        allRows.push(`<tr class="tr-ur"><td>${rowNo}</td><td style="text-align:left;padding-left:8px;font-style:italic">${sp}</td>${aC(posCnt[sp])}<td>${posCnt[sp].total||'—'}</td></tr>`);
+      });
+      // รองผู้ว่าการและขึ้นตรง (คนที่ group=ขึ้นตรง ผวว. แต่ deptCode เป็นกลุ่มอื่น)
+      if(crossAgg.total>0){
+        rowNo++;
+        allRows.push(`<tr class="tr-ur"><td>${rowNo}</td><td style="text-align:left;padding-left:8px;font-style:italic;color:#555">รองผู้ว่าการและขึ้นตรง</td>${aC(crossAgg)}<td>${crossAgg.total||'—'}</td></tr>`);
+      }
+
+      // Regular people by dept (same L2/L3 logic as normal groups)
+      const grpCodePVV=GROUP_CODES[grp]||'ผวว.';
+      const l2uPVV={},dirUPVV=[]; let rootAggPVV=null,rootNamePVV=null;
+      Object.entries(pvvDeptMap).forEach(([code,data])=>{
+        const lv=deptLevel(code,data.name,grpCodePVV);
+        if(lv==='root'){rootAggPVV=data.agg; rootNamePVV=data.name;}
+        else if(lv==='l3'){
+          const pc=PARENT_MAP[normCode(code)];
+          if(!l2uPVV[pc]) l2uPVV[pc]={name:pc,ownAgg:EMPTY_AGG(),children:{}};
+          l2uPVV[pc].children[code]={name:data.name,agg:data.agg};
+        } else if(lv==='l2'){
+          if(!l2uPVV[code]) l2uPVV[code]={name:data.name,ownAgg:EMPTY_AGG(),children:{}};
+          l2uPVV[code].name=data.name; addAgg(l2uPVV[code].ownAgg,data.agg);
+        } else {dirUPVV.push({name:data.name,agg:data.agg});}
+      });
+      // rootAggPVV นับในยอดกลุ่มแล้ว ไม่แสดง row แยก
+      const l2sPVV=Object.entries(l2uPVV).sort((a,b)=>{
+        const ta=a[1].ownAgg.total+Object.values(a[1].children).reduce((s,c)=>s+c.agg.total,0);
+        const tb=b[1].ownAgg.total+Object.values(b[1].children).reduce((s,c)=>s+c.agg.total,0);
+        return tb-ta;
+      });
+      l2sPVV.forEach(([,l2d])=>{
+        const l2T=EMPTY_AGG(); addAgg(l2T,l2d.ownAgg);
+        Object.values(l2d.children).forEach(c=>addAgg(l2T,c.agg));
+        rowNo++;
+        allRows.push(`<tr class="tr-l2"><td>${rowNo}</td><td style="text-align:left;font-weight:600">${l2d.name}</td>${aC(l2T)}<td><b>${l2T.total||'—'}</b></td></tr>`);
+        Object.entries(l2d.children).sort((a,b)=>b[1].agg.total-a[1].agg.total).forEach(([,child])=>{
+          rowNo++;
+          allRows.push(`<tr class="tr-ur"><td>${rowNo}</td><td style="text-align:left;padding-left:20px;font-size:.69rem">↳ ${child.name}</td>${aC(child.agg)}<td>${child.agg.total||'—'}</td></tr>`);
+        });
+      });
+      dirUPVV.sort((a,b)=>b.agg.total-a.agg.total).forEach(u=>{
+        rowNo++;
+        allRows.push(`<tr class="tr-ur"><td>${rowNo}</td><td style="text-align:left;padding-left:8px">${u.name}</td>${aC(u.agg)}<td>${u.agg.total||'—'}</td></tr>`);
+      });
+      return;
+    }
+
+    // ── กลุ่มปกติ ──
+    const depts=grpMap[grp],grpCode=GROUP_CODES[grp]||'';
+    const l2u={},dirU=[]; let rootAgg=EMPTY_AGG();
+
+    Object.entries(depts).forEach(([code,data])=>{
+      const lv=deptLevel(code,data.name,grpCode);
+      if(lv==='root'){addAgg(rootAgg,data.agg);}
+      else if(lv==='l3'){
+        const pc=PARENT_MAP[normCode(code)];
+        if(!l2u[pc]) l2u[pc]={name:pc,ownAgg:EMPTY_AGG(),children:{}};
+        l2u[pc].children[code]={name:data.name,agg:data.agg};
+      } else if(lv==='l2'){
+        if(!l2u[code]) l2u[code]={name:data.name,ownAgg:EMPTY_AGG(),children:{}};
+        l2u[code].name=data.name; addAgg(l2u[code].ownAgg,data.agg);
+      } else {dirU.push({name:data.name,agg:data.agg});}
+    });
+
+    const gSub=EMPTY_AGG();
+    addAgg(gSub,rootAgg);
+    Object.values(l2u).forEach(u=>{ addAgg(gSub,u.ownAgg); Object.values(u.children).forEach(c=>addAgg(gSub,c.agg)); });
+    dirU.forEach(u=>addAgg(gSub,u.agg));
+    addAgg(totAll,gSub);
+
+    allRows.push(`<tr class="tr-gr"><td></td><td style="text-align:left;padding-left:4px;font-weight:700">${GROUP_FULL[grp]||grp}</td>${aC(gSub)}<td><b>${gSub.total||'—'}</b></td></tr>`);
+
+    // แสดง rootAgg เป็นแถว "รองผู้ว่าการและขึ้นตรง"
+    if(rootAgg.total>0){
+      rowNo++;
+      allRows.push(`<tr class="tr-ur"><td>${rowNo}</td><td style="text-align:left;padding-left:8px;font-style:italic;color:#555">รองผู้ว่าการและขึ้นตรง</td>${aC(rootAgg)}<td>${rootAgg.total}</td></tr>`);
+    }
+
+    const l2s=Object.entries(l2u).sort((a,b)=>{
+      const ta=a[1].ownAgg.total+Object.values(a[1].children).reduce((s,c)=>s+c.agg.total,0);
+      const tb=b[1].ownAgg.total+Object.values(b[1].children).reduce((s,c)=>s+c.agg.total,0);
+      return tb-ta;
+    });
+    l2s.forEach(([,l2d])=>{
+      const l2T=EMPTY_AGG(); addAgg(l2T,l2d.ownAgg);
+      Object.values(l2d.children).forEach(c=>addAgg(l2T,c.agg));
+      rowNo++;
+      allRows.push(`<tr class="tr-l2"><td>${rowNo}</td><td style="text-align:left;font-weight:600">${l2d.name}</td>${aC(l2T)}<td><b>${l2T.total||'—'}</b></td></tr>`);
+      Object.entries(l2d.children).sort((a,b)=>b[1].agg.total-a[1].agg.total).forEach(([,child])=>{
+        rowNo++;
+        allRows.push(`<tr class="tr-ur"><td>${rowNo}</td><td style="text-align:left;padding-left:20px;font-size:.69rem">↳ ${child.name}</td>${aC(child.agg)}<td>${child.agg.total||'—'}</td></tr>`);
+      });
+    });
+
+    dirU.sort((a,b)=>b.agg.total-a.agg.total).forEach(u=>{
+      rowNo++;
+      allRows.push(`<tr class="tr-ur"><td>${rowNo}</td><td style="text-align:left;padding-left:8px">${u.name}</td>${aC(u.agg)}<td>${u.agg.total||'—'}</td></tr>`);
+    });
+  });
+
+  const totRow=`<tr class="tr-tot"><td></td><td style="text-align:left">รวมทั้งหมด</td>${['emp','perm','gen','spec'].map(k=>`<td><b>${totAll[k].r||'—'}</b></td><td><b>${totAll[k].s||'—'}</b></td>`).join('')}<td><b>${totAll.total.toLocaleString('th-TH')}</b></td></tr>`;
+
+  // Split into pages — widow control: ถ้าแถวสุดท้ายเป็น group/L2 header ให้ย้ายไปหน้าถัดไป
+  const pages=[];
+  let pg=[];
+  for(let i=0;i<allRows.length;i++){
+    pg.push(allRows[i]);
+    if(pg.length>=ROWS_PER_PAGE){
+      const last=pg[pg.length-1];
+      if(last.includes('tr-gr')||last.includes('tr-l2')){
+        const orphan=pg.pop(); pages.push(pg); pg=[orphan];
+      } else { pages.push(pg); pg=[]; }
+    }
+  }
+  if(pg.length) pages.push(pg);
+  if(!pages.length) pages.push([]);
+
+  const total=pages.length;
+  const hdr=buildPrintPageHeader();
+  document.getElementById('print-pages').innerHTML=pages.map((chunk,pi)=>{
+    const isLast=pi===total-1;
+    const body=(isLast?[...chunk,totRow]:chunk).join('');
+    const note=isLast?`<div class="pnote">* วิจัย/วิชาการ จำแนกจาก Band (Band 2 = สายวิจัย) — โปรดตรวจสอบความถูกต้องกับฝ่ายทรัพยากรบุคคล</div>`:'';
+    const pgNum=total>1?`<div class="ppage-num">หน้า ${pi+1} / ${total}</div>`:'';
+    return `<div class="ppage">${hdr}<table class="ptbl">${PRINT_THEAD}<tbody>${body}</tbody></table>${note}${pgNum}</div>`;
+  }).join('');
+}
+
+// ============================================================
+// DEPT PEOPLE MODAL
+// ============================================================
+let _pplData=[];
+
+function showDeptPeople(codes,title,grp=null){
+  _pplData=allData.filter(r=>codes.includes(r.deptCode)&&(!grp||r.group===grp));
+  document.getElementById('ppl-title').textContent=title;
+  const cnt={};
+  _pplData.forEach(r=>{ const p=r.positioning||'พนักงาน'; cnt[p]=(cnt[p]||0)+1; });
+  document.getElementById('ppl-sub').innerHTML=POS_LIST.filter(p=>cnt[p]).map(p=>{
+    const cl=p==='พนักงาน'?'bn':p==='ลูกจ้างประจำ'?'bg':p==='ลูกจ้างทั่วไป'?'be':'bp';
+    return `<span class="badge ${cl}" style="font-size:.69rem">${p} ${cnt[p]} คน</span>`;
+  }).join('');
+  document.getElementById('ppl-search-inp').value='';
+  renderPplTable(_pplData);
+  document.getElementById('ppl-modal').style.display='block';
+}
+
+function renderPplTable(people){
+  if(!people.length){
+    document.getElementById('ppl-body').innerHTML='<div class="ppl-empty">ไม่พบข้อมูลบุคลากร</div>';
+    document.getElementById('ppl-count').textContent='';
+    return;
+  }
+  const rows=people.map((r,i)=>`<tr>
+    <td style="color:var(--muted);text-align:center">${i+1}</td>
+    <td>${(r.prefix||'')+' '+(r.name||'')}</td>
+    <td style="color:var(--muted)">${r.posNew||r.position||'—'}</td>
+    <td style="text-align:center">${PBADGE[r.positioning]||r.positioning||'—'}</td>
+    <td style="text-align:center">${r.band||'—'}</td>
+  </tr>`).join('');
+  document.getElementById('ppl-body').innerHTML=`<table>
+    <thead><tr>
+      <th style="width:5%;text-align:center">#</th>
+      <th>ชื่อ-สกุล</th><th>ตำแหน่ง</th>
+      <th style="text-align:center">ประเภท</th>
+      <th style="text-align:center">Band</th>
+    </tr></thead>
+    <tbody>${rows}</tbody></table>`;
+  document.getElementById('ppl-count').textContent=`แสดง ${people.length} คน`;
+}
+
+function filterPplModal(q){
+  q=q.toLowerCase();
+  const res=q?_pplData.filter(r=>(r.name||'').toLowerCase().includes(q)||(r.posNew||r.position||'').toLowerCase().includes(q)):_pplData;
+  renderPplTable(res);
+}
+
+function closePplModal(){ document.getElementById('ppl-modal').style.display='none'; }
+document.addEventListener('keydown',e=>{ if(e.key==='Escape') closePplModal(); });
+
+// ============================================================
+// GENDER CHART
+// ============================================================
+function renderGenderChart(){
+  dc('gender');
+  const groups=GROUP_ORDER.filter(g=>filtered.some(r=>r.group===g));
+  const mCnt=groups.map(g=>filtered.filter(r=>r.group===g&&r.prefix==='นาย').length);
+  const fCnt=groups.map(g=>filtered.filter(r=>r.group===g&&(r.prefix==='น.ส.'||r.prefix==='นาง'||r.prefix==='นางสาว')).length);
+  if(!groups.length) return;
+
+  charts['gender']=new Chart(document.getElementById('ch-gender').getContext('2d'),{
+    type:'bar',
+    data:{labels:groups,datasets:[
+      {label:'ชาย',data:mCnt,backgroundColor:'#3B82F6',borderRadius:4,borderSkipped:false},
+      {label:'หญิง',data:fCnt,backgroundColor:'#F472B6',borderRadius:4,borderSkipped:false},
+    ]},
+    options:{
+      responsive:true,maintainAspectRatio:false,layout:{padding:{top:28}},
+      scales:{x:{ticks:{font:FONT}},y:{beginAtZero:true,ticks:{font:FONT}}},
+      plugins:{
+        legend:{position:'bottom',labels:{font:FONT,padding:12,boxWidth:12}},
+        tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${c.raw.toLocaleString('th-TH')} คน`}}
+      },
+      animation:{duration:350},
+    },
+    plugins:[{
+      id:'genderTotals',
+      afterDatasetsDraw(chart){
+        const ctx=chart.ctx,dss=chart.data.datasets;
+        if(dss.length<2) return;
+        const meta0=chart.getDatasetMeta(0), meta1=chart.getDatasetMeta(1);
+        meta0.data.forEach((bar0,i)=>{
+          const bar1=meta1.data[i];
+          const m=mCnt[i]||0, f=fCnt[i]||0, tot=m+f;
+          if(!tot) return;
+          ctx.save();
+          // Male count inside blue bar (center of bar vertically)
+          if(m>0 && (bar0.base-bar0.y)>14){
+            ctx.font="700 10px 'Sarabun',sans-serif";
+            ctx.fillStyle='#fff'; ctx.textAlign='center'; ctx.textBaseline='middle';
+            ctx.fillText(m.toLocaleString('th-TH'), bar0.x, (bar0.y+bar0.base)/2);
+          }
+          // Female count inside pink bar
+          if(f>0 && (bar1.base-bar1.y)>14){
+            ctx.font="700 10px 'Sarabun',sans-serif";
+            ctx.fillStyle='#fff'; ctx.textAlign='center'; ctx.textBaseline='middle';
+            ctx.fillText(f.toLocaleString('th-TH'), bar1.x, (bar1.y+bar1.base)/2);
+          }
+          // Combined total above both bars
+          const topY=Math.min(bar0.y,bar1.y);
+          ctx.font="700 11px 'Sarabun',sans-serif";
+          ctx.fillStyle='#374151'; ctx.textAlign='center'; ctx.textBaseline='bottom';
+          ctx.fillText('รวม '+tot.toLocaleString('th-TH'),(bar0.x+bar1.x)/2,topY-4);
+          ctx.restore();
+        });
+      }
+    }]
+  });
+}
+
+// ============================================================
+// (removed: SB DISTRIBUTION CHART — not in main PDF report)
+// PLACEHOLDER for SB / compat reference
+function renderSbChart(){
+  dc('sb');
+  // removed — use renderGenderChart instead
+  const cnt={};
+  filtered.filter(r=>(r.positioning==='พนักงาน'||!r.positioning)&&r.sb).forEach(r=>{
+    const s=String(r.sb).trim(); if(s) cnt[s]=(cnt[s]||0)+1;
+  });
+  const labels=Object.keys(cnt).sort((a,b)=>Number(a)-Number(b)||a.localeCompare(b));
+  const vals=labels.map(l=>cnt[l]);
+  if(!labels.length) return;
+
+  // no canvas id="ch-sb" anymore, skip silently
+}
+
+function renderResearchChart(){ dc('research'); }
+
+// ============================================================
+// EXCEL EXPORT
+// ============================================================
+function exportToExcel(){
+  if(!window.XLSX){ alert('กำลังโหลด SheetJS — กรุณารอสักครู่แล้วลองใหม่'); return; }
+
+  const grpF=document.getElementById('pv-group')?.value||document.getElementById('f-group')?.value||'';
+  const dptF=document.getElementById('pv-dept')?.value||document.getElementById('f-dept')?.value||'';
+  const src=allData.filter(r=>(!grpF||r.group===grpF)&&(!dptF||r.deptCode===dptF));
+
+  // Build same hierarchy as renderPrintTable
+  const grpMap={};
+  src.forEach(r=>{
+    const g=r.group||'(ไม่ระบุ)',d=r.deptCode||'?';
+    if(!grpMap[g]) grpMap[g]={};
+    if(!grpMap[g][d]) grpMap[g][d]={name:r.deptName||d,agg:EMPTY_AGG()};
+    const a=grpMap[g][d].agg,k=POS_KEYS[r.positioning]||'emp';
+    a.total++; a[k][isResearch(r.posNew,r.band)?'r':'s']++;
+  });
+
+  const nv=v=>v>0?v:0;
+  const rowArr=(no,name,agg,indent)=>{
+    const prefix=indent?'  '.repeat(indent):'';
+    return [no===null?'':no, prefix+name,
+      nv(agg.emp.r),nv(agg.emp.s),nv(agg.perm.r),nv(agg.perm.s),
+      nv(agg.gen.r),nv(agg.gen.s),nv(agg.spec.r),nv(agg.spec.s),agg.total];
+  };
+
+  const aoa=[];
+  // Title
+  const dateStr=document.getElementById('phdr-date')?.textContent||new Date().toLocaleDateString('th-TH');
+  aoa.push(['ตารางสรุปข้อมูลอัตรากำลัง สถาบันวิจัยวิทยาศาสตร์และเทคโนโลยีแห่งประเทศไทย (วว.)']);
+  aoa.push([`ข้อมูล ณ วันที่ ${dateStr}`]);
+  aoa.push([]);
+  // Headers row 1
+  aoa.push(['ลำดับ','หน่วยงาน','พนักงาน','','ลูกจ้างประจำ','','ลูกจ้างทั่วไป','','ลูกจ้างเฉพาะกิจ','','รวม']);
+  // Headers row 2
+  aoa.push(['','','วิจัย/วิชาการ','สนับสนุน','วิจัย/วิชาการ','สนับสนุน','วิจัย/วิชาการ','สนับสนุน','วิจัย/วิชาการ','สนับสนุน','']);
+
+  const TITLE_ROW=0, HDR1_ROW=3, HDR2_ROW=4;
+  const totAll=EMPTY_AGG();
+  let rowNo=0;
+  const grpRowIdxs=[], l2RowIdxs=[], totRowIdxs=[];
+
+  const groups=GROUP_ORDER.filter(g=>grpMap[g]);
+  Object.keys(grpMap).forEach(g=>{ if(!groups.includes(g)) groups.push(g); });
+
+  groups.forEach(grp=>{
+    if(!grpMap[grp]) return;
+    const depts=grpMap[grp],grpCode=GROUP_CODES[grp]||'';
+    const l2u={},dirU=[]; let rootAgg=null;
+
+    Object.entries(depts).forEach(([code,data])=>{
+      const lv=deptLevel(code,data.name,grpCode);
+      if(lv==='root'){rootAgg=data.agg;}
+      else if(lv==='l3'){
+        const pc=PARENT_MAP[normCode(code)];
+        if(!l2u[pc]) l2u[pc]={name:pc,ownAgg:EMPTY_AGG(),children:{}};
+        l2u[pc].children[code]={name:data.name,agg:data.agg};
+      } else if(lv==='l2'){
+        if(!l2u[code]) l2u[code]={name:data.name,ownAgg:EMPTY_AGG(),children:{}};
+        l2u[code].name=data.name; addAgg(l2u[code].ownAgg,data.agg);
+      } else {dirU.push({name:data.name,agg:data.agg});}
+    });
+
+    const gSub=EMPTY_AGG();
+    if(rootAgg) addAgg(gSub,rootAgg);
+    Object.values(l2u).forEach(u=>{ addAgg(gSub,u.ownAgg); Object.values(u.children).forEach(c=>addAgg(gSub,c.agg)); });
+    dirU.forEach(u=>addAgg(gSub,u.agg));
+    addAgg(totAll,gSub);
+
+    grpRowIdxs.push(aoa.length);
+    aoa.push([null, GROUP_FULL[grp]||grp,
+      nv(gSub.emp.r),nv(gSub.emp.s),nv(gSub.perm.r),nv(gSub.perm.s),
+      nv(gSub.gen.r),nv(gSub.gen.s),nv(gSub.spec.r),nv(gSub.spec.s),gSub.total]);
+
+    if(rootAgg&&rootAgg.total>0){
+      rowNo++;
+      aoa.push(rowArr(rowNo,'ขึ้นตรง '+grpCode,rootAgg,1));
+    }
+
+    const l2s=Object.entries(l2u).sort((a,b)=>{
+      const ta=a[1].ownAgg.total+Object.values(a[1].children).reduce((s,c)=>s+c.agg.total,0);
+      const tb=b[1].ownAgg.total+Object.values(b[1].children).reduce((s,c)=>s+c.agg.total,0);
+      return tb-ta;
+    });
+    l2s.forEach(([,l2d])=>{
+      const l2T=EMPTY_AGG(); addAgg(l2T,l2d.ownAgg);
+      Object.values(l2d.children).forEach(c=>addAgg(l2T,c.agg));
+      rowNo++;
+      l2RowIdxs.push(aoa.length);
+      aoa.push(rowArr(rowNo,l2d.name,l2T,1));
+      Object.entries(l2d.children).sort((a,b)=>b[1].agg.total-a[1].agg.total).forEach(([,child])=>{
+        rowNo++;
+        aoa.push(rowArr(rowNo,'↳ '+child.name,child.agg,2));
+      });
+    });
+
+    dirU.sort((a,b)=>b.agg.total-a.agg.total).forEach(u=>{
+      rowNo++;
+      aoa.push(rowArr(rowNo,u.name,u.agg,1));
+    });
+  });
+
+  totRowIdxs.push(aoa.length);
+  aoa.push([null,'รวมทั้งหมด',
+    totAll.emp.r,totAll.emp.s,totAll.perm.r,totAll.perm.s,
+    totAll.gen.r,totAll.gen.s,totAll.spec.r,totAll.spec.s,totAll.total]);
+
+  // Build worksheet
+  const ws=XLSX.utils.aoa_to_sheet(aoa);
+
+  // Column widths
+  ws['!cols']=[{wch:8},{wch:40},{wch:10},{wch:10},{wch:10},{wch:10},{wch:10},{wch:10},{wch:10},{wch:10},{wch:8}];
+
+  // Merges
+  ws['!merges']=[
+    {s:{r:TITLE_ROW,c:0},e:{r:TITLE_ROW,c:10}},
+    {s:{r:TITLE_ROW+1,c:0},e:{r:TITLE_ROW+1,c:10}},
+    {s:{r:HDR1_ROW,c:0},e:{r:HDR2_ROW,c:0}},   // ลำดับ rowspan2
+    {s:{r:HDR1_ROW,c:1},e:{r:HDR2_ROW,c:1}},   // หน่วยงาน rowspan2
+    {s:{r:HDR1_ROW,c:2},e:{r:HDR1_ROW,c:3}},   // พนักงาน colspan2
+    {s:{r:HDR1_ROW,c:4},e:{r:HDR1_ROW,c:5}},   // ลจ.ประจำ
+    {s:{r:HDR1_ROW,c:6},e:{r:HDR1_ROW,c:7}},   // ลจ.ทั่วไป
+    {s:{r:HDR1_ROW,c:8},e:{r:HDR1_ROW,c:9}},   // ลจ.เฉพาะกิจ
+    {s:{r:HDR1_ROW,c:10},e:{r:HDR2_ROW,c:10}}, // รวม rowspan2
+  ];
+
+  // Row heights
+  ws['!rows']=[];
+  ws['!rows'][TITLE_ROW]={hpt:22};
+  ws['!rows'][TITLE_ROW+1]={hpt:18};
+
+  const wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,ws,'อัตรากำลัง วว.');
+  const fname=`อัตรากำลัง_วว_${dateStr.replace(/\s/g,'_')}.xlsx`;
+  XLSX.writeFile(wb,fname);
+}
+
+// ============================================================
+// EXCEL EXPORT — FORMAL REPORT (PDF2)
+// ============================================================
+function exportFormalReportToExcel(){
+  if(!window.XLSX){ alert('กำลังโหลด SheetJS — กรุณารอสักครู่แล้วลองใหม่'); return; }
+
+  const grpF=document.getElementById('r2-group')?.value||'';
+  const dptF=document.getElementById('r2-dept')?.value||'';
+  const data=allData.filter(r=>(!grpF||r.group===grpF)&&(!dptF||r.deptCode===dptF));
+  const activeGroups=grpF?[grpF]:R2_GROUPS;
+
+  const asOf=(()=>{
+    try{ return new Intl.DateTimeFormat('th-TH',{day:'numeric',month:'long',year:'numeric',calendar:'buddhist'}).format(new Date()); }
+    catch(e){ return new Date().toLocaleDateString('th-TH'); }
+  })();
+
+  const wb=XLSX.utils.book_new();
+
+  // ===== SHEET 1: สรุปประเภทบุคลากร + เพศ =====
+  const s1=[];
+  s1.push(['สรุปจำนวนพนักงานและลูกจ้าง — สถาบันวิจัยวิทยาศาสตร์และเทคโนโลยีแห่งประเทศไทย (วว.)']);
+  s1.push([`ข้อมูล ณ วันที่ ${asOf}`]);
+  s1.push([]);
+  const s1h1=['ประเภทบุคลากร'];
+  const s1h2=[''];
+  activeGroups.forEach(g=>{s1h1.push(R2_GRP_SHORT[g]||g,'');s1h2.push('ช.','ญ.');});
+  if(activeGroups.length>1){s1h1.push('รวม','');s1h2.push('ช.','ญ.');}
+  s1h1.push('รวมทั้งสิ้น');s1h2.push('');
+  s1.push(s1h1);s1.push(s1h2);
+  let gM=0,gF=0;
+  R2_POS.forEach(pos=>{
+    const rows=data.filter(d=>d.positioning===pos);
+    const row=[R2_POS_SHORT[pos]||pos];
+    let rM=0,rF=0;
+    activeGroups.forEach(g=>{const c=r2cnt(rows,d=>d.group===g);row.push(c.M||0,c.F||0);rM+=c.M;rF+=c.F;});
+    if(activeGroups.length>1) row.push(rM,rF);
+    row.push(rM+rF);gM+=rM;gF+=rF;s1.push(row);
+  });
+  const st1=['รวมทั้งสิ้น'];
+  activeGroups.forEach(g=>{const c=r2cnt(data,d=>d.group===g);st1.push(c.M,c.F);});
+  if(activeGroups.length>1) st1.push(gM,gF);
+  st1.push(gM+gF);s1.push(st1);
+  // Gender section
+  s1.push([]);s1.push(['แยกตามเพศ']);
+  const sg1=['ประเภท'];const sg2=[''];
+  activeGroups.forEach(g=>{sg1.push(R2_GRP_SHORT[g]||g,'');sg2.push('ช.','ญ.');});
+  sg1.push('รวม','','');sg2.push('ช.','ญ.','รวม');
+  s1.push(sg1);s1.push(sg2);
+  let tM=0,tF=0;
+  R2_POS.forEach(pos=>{
+    const rows=data.filter(d=>d.positioning===pos);
+    const row=[R2_POS_SHORT[pos]||pos];let rM=0,rF=0;
+    activeGroups.forEach(g=>{const c=r2cnt(rows,d=>d.group===g);row.push(c.M||0,c.F||0);rM+=c.M;rF+=c.F;});
+    row.push(rM,rF,rM+rF);tM+=rM;tF+=rF;s1.push(row);
+  });
+  const gt=['รวมทั้งสิ้น'];
+  activeGroups.forEach(g=>{const c=r2cnt(data,d=>d.group===g);gt.push(c.M,c.F);});
+  gt.push(tM,tF,tM+tF);s1.push(gt);
+  const ws1=XLSX.utils.aoa_to_sheet(s1);
+  ws1['!cols']=[{wch:18},...Array(activeGroups.length*2+(activeGroups.length>1?2:0)+1).fill({wch:7})];
+  XLSX.utils.book_append_sheet(wb,ws1,'สรุปประเภท-เพศ');
+
+  // ===== SHEET 2: การศึกษา =====
+  const s2=[];
+  s2.push(['แยกตามระดับการศึกษา — สถาบันวิจัยวิทยาศาสตร์และเทคโนโลยีแห่งประเทศไทย (วว.)']);
+  s2.push([`ข้อมูล ณ วันที่ ${asOf}`]);s2.push([]);
+  const s2h1=['ระดับการศึกษา'];const s2h2=[''];
+  activeGroups.forEach(g=>{s2h1.push(R2_GRP_SHORT[g]||g,'');s2h2.push('ช.','ญ.');});
+  if(activeGroups.length>1){s2h1.push('รวม','');s2h2.push('ช.','ญ.');}
+  s2h1.push('รวมทั้งสิ้น');s2h2.push('');
+  s2.push(s2h1);s2.push(s2h2);
+  let e_gM=0,e_gF=0;
+  R2_EDU_ORDER.forEach(edu=>{
+    const rows=data.filter(d=>r2EduGroup(d.edu||'')===edu);
+    if(!rows.length) return;
+    const row=[edu];let rM=0,rF=0;
+    activeGroups.forEach(g=>{const c=r2cnt(rows,d=>d.group===g);row.push(c.M||0,c.F||0);rM+=c.M;rF+=c.F;});
+    if(activeGroups.length>1) row.push(rM,rF);
+    row.push(rM+rF);e_gM+=rM;e_gF+=rF;s2.push(row);
+    R2_POS.forEach(pos=>{
+      const pRows=rows.filter(d=>d.positioning===pos);
+      if(!pRows.length) return;
+      const pr=['  ↳ '+(R2_POS_SHORT[pos]||pos)];let pM=0,pF=0;
+      activeGroups.forEach(g=>{const c=r2cnt(pRows,d=>d.group===g);pr.push(c.M||0,c.F||0);pM+=c.M;pF+=c.F;});
+      if(activeGroups.length>1) pr.push(pM,pF);
+      pr.push(pM+pF);s2.push(pr);
+    });
+  });
+  const et=['รวมทั้งสิ้น'];
+  activeGroups.forEach(g=>{const c=r2cnt(data,d=>d.group===g);et.push(c.M,c.F);});
+  if(activeGroups.length>1) et.push(e_gM,e_gF);
+  et.push(e_gM+e_gF);s2.push(et);
+  const ws2=XLSX.utils.aoa_to_sheet(s2);
+  ws2['!cols']=[{wch:22},...Array(activeGroups.length*2+(activeGroups.length>1?2:0)+1).fill({wch:7})];
+  XLSX.utils.book_append_sheet(wb,ws2,'การศึกษา');
+
+  // ===== SHEET 3: Band/SB =====
+  const s3=[];
+  s3.push(['พนักงาน แยกตามตำแหน่ง (Band / Sub band) — สถาบันวิจัยวิ�ทยาศาสตร์และเทคโนโลยีแห่งประเทศไทย (วว.)']);
+  const {table:bandTbl}=r2BandTable(data);
+  bandTbl.forEach(row=>s3.push(row));
+  const ws3=XLSX.utils.aoa_to_sheet(s3);
+  ws3['!cols']=[{wch:22},{wch:9},{wch:9},{wch:9},{wch:9},{wch:9},{wch:9},{wch:9},{wch:9},{wch:9}];
+  XLSX.utils.book_append_sheet(wb,ws3,'Band-SB');
+
+  XLSX.writeFile(wb,`TISTR_FormalReport_${new Date().toLocaleDateString('th-TH',{year:'numeric',month:'2-digit',day:'2-digit'}).replace(/\//g,'-')}.xlsx`);
+}
+
+// ============================================================
+// LOGOUT
+// ============================================================
+function doLogout(){
+  speechSynthesis && speechSynthesis.cancel();
+  sessionStorage.removeItem('wf_auth');
+  location.reload();
+}
+
+// ============================================================
+// FORECAST TAB — FILTERS & KPIs
+// ============================================================
+function populateFcGroupFilter(){
+  const sel=document.getElementById('fc-group'); if(!sel) return;
+  const cur=sel.value;
+  sel.innerHTML='<option value="">ทั้งหมด</option>';
+  const groups=[...new Set(allData.map(r=>r.group).filter(Boolean))];
+  const ordered=GROUP_ORDER.filter(g=>groups.includes(g));
+  ordered.forEach(g=>{ const o=document.createElement('option'); o.value=o.textContent=g; sel.appendChild(o); });
+  if(cur) sel.value=cur;
+}
+
+function applyForecastFilters(){
+  const gf=document.getElementById('fc-group')?.value||'';
+  const pf=document.getElementById('fc-pos')?.value||'';
+  const bf=document.getElementById('fc-band')?.value||'';
+  const yrs=parseInt(document.getElementById('fc-yrs')?.value||'10');
+  const base=allData.filter(r=>(!gf||r.group===gf)&&(!pf||(r.positioning||'พนักงาน')===pf)&&(!bf||String(r.band)===bf));
+  const el=document.getElementById('fc-info');
+  if(el) el.textContent=`${base.length.toLocaleString('th-TH')} คน`;
+  renderForecastKPIs(base,yrs);
+  renderRetireYrChart(base,pf,10);
+  const gfLabel=document.getElementById('fc-grp-yrs-lbl'); if(gfLabel) gfLabel.textContent=yrs;
+  const bfLabel=document.getElementById('fc-band-yrs-lbl'); if(bfLabel) bfLabel.textContent=yrs;
+  renderRetireGrpChart(base,pf,yrs);
+  renderRetireBandChart(base,pf,yrs);
+  renderRetireEduChart(base,pf,yrs);
+  renderForecastTable(yrs);
+}
+
+function resetForecastFilters(){
+  const els=['fc-group','fc-pos','fc-band'];
+  els.forEach(id=>{ const s=document.getElementById(id); if(s) s.value=''; });
+  const yrs=document.getElementById('fc-yrs'); if(yrs) yrs.value='10';
+  applyForecastFilters();
+}
+
+function renderForecastKPIs(base,yrs){
+  const now=new Date(); const curYrBE=now.getFullYear()+543;
+  const k1=base.filter(r=>r.retireCountdown!==null&&r.retireCountdown>=0&&r.retireCountdown<=0).length;
+  const k3=base.filter(r=>r.retireCountdown!==null&&r.retireCountdown>=0&&r.retireCountdown<=3).length;
+  const k5=base.filter(r=>r.retireCountdown!==null&&r.retireCountdown>=0&&r.retireCountdown<=5).length;
+  const k10=base.filter(r=>r.retireCountdown!==null&&r.retireCountdown>=0&&r.retireCountdown<=10).length;
+  const ages=base.map(r=>r.ageYrs).filter(v=>v!==null&&!isNaN(v));
+  const kavg=ages.length?Math.round(ages.reduce((a,b)=>a+b,0)/ages.length):null;
+  const sy=v=>{ const el=document.getElementById(v[0]); if(el) el.textContent=v[1]; };
+  sy(['fc-k1',k1.toLocaleString('th-TH')]);
+  sy(['fc-k3',k3.toLocaleString('th-TH')]);
+  sy(['fc-k5',k5.toLocaleString('th-TH')]);
+  sy(['fc-k10',k10.toLocaleString('th-TH')]);
+  sy(['fc-kavg',kavg!==null?kavg.toFixed(1):'—']);
+  sy(['fc-k1-lbl','📅 พ.ศ. '+curYrBE]);
+  sy(['fc-hero-1yr',k1]);
+  sy(['fc-hero-3yr',k3]);
+  sy(['fc-hero-10yr',k10]);
+}
+
+// ============================================================
+// FORECAST CHARTS
+// ============================================================
+function renderRetireYrChart(base,pf,yrs){
+  const dc=id=>{ if(charts[id]){charts[id].destroy();delete charts[id];} };
+  dc('retireyr');
+  const now=new Date(); const curYrBE=now.getFullYear()+543;
+  const yrArr=[]; for(let i=0;i<=yrs;i++) yrArr.push(curYrBE+i);
+  const counts=yrArr.map(yr=>base.filter(r=>r.retireYearBE===yr).length);
+  const ctx=document.getElementById('ch-retire-yr'); if(!ctx) return;
+  charts['retireyr']=new Chart(ctx.getContext('2d'),{
+    type:'bar',
+    data:{labels:yrArr.map(y=>String(y)),datasets:[{
+      label:'คนเกษียณ',data:counts,
+      backgroundColor:counts.map((c,i)=>i===0?'#EF4444':i<=2?'#F97316':i<=4?'#EAB308':'#3B82F6'),
+      borderRadius:5,borderSkipped:false
+    }]},
+    options:{
+      responsive:true,maintainAspectRatio:false,layout:{padding:{top:28,left:4,right:4}},
+      scales:{
+        x:{grid:{display:false},ticks:{font:{...FONT,size:10}},border:{display:false}},
+        y:{beginAtZero:true,grid:{color:'rgba(0,0,0,.04)'},ticks:{stepSize:1,font:FONT},border:{display:false}}
+      },
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${c.raw} คน`}}},
+      animation:{duration:700,easing:'easeOutQuart'}
+    },
+    plugins:[{id:'yrLbls',afterDatasetsDraw(chart){
+      const ctx=chart.ctx,meta=chart.getDatasetMeta(0);
+      meta.data.forEach((bar,i)=>{
+        if(!counts[i]) return;
+        ctx.save();ctx.font="700 11px 'Sarabun',sans-serif";
+        ctx.fillStyle='#374151';ctx.textAlign='center';ctx.textBaseline='bottom';
+        ctx.fillText(counts[i],bar.x,bar.y-3);ctx.restore();
+      });
+    }}]
+  });
+}
+
+function renderRetireGrpChart(base,pf,yrs){
+  const dc=id=>{ if(charts[id]){charts[id].destroy();delete charts[id];} };
+  dc('retiregrp');
+  const grps=GROUP_ORDER.filter(g=>base.some(r=>r.group===g));
+  const counts=grps.map(g=>base.filter(r=>r.group===g&&r.retireCountdown!==null&&r.retireCountdown>=0&&r.retireCountdown<=yrs).length);
+  const ctx=document.getElementById('ch-retire-grp'); if(!ctx) return;
+  charts['retiregrp']=new Chart(ctx.getContext('2d'),{
+    type:'bar',
+    data:{labels:grps,datasets:[{label:'คนเกษียณ',data:counts,
+      backgroundColor:GROUP_COLORS.slice(0,grps.length),borderRadius:4,borderSkipped:false}]},
+    options:{
+      indexAxis:'y',responsive:true,maintainAspectRatio:false,layout:{padding:{right:40,top:4,bottom:4}},
+      scales:{
+        x:{beginAtZero:true,ticks:{font:FONT,stepSize:1},grid:{color:'rgba(0,0,0,.04)'},border:{display:false}},
+        y:{ticks:{font:{...FONT,weight:'600'}},grid:{display:false},border:{display:false}}
+      },
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${c.raw} คน`}}},
+      animation:{duration:700,easing:'easeOutQuart'}
+    },
+    plugins:[{id:'grpLbls',afterDatasetsDraw(chart){
+      const ctx=chart.ctx,meta=chart.getDatasetMeta(0);
+      meta.data.forEach((bar,i)=>{
+        if(!counts[i]) return;
+        ctx.save();ctx.font="700 12px 'Sarabun',sans-serif";
+        ctx.fillStyle='#374151';ctx.textAlign='left';ctx.textBaseline='middle';
+        ctx.fillText(counts[i]+' คน',bar.x+6,bar.y);ctx.restore();
+      });
+    }}]
+  });
+}
+
+function renderRetireBandChart(base,pf,yrs){
+  const dc=id=>{ if(charts[id]){charts[id].destroy();delete charts[id];} };
+  dc('retireband');
+  const retiring=base.filter(r=>r.retireCountdown!==null&&r.retireCountdown>=0&&r.retireCountdown<=yrs);
+  const bandMap={};
+  retiring.forEach(r=>{const b=r.band?'Band '+r.band:'ไม่ระบุ';bandMap[b]=(bandMap[b]||0)+1;});
+  const labels=Object.keys(bandMap).sort((a,b)=>{
+    const na=parseInt(a.replace(/\D/g,''))||99,nb=parseInt(b.replace(/\D/g,''))||99;return na-nb;
+  });
+  const counts=labels.map(l=>bandMap[l]);
+  const colors=['#6366F1','#0EA5E9','#10B981','#F59E0B','#EF4444','#8B5CF6','#06B6D4','#F97316'];
+  const el=document.getElementById('ch-retire-band');if(!el)return;
+  charts['retireband']=new Chart(el.getContext('2d'),{
+    type:'bar',
+    data:{labels,datasets:[{label:'คนเกษียณ',data:counts,
+      backgroundColor:labels.map((_,i)=>colors[i%colors.length]),borderRadius:5,borderSkipped:false}]},
+    options:{
+      responsive:true,maintainAspectRatio:false,layout:{padding:{top:28,left:4,right:4}},
+      scales:{
+        x:{grid:{display:false},ticks:{font:{...FONT,weight:'600'}},border:{display:false}},
+        y:{beginAtZero:true,grid:{color:'rgba(0,0,0,.04)'},ticks:{stepSize:1,font:FONT},border:{display:false}}
+      },
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${c.raw} คน`}}},
+      animation:{duration:700,easing:'easeOutQuart'}
+    },
+    plugins:[{id:'bandLbls',afterDatasetsDraw(chart){
+      const ctx=chart.ctx,meta=chart.getDatasetMeta(0);
+      meta.data.forEach((bar,i)=>{
+        if(!counts[i])return;
+        ctx.save();ctx.font="700 11px 'Sarabun',sans-serif";
+        ctx.fillStyle='#374151';ctx.textAlign='center';ctx.textBaseline='bottom';
+        ctx.fillText(counts[i],bar.x,bar.y-4);ctx.restore();
+      });
+    }}]
+  });
+}
+
+function renderRetireEduChart(base,pf,yrs){
+  const dc=id=>{ if(charts[id]){charts[id].destroy();delete charts[id];} };
+  dc('retireedu');
+  const retiring=base.filter(r=>r.retireCountdown!==null&&r.retireCountdown>=0&&r.retireCountdown<=yrs);
+  const eduMap={};
+  retiring.forEach(r=>{ const e=normEduDash(r.edu); eduMap[e]=(eduMap[e]||0)+1; });
+  const labels=EDU_ORDER.filter(e=>eduMap[e]);
+  const counts=labels.map(l=>eduMap[l]);
+  const eduColors=['#F59E0B','#3B82F6','#8B5CF6','#10B981'];
+  const el=document.getElementById('ch-retire-edu');if(!el)return;
+  charts['retireedu']=new Chart(el.getContext('2d'),{
+    type:'doughnut',
+    data:{labels,datasets:[{data:counts,backgroundColor:labels.map((_,i)=>eduColors[i%eduColors.length]),
+      borderWidth:2,borderColor:'#fff',hoverOffset:8}]},
+    options:{
+      responsive:true,maintainAspectRatio:false,cutout:'52%',
+      plugins:{
+        legend:{position:'bottom',labels:{font:FONT,padding:10,boxWidth:12}},
+        tooltip:{callbacks:{label:c=>` ${c.label}: ${c.raw} คน`}}
+      },
+      animation:{duration:700}
+    },
+    plugins:[{
+      id:'eduSliceLbls',
+      afterDatasetsDraw(chart){
+        const ctx=chart.ctx,meta=chart.getDatasetMeta(0),tot=counts.reduce((a,b)=>a+b,0);
+        if(!tot)return;
+        meta.data.forEach((arc,i)=>{
+          const val=counts[i]; if(!val||val/tot<0.04) return;
+          const angle=(arc.startAngle+arc.endAngle)/2;
+          const r2=(arc.innerRadius+arc.outerRadius)/2;
+          const x=arc.x+Math.cos(angle)*r2, y=arc.y+Math.sin(angle)*r2;
+          ctx.save();
+          ctx.font="700 11px 'Sarabun',sans-serif"; ctx.fillStyle='rgba(255,255,255,.95)';
+          ctx.textAlign='center'; ctx.textBaseline='middle';
+          ctx.fillText(val,x,y-5);
+          ctx.font="400 9.5px 'Sarabun',sans-serif"; ctx.fillStyle='rgba(255,255,255,.8)';
+          ctx.fillText(((val/tot)*100).toFixed(0)+'%',x,y+6);
+          ctx.restore();
+        });
+      }
+    }]
+  });
+}
+
+// ============================================================
+// FORECAST TABLE
+// ============================================================
+function renderForecastTable(yrs){
+  const tbody=document.getElementById('fc-tbody'); if(!tbody) return;
+  const gf=document.getElementById('fc-group')?.value||'';
+  const pf=document.getElementById('fc-pos')?.value||'';
+  const search=(document.getElementById('fc-search')?.value||'').toLowerCase();
+  const tblYrs=document.getElementById('fc-tbl-yrs'); if(tblYrs) tblYrs.textContent=yrs;
+  const fcFiltered=allData.filter(r=>
+    (!gf||r.group===gf)&&
+    (!pf||(r.positioning||'พนักงาน')===pf)&&
+    r.retireCountdown!==null&&r.retireCountdown>=0&&r.retireCountdown<=yrs
+  ).filter(r=>!search||
+    (r.name||'').toLowerCase().includes(search)||
+    (r.posNew||r.position||'').toLowerCase().includes(search)||
+    (r.deptName||'').toLowerCase().includes(search)
+  );
+  let sorted=[...fcFiltered].sort((a,b)=>(a.retireCountdown??9999)-(b.retireCountdown??9999));
+  const badge=cd=>{
+    if(cd===0) return '<span style="background:#fee2e2;color:#991b1b;padding:2px 10px;border-radius:20px;font-size:.7rem;font-weight:700">ปีนี้</span>';
+    if(cd<=1) return '<span style="background:#ffedd5;color:#92400e;padding:2px 10px;border-radius:20px;font-size:.7rem;font-weight:700">'+cd+' ปี</span>';
+    if(cd<=3) return '<span style="background:#fef3c7;color:#92400e;padding:2px 10px;border-radius:20px;font-size:.7rem;font-weight:700">'+cd+' ปี</span>';
+    if(cd<=5) return '<span style="background:#ede9fe;color:#5b21b6;padding:2px 10px;border-radius:20px;font-size:.7rem;font-weight:700">'+cd+' ปี</span>';
+    return '<span style="background:#dbeafe;color:#1e40af;padding:2px 10px;border-radius:20px;font-size:.7rem;font-weight:700">'+cd+' ปี</span>';
+  };
+  tbody.innerHTML=sorted.length?sorted.map((r,i)=>`<tr>
+    <td style="text-align:center;color:var(--muted);font-size:.78rem">${i+1}</td>
+    <td style="font-weight:600">${(r.prefix||'')+' '+(r.name||'—')}</td>
+    <td style="font-size:.8rem">${r.posNew||r.position||'—'}</td>
+    <td style="text-align:center">${PBADGE[r.positioning]||r.positioning||'—'}</td>
+    <td style="text-align:center;font-size:.8rem">${r.band||'—'}</td>
+    <td style="font-size:.8rem">${r.group||'—'}</td>
+    <td style="font-size:.79rem;color:#555">${r.deptName||r.deptCode||'—'}</td>
+    <td style="text-align:center;font-size:.79rem;color:var(--c1);font-weight:600">${r.retireDate||'—'}</td>
+    <td style="text-align:center">${r.retireCountdown!==null?badge(r.retireCountdown):'—'}</td>
+  </tr>`).join(''):'<tr><td colspan="9" style="text-align:center;color:var(--muted);padding:20px">ไม่มีข้อมูล</td></tr>';
+  const el=document.getElementById('fc-tbl-count'); if(el) el.textContent=sorted.length+' คน';
+}
+
+// ============================================================
+// SCENARIO SIMULATOR
+// ============================================================
+function openScenario(){
+  const bd=document.getElementById('scenario-backdrop');
+  bd.classList.add('open');
+  updateScenario();
+}
+function closeScenario(){ document.getElementById('scenario-backdrop').classList.remove('open'); }
+function resetScenario(){
+  document.getElementById('sc-emp').value=0;
+  document.getElementById('sc-perm').value=0;
+  document.getElementById('sc-other').value=0;
+  updateScenario();
+}
+function updateScenario(){
+  const dEmp=+document.getElementById('sc-emp').value;
+  const dPerm=+document.getElementById('sc-perm').value;
+  const dOther=+document.getElementById('sc-other').value;
+  const fmt=v=>(v>=0?'+':'')+v.toLocaleString('th-TH');
+  document.getElementById('sc-val-emp').textContent=fmt(dEmp)+' คน';
+  document.getElementById('sc-val-perm').textContent=fmt(dPerm)+' คน';
+  document.getElementById('sc-val-other').textContent=fmt(dOther)+' คน';
+  const cnt={total:0};
+  (allData||[]).forEach(r=>{ cnt.total++; });
+  const curTotal=cnt.total;
+  const projTotal=curTotal+dEmp+dPerm+dOther;
+  const approvedTotal=APPROVED.emp+APPROVED.perm;
+  const delta=projTotal-curTotal;
+  document.getElementById('sc-cur').textContent=curTotal.toLocaleString('th-TH');
+  document.getElementById('sc-proj').textContent=projTotal.toLocaleString('th-TH');
+  document.getElementById('sc-appr').textContent=approvedTotal.toLocaleString('th-TH');
+  const dEl=document.getElementById('sc-delta');
+  dEl.textContent=(delta>=0?'▲ +':'▼ ')+delta.toLocaleString('th-TH')+' คน';
+  dEl.className='sc-delta '+(delta>0?'up':delta<0?'dn':'');
+  const gap=approvedTotal-projTotal;
+  const noteEl=document.getElementById('sc-note');
+  if(delta===0) noteEl.textContent='ปรับ slider เพื่อจำลองการเปลี่ยนแปลงอัตรากำลัง';
+  else if(gap>0) noteEl.textContent=`หลังปรับแล้วยังขาดอีก ${gap.toLocaleString('th-TH')} คน จากอัตราที่ได้รับอนุมัติ`;
+  else if(gap<0) noteEl.textContent=`หลังปรับแล้วเกินอัตราที่ได้รับอนุมัติ ${Math.abs(gap).toLocaleString('th-TH')} คน`;
+  else noteEl.textContent='อัตรากำลังหลังปรับ = อัตราที่ได้รับอนุมัติพอดี ✅';
+}
+
+// ============================================================
+// TEXT-TO-SPEECH
+// ============================================================
+let ttsUtterance=null;
+function toggleTTS(){
+  const btn=document.getElementById('tts-btn');
+  if(!window.speechSynthesis){ alert('Browser ของท่านไม่รองรับการอ่านออกเสียง'); return; }
+  if(speechSynthesis.speaking){
+    speechSynthesis.cancel();
+    btn.textContent='🔊 อ่านสรุป'; btn.classList.remove('reading');
+    return;
+  }
+  const cnt={total:0,'ผู้บริหาร':0,'พนักงาน':0,'ลูกจ้างประจำ':0,'ลูกจ้างทั่วไป':0,'ลูกจ้างเฉพาะกิจ':0};
+  (allData||[]).forEach(r=>{ cnt.total++; const p=r.positioning||'พนักงาน'; if(cnt[p]!==undefined) cnt[p]++; });
+  const retiring=(allData||[]).filter(r=>r.retireCountdown===0).length;
+  const in3=(allData||[]).filter(r=>r.retireCountdown!==null&&r.retireCountdown>=0&&r.retireCountdown<=3).length;
+  const text=`สรุปข้อมูลอัตรากำลัง สถาบันวิจัยวิทยาศาสตร์และเทคโนโลยีแห่งประเทศไทย วว. `
+    +`บุคลากรรวมทั้งหมด ${cnt.total} คน `
+    +`แบ่งเป็น ผู้บริหาร ${cnt['ผู้บริหาร']} คน `
+    +`พนักงาน ${cnt['พนักงาน']} คน `
+    +`ลูกจ้างประจำ ${cnt['ลูกจ้างประจำ']} คน `
+    +`ลูกจ้างทั่วไป ${cnt['ลูกจ้างทั่วไป']} คน `
+    +`ลูกจ้างเฉพาะกิจ ${cnt['ลูกจ้างเฉพาะกิจ']} คน `
+    +`บุคลากรที่เกษียณในปีนี้ ${retiring} คน `
+    +`และเกษียณภายใน 3 ปี ${in3} คน`;
+  ttsUtterance=new SpeechSynthesisUtterance(text);
+  ttsUtterance.lang='th-TH'; ttsUtterance.rate=0.95; ttsUtterance.pitch=1;
+  const voices=speechSynthesis.getVoices();
+  const thVoice=voices.find(v=>v.lang==='th-TH'||v.lang.startsWith('th'));
+  if(thVoice) ttsUtterance.voice=thVoice;
+  ttsUtterance.onend=()=>{ btn.textContent='🔊 อ่านสรุป'; btn.classList.remove('reading'); };
+  ttsUtterance.onerror=()=>{ btn.textContent='🔊 อ่านสรุป'; btn.classList.remove('reading'); };
+  speechSynthesis.speak(ttsUtterance);
+  btn.textContent='⏹ หยุดอ่าน'; btn.classList.add('reading');
+}
+
+
+// ============================================================
+// LOGIN SYSTEM
+// ============================================================
+(function(){
+  var PASS='HR2569';
+  var overlay=document.getElementById('login-overlay');
+  var welcome=document.getElementById('welcome-screen');
+  var errEl=document.getElementById('login-err');
+  if(sessionStorage.getItem('wf_auth')==='1'){
+    if(overlay) overlay.style.display='none';
+    return;
+  }
+  window.togglePwd=function(){
+    var inp=document.getElementById('login-pwd');
+    var btn=document.getElementById('login-eye-btn');
+    if(!inp) return;
+    if(inp.type==='password'){ inp.type='text'; btn.textContent='\u{1F648}'; }
+    else { inp.type='password'; btn.textContent='\u{1F441}'; }
+  };
+  window.doLogin=function(){
+    var inp=document.getElementById('login-pwd');
+    if(!inp) return;
+    if(inp.value===PASS){
+      sessionStorage.setItem('wf_auth','1');
+      if(errEl) errEl.textContent='';
+      // Show welcome FIRST — z-index 10000 covers everything including dashboard
+      if(welcome){
+        welcome.classList.add('show');
+      }
+      // Then fade out login overlay underneath
+      if(overlay){
+        overlay.classList.add('fade-out');
+        setTimeout(function(){ overlay.style.display='none'; },600);
+      }
+      // After curtain animation + read time, fade welcome out
+      if(welcome){
+        setTimeout(function(){
+          welcome.classList.add('fade-out');
+          setTimeout(function(){ welcome.style.display='none'; },900);
+        },4600);
+      }
+    } else {
+      if(errEl) errEl.textContent='\u0e23\u0e2b\u0e31\u0e2a\u0e1c\u0e48\u0e32\u0e19\u0e44\u0e21\u0e48\u0e16\u0e39\u0e01\u0e15\u0e49\u0e2d\u0e07 \u0e01\u0e23\u0e38\u0e13\u0e32\u0e25\u0e2d\u0e07\u0e43\u0e2b\u0e21\u0e48';
+      var box=document.querySelector('.login-box');
+      if(box){ box.classList.remove('shake'); void box.offsetWidth; box.classList.add('shake'); }
+      inp.value=''; inp.focus();
+    }
+  };
+})();
+
+// ============================================================
+// KPI COUNT-UP ANIMATION
+// ============================================================
+function animateCountUp(el,target,duration=700){
+  if(!el||isNaN(target)) return;
+  const start=performance.now();
+  function step(ts){
+    const pct=Math.min((ts-start)/duration,1);
+    const ease=1-Math.pow(1-pct,3);
+    el.textContent=Math.round(target*ease).toLocaleString('th-TH');
+    if(pct<1) requestAnimationFrame(step);
+    else el.textContent=target.toLocaleString('th-TH');
+  }
+  requestAnimationFrame(step);
+}
+
+loadData();
+</script>
+</body>
+</html>
