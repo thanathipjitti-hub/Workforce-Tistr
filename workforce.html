@@ -759,6 +759,148 @@ body{background:linear-gradient(160deg,#eaecf5 0%,#f0f2f8 60%,#e8edf6 100%);min-
   border-radius:8px;padding:7px 14px;font-family:'Sarabun',sans-serif;font-size:.82rem;
   font-weight:600;cursor:pointer;transition:background .15s,color .15s}
 .btn-logout:hover{background:rgba(220,38,38,.7);color:#fff;border-color:transparent}
+
+/* ===== DEMAND FORECAST TAB ===== */
+.dm-hero{
+  background:linear-gradient(135deg,#0f172a 0%,#1e3a8a 45%,#4f46e5 100%);
+  border-radius:var(--r);padding:24px 28px;margin-bottom:16px;
+  display:flex;justify-content:space-between;align-items:center;
+  position:relative;overflow:hidden;box-shadow:0 4px 20px rgba(15,23,42,.35)
+}
+.dm-hero::before{content:'';position:absolute;top:-40px;right:80px;width:200px;height:200px;
+  border-radius:50%;background:rgba(255,255,255,.04)}
+.dm-hero::after{content:'';position:absolute;bottom:-50px;right:-10px;width:160px;height:160px;
+  border-radius:50%;background:rgba(255,255,255,.03)}
+.dm-hero-left{position:relative;z-index:1}
+.dm-hero-ttl{font-family:'Prompt',sans-serif;font-size:1.25rem;font-weight:700;color:#fff;margin-bottom:5px;letter-spacing:.01em}
+.dm-hero-sub{font-size:.81rem;color:rgba(255,255,255,.6);line-height:1.5}
+.dm-hero-right{display:flex;gap:12px;position:relative;z-index:1;flex-shrink:0}
+
+/* demand KPI row */
+.dm-krow{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:14px}
+.dm-kpi{background:#fff;border-radius:var(--r);padding:16px 18px;border-top:3px solid #e2e8f0;
+  box-shadow:var(--sh2);transition:.15s}
+.dm-kpi.k-blue{border-top-color:#3b82f6}
+.dm-kpi.k-green{border-top-color:#10b981}
+.dm-kpi.k-amber{border-top-color:#f59e0b}
+.dm-kpi.k-red{border-top-color:#ef4444}
+.dm-kpi.k-purple{border-top-color:#8b5cf6}
+.dm-kpi-lbl{font-size:.7rem;color:#64748b;margin-bottom:5px;font-weight:600;letter-spacing:.02em;text-transform:uppercase}
+.dm-kpi-val{font-size:1.65rem;font-weight:700;color:#1e3a8a;line-height:1}
+.dm-kpi-val.red{color:#dc2626}.dm-kpi-val.amber{color:#d97706}.dm-kpi-val.green{color:#059669}
+.dm-kpi-sub{font-size:.67rem;color:#94a3b8;margin-top:4px}
+
+/* charts row */
+.dm-charts{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+.dm-cc{background:#fff;border-radius:var(--r);padding:18px 20px;box-shadow:var(--sh2)}
+.dm-cc-title{font-size:.82rem;font-weight:700;color:var(--c1);margin-bottom:14px;
+  display:flex;justify-content:space-between;align-items:center}
+
+/* demand table */
+.dm-tc{background:#fff;border-radius:var(--r);box-shadow:var(--sh2);overflow:hidden;margin-bottom:14px}
+.dm-tc-hdr{background:var(--c1);padding:12px 18px;display:flex;align-items:center;justify-content:space-between}
+.dm-tc-ttl{color:#fff;font-size:.85rem;font-weight:600}
+.dm-tc-badge{background:var(--gold);color:#0f172a;font-size:.65rem;padding:2px 10px;border-radius:20px;font-weight:700}
+.dm-tbl{width:100%;border-collapse:collapse}
+.dm-tbl th{background:#f8fafc;font-size:.72rem;color:#64748b;padding:9px 14px;text-align:left;
+  border-bottom:1px solid #e2e8f0;font-weight:700;text-transform:uppercase;letter-spacing:.03em}
+.dm-tbl td{font-size:.76rem;color:#334155;padding:8px 14px;border-bottom:1px solid #f1f5f9}
+.dm-tbl tr:last-child td{border-bottom:none;background:#f8fafc;font-weight:700}
+.dm-tbl tr:hover td{background:#fafbff}
+.dm-badge{display:inline-block;padding:2px 9px;border-radius:20px;font-size:.65rem;font-weight:700}
+.dm-badge.red{background:#fee2e2;color:#991b1b}
+.dm-badge.amber{background:#fef3c7;color:#92400e}
+.dm-badge.green{background:#d1fae5;color:#065f46}
+.dm-badge.blue{background:#dbeafe;color:#1e40af}
+
+/* supply bar in table */
+.dm-bar-wrap{background:#f1f5f9;border-radius:6px;height:10px;overflow:hidden;margin-top:3px}
+.dm-bar-fill{height:100%;border-radius:6px;background:#3b82f6;transition:width .6s}
+.dm-bar-fill.red{background:#ef4444}
+.dm-bar-fill.amber{background:#f59e0b}
+#dm-yr-grid button:hover{background:#dbeafe!important;color:#1e40af!important;border-color:#3b82f6!important}
+
+/* ===== DEMAND FORECAST — dark KPI (match Dashboard 1 exactly) ===== */
+.dm-krow{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:14px}
+.dm-kpi{
+  border-radius:var(--r);padding:20px 20px 16px;
+  border:none;display:flex;flex-direction:column;gap:5px;
+  position:relative;overflow:hidden;
+  background:linear-gradient(140deg,#1a1a6e 0%,#2e2ea8 100%);
+  box-shadow:0 3px 10px rgba(26,26,110,.22);
+  transition:transform .15s,box-shadow .15s
+}
+.dm-kpi:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(26,26,110,.32)}
+.dm-kpi::after{content:'';position:absolute;right:-20px;bottom:-20px;width:100px;height:100px;border-radius:50%;background:rgba(255,255,255,.07);pointer-events:none}
+.dm-kpi::before{content:'';position:absolute;left:-10px;top:-10px;width:60px;height:60px;border-radius:50%;background:rgba(255,255,255,.04);pointer-events:none}
+.dm-kpi.k-blue{background:linear-gradient(140deg,#1e3a8a 0%,#2563eb 100%);box-shadow:0 3px 10px rgba(30,58,138,.28)}
+.dm-kpi.k-green{background:linear-gradient(140deg,#14532d 0%,#16a34a 100%);box-shadow:0 3px 10px rgba(22,163,74,.22)}
+.dm-kpi.k-amber{background:linear-gradient(140deg,#78350f 0%,#d97706 100%);box-shadow:0 3px 10px rgba(217,119,6,.22)}
+.dm-kpi.k-red{background:linear-gradient(140deg,#7f1d1d 0%,#b91c1c 100%);box-shadow:0 3px 10px rgba(185,28,28,.25)}
+.dm-kpi.k-purple{background:linear-gradient(140deg,#4c1d95 0%,#7c3aed 100%);box-shadow:0 3px 10px rgba(124,58,237,.22)}
+.dm-kpi-lbl{font-size:.79rem;color:rgba(255,255,255,.8);font-weight:600;letter-spacing:.02em}
+.dm-kpi-val{font-size:1.85rem;font-weight:700;color:#fff;line-height:1;font-family:'Prompt',sans-serif;text-shadow:0 1px 6px rgba(0,0,0,.18)}
+.dm-kpi-sub{font-size:.72rem;color:rgba(255,255,255,.58)}
+
+/* ===== DEMAND FORECAST — hero stat boxes (match fc-hero-stat) ===== */
+.dm-hero-right{display:flex;gap:12px;position:relative;z-index:1;flex-shrink:0}
+.dm-hero-stat{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.12);
+  border-radius:14px;padding:10px 20px;color:#fff;text-align:center;min-width:90px;
+  backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}
+.dm-hero-stat-num{font-family:'Prompt',sans-serif;font-size:1.7rem;font-weight:700;color:#FCD34D;display:block;line-height:1.1}
+.dm-hero-stat-lbl{font-size:.71rem;color:rgba(255,255,255,.65);margin-top:2px;display:block}
+
+/* ===== DEMAND FORECAST — section dividers (match fc-section) ===== */
+.dm-section{display:flex;align-items:center;gap:10px;margin:16px 0 10px}
+.dm-section-line{flex:1;height:1px;background:linear-gradient(90deg,var(--bdr),transparent)}
+.dm-section-ttl{font-family:'Prompt',sans-serif;font-size:.77rem;font-weight:700;
+  color:var(--muted);text-transform:uppercase;letter-spacing:.09em;white-space:nowrap}
+
+/* ===== DEMAND FORECAST — fbar accent (match forecast) ===== */
+#view-demand .fbar{
+  background:linear-gradient(135deg,#fff 0%,#f5f7fd 100%);
+  border-left:4px solid #4f46e5;
+  box-shadow:0 2px 10px rgba(79,70,229,.08)
+}
+
+/* ===== DEMAND FORECAST — chart cards match cgrid style ===== */
+.dm-charts{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+.dm-cc{background:var(--w);border-radius:var(--r);padding:20px 22px;border:1px solid var(--bdr);
+  box-shadow:var(--sh2);display:flex;flex-direction:column;
+  border-top:3px solid #4f46e5;transition:transform .15s,box-shadow .15s}
+.dm-cc:last-child{border-top-color:#ef4444}
+.dm-cc:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(26,26,110,.13)}
+.dm-cc-title{font-family:'Prompt',sans-serif;font-size:.93rem;font-weight:700;color:var(--c1);
+  margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid var(--light);
+  display:flex;justify-content:space-between;align-items:center}
+
+/* ===== SUMMARY PANEL ===== */
+.tabs{display:flex;align-items:center}
+.tab-summary-btn{
+  margin-left:auto;padding:8px 18px;background:linear-gradient(135deg,#1d4ed8,#4f46e5);
+  color:#fff;border:none;border-radius:9px;font-family:'Sarabun',sans-serif;
+  font-size:.82rem;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;
+  box-shadow:0 2px 8px rgba(79,70,229,.35);transition:transform .12s,box-shadow .12s;
+  margin-right:12px;white-space:nowrap;flex-shrink:0
+}
+.tab-summary-btn:hover{transform:translateY(-1px);box-shadow:0 4px 14px rgba(79,70,229,.45)}
+.tab-summary-btn.active{background:linear-gradient(135deg,#059669,#10b981)}
+
+#summary-panel{
+  background:linear-gradient(135deg,#0f172a 0%,#1e3a8a 60%,#4338ca 100%);
+  color:#fff;padding:0;max-height:0;overflow:hidden;transition:max-height .35s ease,padding .3s;
+  border-bottom:1px solid rgba(255,255,255,.1);position:relative
+}
+#summary-panel.open{max-height:280px;padding:14px 32px}
+.sum-inner{display:flex;gap:24px;align-items:flex-start}
+.sum-badge{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);
+  border-radius:10px;padding:4px 12px;font-size:.7rem;font-weight:700;color:#fbbf24;
+  white-space:nowrap;flex-shrink:0;align-self:flex-start;margin-top:2px}
+.sum-text{font-size:.81rem;color:rgba(255,255,255,.88);line-height:1.75;flex:1;white-space:pre-line}
+.sum-close{position:absolute;top:10px;right:18px;background:none;border:none;
+  color:rgba(255,255,255,.5);font-size:1.1rem;cursor:pointer;padding:4px 8px;
+  border-radius:6px;transition:color .15s}
+.sum-close:hover{color:#fff;background:rgba(255,255,255,.1)}
 </style>
 </head>
 <body>
@@ -887,7 +1029,16 @@ body{background:linear-gradient(160deg,#eaecf5 0%,#f0f2f8 60%,#e8edf6 100%);min-
 <div class="tabs">
   <button class="tab on" id="tab-dash" onclick="switchTab('dash')">📊 ภาพรวมอัตรากำลัง</button>
   <button class="tab" id="tab-forecast" onclick="switchTab('forecast')">📅 แผนอัตรากำลัง</button>
+  <button class="tab" id="tab-demand" onclick="switchTab('demand')">📈 Demand Forecast</button>
   <button class="tab" id="tab-people" onclick="switchTab('people')">👤 รายชื่อบุคลากร</button>
+  <button class="tab-summary-btn" id="sum-btn" onclick="toggleSummary()">📝 สรุปผล</button>
+</div>
+<div id="summary-panel">
+  <div class="sum-inner">
+    <span class="sum-badge" id="sum-badge">ภาพรวม</span>
+    <div class="sum-text" id="sum-text">กำลังโหลดข้อมูล...</div>
+  </div>
+  <button class="sum-close" onclick="toggleSummary()">✕</button>
 </div>
 
 <div id="loading"><div class="spin"></div><div style="font-size:.9rem">กำลังโหลดข้อมูลจาก Google Sheets...</div></div>
@@ -1154,6 +1305,12 @@ body{background:linear-gradient(160deg,#eaecf5 0%,#f0f2f8 60%,#e8edf6 100%);min-
         <div class="fc-hero-ttl" style="margin-bottom:0">แผนอัตรากำลัง &amp; การเกษียณอายุ</div>
       </div>
       <div class="fc-hero-sub">วิเคราะห์แนวโน้มการเกษียณอายุบุคลากร วว. · จำแนกตามกลุ่ม Band และระดับการศึกษา</div>
+      <div class="dash-hero-tags" style="margin-top:12px">
+        <span class="dash-hero-tag gold">วว. - TISTR</span>
+        <span class="dash-hero-tag" id="fc-tag-total">บุคลากรทั้งหมด —</span>
+        <span class="dash-hero-tag" id="fc-tag-retire5">เกษียณ 5 ปี —</span>
+        <span class="dash-hero-tag" id="fc-tag-avg">อายุเฉลี่ย —</span>
+      </div>
     </div>
     <div class="fc-hero-right">
       <div class="fc-hero-stat">
@@ -1317,6 +1474,177 @@ body{background:linear-gradient(160deg,#eaecf5 0%,#f0f2f8 60%,#e8edf6 100%);min-
     </div>
   </div>
 </div><!-- /view-forecast -->
+
+<!-- DEMAND FORECAST TAB -->
+<div id="view-demand" class="main" style="display:none">
+
+  <!-- Hero Banner — FIRST (like dashboards 1 & 2) -->
+  <div class="dm-hero">
+    <div class="dm-hero-left">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:6px">
+        <img src="tistr-logo.png" alt="วว." class="hero-logo">
+        <div class="dm-hero-ttl" style="margin-bottom:0">Demand Forecast — คาดการณ์ความต้องการอัตรากำลัง</div>
+      </div>
+      <div class="dm-hero-sub">เปรียบเทียบ Supply คาดการณ์ (หลังหักเกษียณ) กับ Demand (อัตราที่ได้รับอนุมัติ) เพื่อวางแผนสรรหาบุคลากรทดแทน</div>
+      <div class="dash-hero-tags" style="margin-top:12px">
+        <span class="dash-hero-tag gold">วว. - TISTR</span>
+        <span class="dash-hero-tag" id="dm-hero-tag-yr">ช่วงปี 2568–2573</span>
+        <span class="dash-hero-tag" id="dm-hero-tag-frame">กรอบอัตรารัฐ 732 คน</span>
+        <span class="dash-hero-tag" id="dm-hero-tag-gap">Gap —</span>
+      </div>
+    </div>
+    <div class="dm-hero-right">
+      <div class="dm-hero-stat"><span class="dm-hero-stat-num" id="dm-stat-cur">—</span><span class="dm-hero-stat-lbl">ปัจจุบัน</span></div>
+      <div class="dm-hero-stat"><span class="dm-hero-stat-num" id="dm-stat-ret" style="color:#fca5a5">—</span><span class="dm-hero-stat-lbl">เกษียณใน <span id="dm-stat-yr">5</span> ปี</span></div>
+      <div class="dm-hero-stat"><span class="dm-hero-stat-num" id="dm-stat-gap">—</span><span class="dm-hero-stat-lbl">Gap ต้องสรรหา</span></div>
+    </div>
+  </div>
+
+  <!-- Filter Bar — BELOW hero (consistent with dashboards 1 & 2) -->
+  <div class="fbar" style="flex-wrap:wrap;gap:10px;align-items:center">
+    <span class="fl">กลุ่มงาน</span>
+    <select class="fsel" id="dm-group" onchange="renderDemandForecast()">
+      <option value="">ทั้งหมด</option>
+    </select>
+    <span class="fl">ประเภทบุคลากร</span>
+    <select class="fsel" id="dm-pos" onchange="renderDemandForecast()" style="min-width:160px">
+      <option value="">ทั้งหมด</option>
+      <option value="gov">กรอบรัฐ (ผบ.+พนง.+ลจ.ประจำ)</option>
+      <option value="ผู้บริหาร">ผู้บริหาร</option>
+      <option value="พนักงาน">พนักงาน</option>
+      <option value="ลูกจ้างประจำ">ลูกจ้างประจำ</option>
+      <option value="ลูกจ้างทั่วไป">ลูกจ้างทั่วไป (วว.จ้างเอง)</option>
+      <option value="ลูกจ้างเฉพาะกิจ">ลูกจ้างเฉพาะกิจ (วว.จ้างเอง)</option>
+    </select>
+    <span class="fl">Band</span>
+    <select class="fsel" id="dm-band" onchange="renderDemandForecast()" style="min-width:95px">
+      <option value="">ทั้งหมด</option>
+      <option>1</option><option>2</option><option>3</option>
+      <option>4</option><option>5</option><option>6</option><option>7</option>
+    </select>
+    <span class="fl">ช่วงปีเป้าหมาย</span>
+    <div style="position:relative;display:inline-block">
+      <button class="fsel" id="dm-yr-btn" onclick="toggleYrPicker(event)"
+        style="cursor:pointer;min-width:160px;text-align:left;display:flex;align-items:center;gap:6px">
+        <span id="dm-yr-display">2568 – 2573</span> <span style="margin-left:auto;opacity:.5">▾</span>
+      </button>
+      <div id="dm-yr-picker" style="display:none;position:absolute;top:calc(100% + 6px);left:0;
+        background:#fff;border:1.5px solid var(--bdr);border-radius:12px;
+        box-shadow:0 8px 32px rgba(0,0,0,.15);padding:16px;z-index:999;width:260px">
+        <div style="font-size:.72rem;color:#64748b;margin-bottom:10px;font-weight:600;text-align:center">
+          เลือกช่วงปี (คลิกปีเริ่ม → ปีสิ้นสุด)
+        </div>
+        <div id="dm-yr-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:5px"></div>
+        <div style="margin-top:10px;font-size:.7rem;text-align:center;color:#94a3b8" id="dm-yr-hint">คลิกปีเริ่มต้น</div>
+        <button onclick="confirmYrRange()" style="margin-top:10px;width:100%;padding:7px;background:#1d4ed8;
+          color:#fff;border:none;border-radius:8px;font-family:'Sarabun',sans-serif;font-size:.82rem;
+          font-weight:600;cursor:pointer">✓ ยืนยัน</button>
+      </div>
+    </div>
+    <button class="fbtn" onclick="resetDmFilters()">✕ รีเซ็ต</button>
+    <span class="finfo" id="dm-info"></span>
+    <span style="margin-left:auto;font-size:.7rem;background:#fef3c7;border:1px solid #fde68a;
+      border-radius:8px;padding:4px 10px;color:#92400e;white-space:nowrap">
+      ⚠️ กรอบ 732 = เงินรัฐ (ผบ.+พนง.+ลจ.ประจำ)
+    </span>
+  </div>
+
+  <!-- Section KPI -->
+  <div class="dm-section">
+    <span class="dm-section-ttl">📊 สรุปอัตรากำลัง &amp; การคาดการณ์</span>
+    <div class="dm-section-line"></div>
+  </div>
+
+  <!-- KPI Cards -->
+  <div class="dm-krow">
+    <div class="dm-kpi k-blue">
+      <div class="kpi-accent"></div>
+      <div class="dm-kpi-lbl">📋 อัตราที่ได้รับอนุมัติ</div>
+      <div class="dm-kpi-val" id="dm-kpi-approved">—</div>
+      <div class="dm-kpi-sub">กรอบรัฐ (พนง.+ผบ.+ลจ.ประจำ)</div>
+    </div>
+    <div class="dm-kpi k-green">
+      <div class="kpi-accent"></div>
+      <div class="dm-kpi-lbl">👥 อัตราปัจจุบัน</div>
+      <div class="dm-kpi-val" id="dm-kpi-cur">—</div>
+      <div class="dm-kpi-sub">บุคลากรที่มีอยู่จริง</div>
+    </div>
+    <div class="dm-kpi k-amber">
+      <div class="kpi-accent"></div>
+      <div class="dm-kpi-lbl">⏳ เกษียณอายุในช่วง</div>
+      <div class="dm-kpi-val" id="dm-kpi-ret">—</div>
+      <div class="dm-kpi-sub" id="dm-kpi-ret-lbl">คนที่จะเกษียณ</div>
+    </div>
+    <div class="dm-kpi k-red">
+      <div class="kpi-accent"></div>
+      <div class="dm-kpi-lbl">📉 Supply คาดการณ์</div>
+      <div class="dm-kpi-val" id="dm-kpi-supply">—</div>
+      <div class="dm-kpi-sub">ปัจจุบัน − เกษียณ (ไม่รับใหม่)</div>
+    </div>
+    <div class="dm-kpi k-purple">
+      <div class="kpi-accent"></div>
+      <div class="dm-kpi-lbl">🎯 ต้องสรรหาเพิ่ม</div>
+      <div class="dm-kpi-val" id="dm-kpi-need">—</div>
+      <div class="dm-kpi-sub" id="dm-kpi-need-lbl">อนุมัติ − Supply</div>
+    </div>
+  </div>
+
+  <!-- Section Charts -->
+  <div class="dm-section">
+    <span class="dm-section-ttl">📈 วิเคราะห์ Supply &amp; Gap รายกลุ่ม</span>
+    <div class="dm-section-line"></div>
+  </div>
+
+  <!-- Charts Row -->
+  <div class="dm-charts">
+    <div class="dm-cc">
+      <div class="dm-cc-title">Supply คาดการณ์ vs Demand (รายกลุ่ม)
+        <span style="font-size:.68rem;color:#94a3b8;font-weight:400">■ Supply  ■ Approved</span>
+      </div>
+      <canvas id="ch-dm-supply" height="220"></canvas>
+    </div>
+    <div class="dm-cc">
+      <div class="dm-cc-title">Gap วิเคราะห์ — อัตราที่ขาด/เกิน (รายกลุ่ม)</div>
+      <canvas id="ch-dm-gap" height="220"></canvas>
+    </div>
+  </div>
+
+  <!-- Section Table -->
+  <div class="dm-section">
+    <span class="dm-section-ttl">📋 ตารางสรุปรายกลุ่ม</span>
+    <div class="dm-section-line"></div>
+  </div>
+
+  <!-- Summary Table -->
+  <div class="dm-tc">
+    <div class="dm-tc-hdr">
+      <div class="dm-tc-ttl">📋 แผนความต้องการอัตรากำลัง รายกลุ่ม</div>
+      <div class="dm-tc-badge" id="dm-tbl-note">คำนวณจากข้อมูลจริง</div>
+    </div>
+    <div style="overflow-x:auto">
+      <table class="dm-tbl">
+        <thead>
+          <tr>
+            <th>กลุ่มงาน</th>
+            <th class="c">ปัจจุบัน</th>
+            <th class="c">เกษียณ 1 ปี</th>
+            <th class="c">เกษียณ 3 ปี</th>
+            <th class="c">เกษียณ 5 ปี</th>
+            <th class="c">Supply คาดการณ์</th>
+            <th class="c">สัดส่วนอนุมัติ</th>
+            <th class="c">Gap</th>
+            <th class="c">สถานะ</th>
+          </tr>
+        </thead>
+        <tbody id="dm-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Alert box -->
+  <div id="dm-alert" style="display:none;margin-bottom:14px;padding:12px 16px;background:#fef3c7;border-left:4px solid #f59e0b;border-radius:8px;font-size:.78rem;color:#92400e"></div>
+
+</div><!-- /view-demand -->
 
 </div><!-- /content -->
 
@@ -1543,7 +1871,7 @@ function populateAllFilters(){
   const groups=[...new Set(allData.map(r=>r.group).filter(Boolean))];
   const ordered=GROUP_ORDER.filter(g=>groups.includes(g));
   groups.forEach(g=>{ if(!ordered.includes(g)) ordered.push(g); });
-  ['f-group','pf-group','pv-group','r2-group','fc-group'].forEach(id=>{
+  ['f-group','pf-group','pv-group','r2-group','fc-group','dm-group'].forEach(id=>{
     const sel=document.getElementById(id); if(!sel) return;
     ordered.forEach(g=>{ const o=document.createElement('option'); o.value=g; o.textContent=g; sel.appendChild(o); });
   });
@@ -1614,6 +1942,7 @@ function applyFilters(){
   if(g||d||p||b) info.textContent=`แสดง ${filtered.length.toLocaleString('th-TH')} จาก ${allData.length.toLocaleString('th-TH')} คน`;
   else info.textContent='';
   renderAll();
+  if(_sumOpen&&_activeTab==='dash') updateSummary('dash');
 }
 
 function resetFilters(){
@@ -1632,7 +1961,7 @@ const APPROVED = { emp: 665, perm: 67 };
 // ============================================================
 // RENDER ALL
 // ============================================================
-function renderAll(){ renderKPIs(); renderCharts(); renderDeptTable(); }
+function renderAll(){ renderKPIs(); renderCharts(); renderDeptTable(); if(_sumOpen&&_activeTab==='dash') updateSummary('dash'); }
 
 function renderKPIs(){
   const cnt={total:0,'ผู้บริหาร':0,'พนักงาน':0,'ลูกจ้างประจำ':0,'ลูกจ้างทั่วไป':0,'ลูกจ้างเฉพาะกิจ':0};
@@ -2091,12 +2420,15 @@ function searchTable(q){
 // PEOPLE TAB
 // ============================================================
 function switchTab(tab){
-  ['dash','people','forecast'].forEach(t=>{
+  ['dash','people','forecast','demand'].forEach(t=>{
     document.getElementById('view-'+t).style.display=t===tab?'':'none';
     document.getElementById('tab-'+t).classList.toggle('on',t===tab);
   });
+  _activeTab=tab;
   if(tab==='people') renderPeopleTable(filtered);
   if(tab==='forecast'){ populateFcGroupFilter(); applyForecastFilters(); }
+  if(tab==='demand'){ populateDmGroupFilter(); renderDemandForecast(); }
+  if(_sumOpen) updateSummary(tab);
 }
 function applyPeopleFilters(){
   const g=document.getElementById('pf-group').value;
@@ -2110,6 +2442,7 @@ function applyPeopleFilters(){
   );
   document.getElementById('pf-info').textContent=`แสดง ${rows.length.toLocaleString('th-TH')} คน`;
   renderPeopleTable(rows);
+  if(_sumOpen&&_activeTab==='people') updateSummary('people');
 }
 function resetPeopleFilters(){
   ['pf-group','pf-pos','pf-band'].forEach(id=>{ const s=document.getElementById(id); if(s) s.value=''; });
@@ -2136,6 +2469,341 @@ function renderPeopleTable(rows){
     tr.innerHTML=`<td colspan="8" style="text-align:center;color:var(--muted);padding:12px;font-size:.78rem">แสดง 500 รายการแรก จากทั้งหมด ${rows.length} คน — ใช้ตัวกรองเพื่อจำกัดผลลัพธ์</td>`;
     tbody.appendChild(tr);
   }
+}
+
+// ============================================================
+// DEMAND FORECAST TAB
+// ============================================================
+// Year range state
+let dmYrStart=null, dmYrEnd=null;
+const DM_BASE_BE=2568; // current year in BE
+const GOV_TYPES=['ผู้บริหาร','พนักงาน','ลูกจ้างประจำ'];
+
+function populateDmGroupFilter(){
+  const sel=document.getElementById('dm-group'); if(!sel) return;
+  const cur=sel.value;
+  sel.innerHTML='<option value="">ทั้งหมด</option>';
+  const groups=GROUP_ORDER.filter(g=>allData.some(r=>r.group===g));
+  groups.forEach(g=>{ const o=document.createElement('option'); o.value=o.textContent=g; sel.appendChild(o); });
+  if(cur) sel.value=cur;
+}
+
+function buildYrGrid(){
+  const grid=document.getElementById('dm-yr-grid'); if(!grid) return;
+  const years=[]; for(let y=DM_BASE_BE;y<=DM_BASE_BE+15;y++) years.push(y);
+  grid.innerHTML=years.map(y=>{
+    let cls='';
+    if(dmYrStart&&dmYrEnd&&y>=dmYrStart&&y<=dmYrEnd) cls='background:#dbeafe;color:#1e40af;border-color:#3b82f6;font-weight:700';
+    else if(y===dmYrStart||y===dmYrEnd) cls='background:#1d4ed8;color:#fff;border-color:#1d4ed8;font-weight:700';
+    else cls='background:#f8fafc;color:#334155;border-color:#e2e8f0';
+    return `<button onclick="dmYrClick(${y})" style="padding:6px 2px;border-radius:7px;border:1.5px solid;
+      font-family:'Sarabun',sans-serif;font-size:.75rem;cursor:pointer;transition:.12s;${cls}">${y}</button>`;
+  }).join('');
+}
+
+function dmYrClick(y){
+  if(!dmYrStart||dmYrEnd){
+    // fresh pick
+    dmYrStart=y; dmYrEnd=null;
+    document.getElementById('dm-yr-hint').textContent=`เริ่ม: ${y} — เลือกปีสิ้นสุด`;
+  } else if(y<dmYrStart){
+    dmYrEnd=dmYrStart; dmYrStart=y;
+    document.getElementById('dm-yr-hint').textContent=`${dmYrStart} – ${dmYrEnd} ✓`;
+  } else {
+    dmYrEnd=y;
+    document.getElementById('dm-yr-hint').textContent=`${dmYrStart} – ${dmYrEnd} ✓`;
+  }
+  buildYrGrid();
+}
+
+function confirmYrRange(){
+  if(!dmYrStart) return;
+  if(!dmYrEnd) dmYrEnd=dmYrStart;
+  document.getElementById('dm-yr-display').textContent=`${dmYrStart} – ${dmYrEnd}`;
+  document.getElementById('dm-yr-picker').style.display='none';
+  renderDemandForecast();
+}
+
+function toggleYrPicker(e){
+  e.stopPropagation();
+  const p=document.getElementById('dm-yr-picker');
+  if(p.style.display==='none'){
+    if(!dmYrStart){ dmYrStart=DM_BASE_BE; dmYrEnd=DM_BASE_BE+4; }
+    buildYrGrid();
+    p.style.display='block';
+  } else { p.style.display='none'; }
+}
+document.addEventListener('click',e=>{
+  const p=document.getElementById('dm-yr-picker');
+  const btn=document.getElementById('dm-yr-btn');
+  if(p&&btn&&!p.contains(e.target)&&!btn.contains(e.target)) p.style.display='none';
+});
+
+function resetDmFilters(){
+  document.getElementById('dm-group').value='';
+  document.getElementById('dm-pos').value='';
+  const db=document.getElementById('dm-band'); if(db) db.value='';
+  dmYrStart=DM_BASE_BE; dmYrEnd=DM_BASE_BE+4;
+  document.getElementById('dm-yr-display').textContent=`${dmYrStart} – ${dmYrEnd}`;
+  renderDemandForecast();
+}
+
+function renderDemandForecast(){
+  // Init year range
+  if(!dmYrStart){ dmYrStart=DM_BASE_BE; dmYrEnd=DM_BASE_BE+4; }
+  if(!dmYrEnd) dmYrEnd=dmYrStart;
+  const yrs=dmYrEnd-dmYrStart+1; // number of years in range
+
+  const gf=document.getElementById('dm-group')?.value||'';
+  const pf=document.getElementById('dm-pos')?.value||'';
+  const bf=document.getElementById('dm-band')?.value||'';
+  const n=v=>v.toLocaleString('th-TH');
+
+  // Determine if a type is "government frame"
+  const isGov=pos=>GOV_TYPES.includes(pos);
+
+  // Build base dataset with type + band filter
+  function filterRows(rows){
+    let r=gf?rows.filter(x=>x.group===gf):rows;
+    if(pf==='gov') r=r.filter(x=>isGov(x.positioning||'พนักงาน'));
+    else if(pf) r=r.filter(x=>(x.positioning||'พนักงาน')===pf);
+    if(bf) r=r.filter(x=>String(x.band)===bf);
+    return r;
+  }
+
+  const base=filterRows(allData);
+
+  // Approved base: only gov types count toward 732
+  const approvedTotal=APPROVED.emp+APPROVED.perm; // 732
+  const govData=allData.filter(r=>isGov(r.positioning||'พนักงาน'));
+  const govFiltered=filterRows(govData);
+  const govTotal=govData.length;
+
+  // Approved for this filter
+  let approvedBase;
+  if(pf==='ลูกจ้างทั่วไป'||pf==='ลูกจ้างเฉพาะกิจ'){
+    approvedBase=null; // no approved frame
+  } else if(pf==='gov'||pf===''){
+    // proportional to gov headcount
+    const govBase=filterRows(govData);
+    approvedBase=gf
+      ?Math.round((govBase.length/Math.max(govTotal,1))*approvedTotal)
+      :approvedTotal;
+  } else {
+    // single gov type: proportional
+    const typeAll=allData.filter(r=>(r.positioning||'พนักงาน')===pf&&isGov(r.positioning||'พนักงาน'));
+    const typeBase=filterRows(typeAll);
+    approvedBase=gf
+      ?Math.round((typeBase.length/Math.max(govTotal,1))*approvedTotal)
+      :Math.round((typeAll.length/Math.max(govTotal,1))*approvedTotal);
+  }
+
+  // Retirement in range (retireCountdown = years until retire from now, 0 = this year)
+  const curTotal=base.length;
+  const ret1=base.filter(r=>r.retireCountdown!==null&&r.retireCountdown>=0&&r.retireCountdown<=0).length;
+  const ret3=base.filter(r=>r.retireCountdown!==null&&r.retireCountdown>=0&&r.retireCountdown<=2).length;
+  const ret5=base.filter(r=>r.retireCountdown!==null&&r.retireCountdown>=0&&r.retireCountdown<=4).length;
+  const retY=base.filter(r=>r.retireCountdown!==null&&r.retireCountdown>=0&&r.retireCountdown<yrs).length;
+  const supplyY=curTotal-retY;
+  const gapY=approvedBase!=null?approvedBase-supplyY:null;
+
+  // Hero stats
+  document.getElementById('dm-stat-cur').textContent=n(curTotal);
+  document.getElementById('dm-stat-ret').textContent=n(retY);
+  document.getElementById('dm-stat-yr').textContent=`${dmYrStart}–${dmYrEnd}`;
+  const gapEl=document.getElementById('dm-stat-gap');
+  if(gapY!=null){
+    gapEl.textContent=(gapY>0?'+':'')+n(gapY);
+    gapEl.style.color=gapY>0?'#fca5a5':'#86efac';
+  } else { gapEl.textContent='N/A'; gapEl.style.color='#94a3b8'; }
+  // Hero tags (dynamic)
+  const th=t=>{ const el=document.getElementById(t[0]); if(el) el.textContent=t[1]; };
+  th(['dm-hero-tag-yr',`ช่วงปี ${dmYrStart}–${dmYrEnd}`]);
+  th(['dm-hero-tag-frame',approvedBase!=null?`กรอบรัฐ ${n(approvedBase)} คน`:'วว.จ้างเอง']);
+  th(['dm-hero-tag-gap',gapY!=null?`Gap ${gapY>0?'+':''}${n(gapY)} คน`:'Gap N/A']);
+
+  // KPI cards
+  document.getElementById('dm-kpi-approved').textContent=approvedBase!=null?n(approvedBase):'N/A (วว.จ้างเอง)';
+  document.getElementById('dm-kpi-cur').textContent=n(curTotal);
+  document.getElementById('dm-kpi-ret').textContent=n(retY);
+  document.getElementById('dm-kpi-ret-lbl').textContent=`ช่วง ${dmYrStart}–${dmYrEnd} (${yrs} ปี)`;
+  const supEl=document.getElementById('dm-kpi-supply');
+  supEl.textContent=n(supplyY);
+  supEl.className='dm-kpi-val'; supEl.style.color='#fca5a5'; // always white/light on dark red bg
+  const needEl=document.getElementById('dm-kpi-need');
+  if(gapY!=null){
+    needEl.textContent=(gapY>0?'+':'')+n(gapY);
+    needEl.style.color=gapY>0?'#fca5a5':'#86efac'; // light on dark purple bg
+    document.getElementById('dm-kpi-need-lbl').textContent=gapY>0?`ต้องสรรหา ${n(gapY)} คน`:'อัตรากำลังเพียงพอ';
+  } else {
+    needEl.textContent='—';
+    needEl.style.color='#fff';
+    document.getElementById('dm-kpi-need-lbl').textContent='ไม่อยู่ในกรอบอัตรารัฐ';
+  }
+  document.getElementById('dm-info').textContent=`ฐานข้อมูล ${n(curTotal)} คน · ${dmYrStart}–${dmYrEnd}`;
+
+  // Per-group data (always show all groups)
+  const activeGroups=GROUP_ORDER.filter(g=>allData.some(r=>r.group===g));
+  const grpData=activeGroups.map(g=>{
+    function fRows(rows){ return filterRows(rows.filter(r=>r.group===g)); }
+    const rows=fRows(allData);
+    const govRows=fRows(allData.filter(r=>isGov(r.positioning||'พนักงาน')));
+    const cur=rows.length;
+    const r1=rows.filter(r=>r.retireCountdown!==null&&r.retireCountdown>=0&&r.retireCountdown<=0).length;
+    const r3=rows.filter(r=>r.retireCountdown!==null&&r.retireCountdown>=0&&r.retireCountdown<=2).length;
+    const r5=rows.filter(r=>r.retireCountdown!==null&&r.retireCountdown>=0&&r.retireCountdown<=4).length;
+    const ry=rows.filter(r=>r.retireCountdown!==null&&r.retireCountdown>=0&&r.retireCountdown<yrs).length;
+    const supply=cur-ry;
+    let approved=null;
+    if(approvedBase!=null){
+      approved=Math.round((govRows.length/Math.max(govTotal,1))*approvedTotal);
+    }
+    const gap=approved!=null?approved-supply:null;
+    return {g,cur,r1,r3,r5,ry,supply,approved,gap};
+  });
+
+  // Charts
+  const dcH=id=>{ if(charts[id]){charts[id].destroy();delete charts[id];} };
+  dcH('dm-supply');
+  const ctxS=document.getElementById('ch-dm-supply');
+  if(ctxS){
+    const showGroups=gf?grpData.filter(d=>d.g===gf):grpData;
+    const ds=[
+      {label:'Supply คาดการณ์',data:showGroups.map(d=>d.supply),
+       backgroundColor:'rgba(59,130,246,.8)',borderRadius:5,borderSkipped:false}
+    ];
+    if(approvedBase!=null){
+      ds.push({label:'อนุมัติ (Demand)',data:showGroups.map(d=>d.approved||0),
+       backgroundColor:'rgba(251,191,36,.75)',borderRadius:5,borderSkipped:false});
+    }
+    // inline label plugin for dm-supply
+    const dmLabelPlugin={id:'dmLbl',afterDatasetsDraw(chart){
+      const ctx=chart.ctx;
+      chart.data.datasets.forEach((ds,i)=>{
+        chart.getDatasetMeta(i).data.forEach((bar,j)=>{
+          const v=ds.data[j]; if(!v) return;
+          const barH=bar.height||0;
+          ctx.save();
+          ctx.font=`bold ${barH>22?'11':'9'}px Sarabun,sans-serif`;
+          ctx.fillStyle=barH>22?'#fff':'rgba(0,0,0,.75)';
+          ctx.textAlign='center'; ctx.textBaseline='middle';
+          if(barH>16) ctx.fillText(v, bar.x, bar.y+barH/2);
+          ctx.restore();
+        });
+      });
+    }};
+    charts['dm-supply']=new Chart(ctxS.getContext('2d'),{
+      type:'bar',data:{labels:showGroups.map(d=>d.g),datasets:ds},
+      plugins:[dmLabelPlugin],
+      options:{responsive:true,maintainAspectRatio:true,
+        plugins:{legend:{position:'bottom',labels:{font:{family:'Sarabun',size:11},boxWidth:12}},
+          tooltip:{callbacks:{label:c=>`${c.dataset.label}: ${c.raw} คน`}}},
+        scales:{x:{grid:{display:false}},y:{beginAtZero:true,ticks:{font:{family:'Sarabun',size:11}}}}}
+    });
+  }
+
+  dcH('dm-gap');
+  const ctxG=document.getElementById('ch-dm-gap');
+  if(ctxG){
+    const showGroups=gf?grpData.filter(d=>d.g===gf):grpData;
+    // inline label plugin for gap chart
+    const dmGapLabelPlugin={id:'dmGapLbl',afterDatasetsDraw(chart){
+      const ctx=chart.ctx;
+      chart.data.datasets.forEach((ds,i)=>{
+        chart.getDatasetMeta(i).data.forEach((bar,j)=>{
+          const v=ds.data[j]; if(v===0||v===undefined) return;
+          const barH=Math.abs(bar.height||0);
+          ctx.save();
+          ctx.font=`bold ${barH>22?'11':'9'}px Sarabun,sans-serif`;
+          ctx.fillStyle=barH>22?'#fff':'rgba(0,0,0,.75)';
+          ctx.textAlign='center'; ctx.textBaseline='middle';
+          if(barH>16) ctx.fillText((v>0?'+':'')+v, bar.x, bar.y+bar.height/2);
+          ctx.restore();
+        });
+      });
+    }};
+    if(approvedBase!=null){
+      const gapVals=showGroups.map(d=>d.gap||0);
+      charts['dm-gap']=new Chart(ctxG.getContext('2d'),{
+        type:'bar',plugins:[dmGapLabelPlugin],
+        data:{labels:showGroups.map(d=>d.g),
+          datasets:[{label:'Gap (อนุมัติ − Supply)',data:gapVals,
+            backgroundColor:gapVals.map(v=>v>0?'rgba(239,68,68,.8)':'rgba(16,185,129,.8)'),
+            borderRadius:5,borderSkipped:false}]},
+        options:{responsive:true,maintainAspectRatio:true,
+          plugins:{legend:{display:false},
+            tooltip:{callbacks:{label:c=>`Gap: ${c.raw>0?'+':''}${c.raw} คน`}}},
+          scales:{x:{grid:{display:false}},y:{ticks:{font:{family:'Sarabun',size:11}},grid:{color:'rgba(0,0,0,.06)'}}}}
+      });
+    } else {
+      const retVals=showGroups.map(d=>d.ry);
+      const dmRetPlugin={id:'dmRetLbl',afterDatasetsDraw(chart){
+        const ctx=chart.ctx;
+        chart.getDatasetMeta(0).data.forEach((bar,j)=>{
+          const v=retVals[j]; if(!v) return;
+          const barH=bar.height||0; ctx.save();
+          ctx.font=`bold ${barH>22?'11':'9'}px Sarabun,sans-serif`;
+          ctx.fillStyle='#fff'; ctx.textAlign='center'; ctx.textBaseline='middle';
+          if(barH>16) ctx.fillText(v, bar.x, bar.y+barH/2);
+          ctx.restore();
+        });
+      }};
+      charts['dm-gap']=new Chart(ctxG.getContext('2d'),{
+        type:'bar',plugins:[dmRetPlugin],
+        data:{labels:showGroups.map(d=>d.g),
+          datasets:[{label:`เกษียณ ${dmYrStart}–${dmYrEnd}`,data:retVals,
+            backgroundColor:'rgba(245,158,11,.8)',borderRadius:5,borderSkipped:false}]},
+        options:{responsive:true,maintainAspectRatio:true,
+          plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>`เกษียณ: ${c.raw} คน`}}},
+          scales:{x:{grid:{display:false}},y:{beginAtZero:true,ticks:{font:{family:'Sarabun',size:11}}}}}
+      });
+    }
+  }
+
+  // Table
+  const tbody=document.getElementById('dm-tbody'); if(!tbody) return;
+  const showRows=gf?grpData.filter(d=>d.g===gf):grpData;
+  let totCur=0,totR1=0,totR3=0,totR5=0,totSupply=0,totApproved=0,totGap=0;
+  tbody.innerHTML=showRows.map(d=>{
+    totCur+=d.cur; totR1+=d.r1; totR3+=d.r3; totR5+=d.r5; totSupply+=d.supply;
+    if(d.approved!=null){ totApproved+=d.approved; totGap+=d.gap; }
+    const pct=d.approved?Math.round((d.supply/d.approved)*100):100;
+    const clr=d.gap!=null&&d.gap>10?'red':d.gap!=null&&d.gap>0?'amber':'green';
+    const badge=d.gap==null?'ไม่มีกรอบ':d.gap>10?'วิกฤต':d.gap>0?'ขาดแคลน':'เพียงพอ';
+    const badgeCls=d.gap==null?'blue':clr;
+    return `<tr>
+      <td><strong>${d.g}</strong></td>
+      <td class="c">${n(d.cur)}</td>
+      <td class="c">${n(d.r1)}</td>
+      <td class="c">${n(d.r3)}</td>
+      <td class="c">${n(d.r5)}</td>
+      <td class="c"><div>${n(d.supply)}</div>
+        <div class="dm-bar-wrap"><div class="dm-bar-fill ${pct<80?'red':pct<95?'amber':''}" style="width:${Math.min(pct,100)}%"></div></div></td>
+      <td class="c">${d.approved!=null?n(d.approved):'—'}</td>
+      <td class="c" style="font-weight:700;color:${d.gap==null?'#94a3b8':d.gap>0?'#dc2626':'#059669'}">${d.gap!=null?(d.gap>0?'+':'')+n(d.gap):'—'}</td>
+      <td class="c"><span class="dm-badge ${badgeCls}">${badge}</span></td>
+    </tr>`;
+  }).join('');
+  const totPct=totApproved?Math.round((totSupply/totApproved)*100):100;
+  tbody.innerHTML+=`<tr>
+    <td>รวมทั้งหมด</td>
+    <td class="c">${n(totCur)}</td><td class="c">${n(totR1)}</td>
+    <td class="c">${n(totR3)}</td><td class="c">${n(totR5)}</td>
+    <td class="c"><div>${n(totSupply)}</div>
+      <div class="dm-bar-wrap"><div class="dm-bar-fill ${totPct<80?'red':totPct<95?'amber':''}" style="width:${Math.min(totPct,100)}%"></div></div></td>
+    <td class="c">${totApproved?n(totApproved):'—'}</td>
+    <td class="c" style="color:${totGap>0?'#dc2626':'#059669'}">${totApproved?(totGap>0?'+':'')+n(totGap):'—'}</td>
+    <td class="c">—</td>
+  </tr>`;
+
+  // Alert
+  const alertEl=document.getElementById('dm-alert');
+  const criticals=showRows.filter(d=>d.gap!=null&&d.gap>10).map(d=>d.g);
+  if(criticals.length){
+    alertEl.style.display='block';
+    alertEl.textContent=`⚠️ กลุ่มที่มีอัตราขาดแคลนสูง (Gap > 10): ${criticals.join(', ')} — ควรเร่งแผนสรรหาบุคลากรในช่วง ${dmYrStart}–${dmYrEnd}`;
+  } else { alertEl.style.display='none'; }
+  if(_sumOpen&&_activeTab==='demand') updateSummary('demand');
 }
 
 // ============================================================
@@ -3071,6 +3739,262 @@ function doLogout(){
 }
 
 // ============================================================
+// SUMMARY PANEL
+// ============================================================
+let _sumOpen=false, _activeTab='dash';
+function toggleSummary(){
+  const p=document.getElementById('summary-panel');
+  const b=document.getElementById('sum-btn');
+  _sumOpen=!_sumOpen;
+  p.classList.toggle('open',_sumOpen);
+  b.classList.toggle('active',_sumOpen);
+  if(_sumOpen) updateSummary(_activeTab);
+}
+function updateSummary(tab){
+  const badge=document.getElementById('sum-badge');
+  const text=document.getElementById('sum-text');
+  if(!badge||!text) return;
+  const tabNames={dash:'📊 ภาพรวม',forecast:'📅 แผนอัตรากำลัง',demand:'📈 Demand Forecast',people:'👤 รายชื่อ'};
+  badge.textContent=tabNames[tab]||tab;
+  text.textContent=generateSummary(tab);
+}
+function generateSummary(tab){
+  const n=v=>(+v||0).toLocaleString('th-TH');
+  const el=id=>document.getElementById(id);
+  // top entry in an object {key:count}
+  const topOf=obj=>{const e=Object.entries(obj).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]);return e[0]||null;};
+  const topNOf=(obj,k)=>Object.entries(obj).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]).slice(0,k);
+  try{
+    /* ── DASHBOARD 1: ภาพรวม ── */
+    if(tab==='dash'){
+      const gf=el('f-group')?.value||'';
+      const df=el('f-dept')?.value||'';
+      const pf=el('f-pos')?.value||'';
+      const bf=el('f-band')?.value||'';
+      const parts=[gf?`กลุ่ม ${gf}`:'',df?`สังกัด ${df}`:'',pf||'',bf?`Band ${bf}`:''].filter(Boolean);
+      const scope=parts.length?parts.join(' · '):'วว. ทั้งหมด';
+
+      const base=filtered||allData;
+      const total=base.length;
+      const emp=base.filter(r=>r.positioning==='พนักงาน').length;
+      const exec=base.filter(r=>r.positioning==='ผู้บริหาร').length;
+      const perm=base.filter(r=>r.positioning==='ลูกจ้างประจำ').length;
+      const gen=base.filter(r=>r.positioning==='ลูกจ้างทั่วไป').length;
+      const spec=base.filter(r=>r.positioning==='ลูกจ้างเฉพาะกิจ').length;
+      const male=base.filter(r=>r.prefix==='นาย').length;
+      const mPct=total?Math.round(male/total*100):0;
+
+      // Gap (proportional when group-filtered)
+      const govBase=base.filter(r=>GOV_TYPES.includes(r.positioning||'พนักงาน'));
+      const govAll=allData.filter(r=>GOV_TYPES.includes(r.positioning||'พนักงาน'));
+      const approvedTotal=APPROVED.emp+APPROVED.perm;
+      const approvedScope=gf?Math.round((govBase.length/Math.max(govAll.length,1))*approvedTotal):approvedTotal;
+      const gap=approvedScope-govBase.length;
+      const gapTxt=gap>0?`ยังว่าง ${n(gap)} อัตราในกรอบรัฐ (จาก ${n(approvedScope)})`:(gap<0?`เกินกรอบ ${n(-gap)} คน`:'บรรจุครบกรอบรัฐแล้ว');
+
+      // group bar: top group (raw data)
+      const gc1={};
+      base.forEach(r=>{ if(r.group) gc1[r.group]=(gc1[r.group]||0)+1; });
+      const topGrp1=topOf(gc1);
+      const topGrpTxt=(!gf&&topGrp1)?`กลุ่มที่มีคนมากสุด: ${topGrp1[0]} (${n(topGrp1[1])} คน)`:'';
+
+      // band bar: dominant band (raw data)
+      const bc1={1:0,2:0,3:0,4:0};
+      base.forEach(r=>{ if(r.band&&bc1[r.band]!==undefined) bc1[r.band]++; });
+      const topBand1=topOf(bc1);
+      const topBandTxt=topBand1?`Band ${topBand1[0]} มีคนมากสุด (${n(topBand1[1])} คน)`:'';
+
+      // edu bar: dominant education (raw data)
+      const ec1={};
+      base.forEach(r=>{ const e=normEduDash(r.edu); ec1[e]=(ec1[e]||0)+1; });
+      const topEdu1=topOf(ec1);
+      const topEduTxt=topEdu1?`วุฒิส่วนใหญ่: ${topEdu1[0]} (${n(topEdu1[1])} คน)`:'';
+
+      const row2=[topGrpTxt,topBandTxt,topEduTxt].filter(Boolean).join(' · ');
+      return `📊 ภาพรวม [${scope}]\n`+
+        `บุคลากร ${n(total)} คน — พนักงาน ${n(emp)} · ผู้บริหาร ${n(exec)} · ลจ.ประจำ ${n(perm)} · ลจ.ทั่วไป ${n(gen)} · ลจ.เฉพาะกิจ ${n(spec)} · ชาย ${mPct}%/หญิง ${100-mPct}%\n`+
+        `${row2?row2+' · ':''}${gapTxt}`;
+    }
+
+    /* ── DASHBOARD 2: แผนอัตรากำลัง ── */
+    if(tab==='forecast'){
+      const gf=el('fc-group')?.value||'';
+      const pf=el('fc-pos')?.value||'';
+      const bf=el('fc-band')?.value||'';
+      const yrs=parseInt(el('fc-yrs')?.value||'10');
+      const parts=[gf?`กลุ่ม ${gf}`:'',pf||'',bf?`Band ${bf}`:''].filter(Boolean);
+      const scope=parts.length?parts.join(' · '):'วว. ทั้งหมด';
+
+      const base=allData.filter(r=>
+        (!gf||r.group===gf)&&
+        (!pf||(r.positioning||'พนักงาน')===pf)&&
+        (!bf||String(r.band)===bf));
+      const total=base.length;
+      const k1=base.filter(r=>r.retireCountdown!==null&&r.retireCountdown>=0&&r.retireCountdown<=0).length;
+      const k3=base.filter(r=>r.retireCountdown!==null&&r.retireCountdown>=0&&r.retireCountdown<=2).length;
+      const k5=base.filter(r=>r.retireCountdown!==null&&r.retireCountdown>=0&&r.retireCountdown<=4).length;
+      const k10=base.filter(r=>r.retireCountdown!==null&&r.retireCountdown>=0&&r.retireCountdown<yrs).length;
+      const ages=base.map(r=>r.ageYrs).filter(v=>v&&!isNaN(v));
+      const avgAge=ages.length?Math.round(ages.reduce((a,b)=>a+b,0)/ages.length):null;
+      const kPct=total?Math.round(k10/total*100):0;
+      const now_fc=new Date(); const curYrBE_fc=now_fc.getFullYear()+543;
+
+      // retiring pool for chart insights (raw data — no Chart.js)
+      const retiring_fc=base.filter(r=>r.retireCountdown!==null&&r.retireCountdown>=0&&r.retireCountdown<yrs);
+
+      // retireyr chart: peak year
+      const yrCnt_fc={};
+      retiring_fc.forEach(r=>{ const y=r.retireYearBE||(curYrBE_fc+(r.retireCountdown||0)); if(y) yrCnt_fc[y]=(yrCnt_fc[y]||0)+1; });
+      const peakYr_fc=topOf(yrCnt_fc);
+      const peakYrTxt=peakYr_fc?`ปีที่มีเกษียณมากสุด: พ.ศ. ${peakYr_fc[0]} (${n(peakYr_fc[1])} คน)`:'';
+
+      // retiregrp chart: riskiest group
+      const retGC_fc={};
+      retiring_fc.forEach(r=>{ if(r.group) retGC_fc[r.group]=(retGC_fc[r.group]||0)+1; });
+      const topRetGrp=topOf(retGC_fc);
+      const riskGrpTxt=(!gf&&topRetGrp)?`กลุ่มเสี่ยงสูงสุด: ${topRetGrp[0]} (${n(topRetGrp[1])} คน)`:'';
+
+      // retireband chart: riskiest band
+      const retBC_fc={};
+      retiring_fc.forEach(r=>{ if(r.band) retBC_fc['Band '+r.band]=(retBC_fc['Band '+r.band]||0)+1; });
+      const topRetBand=topOf(retBC_fc);
+      const riskBandTxt=topRetBand?`${topRetBand[0]} มีเกษียณมากสุด (${n(topRetBand[1])} คน)`:'';
+
+      // retireedu pie: education of retirees
+      const retEC_fc={};
+      retiring_fc.forEach(r=>{ const e=normEduDash(r.edu); retEC_fc[e]=(retEC_fc[e]||0)+1; });
+      const topRetEdu=topOf(retEC_fc);
+      const eduTxt=topRetEdu?`วุฒิส่วนใหญ่ที่เกษียณ: ${topRetEdu[0]} (${n(topRetEdu[1])} คน)`:'';
+
+      const row3_fc=[peakYrTxt,riskGrpTxt,riskBandTxt,eduTxt].filter(Boolean).join(' · ');
+      return `📅 แผนอัตรากำลัง [${scope}]\n`+
+        `บุคลากร ${n(total)} คน · อายุเฉลี่ย ${avgAge??'—'} ปี · เกษียณปีนี้ ${n(k1)} · 3 ปี ${n(k3)} · 5 ปี ${n(k5)} · ${yrs} ปี ${n(k10)} คน (${kPct}%)\n`+
+        `${row3_fc||'ไม่มีข้อมูลเกษียณในช่วงนี้'}`;
+    }
+
+    /* ── DASHBOARD 3: Demand Forecast ── */
+    if(tab==='demand'){
+      const gf=el('dm-group')?.value||'';
+      const pf=el('dm-pos')?.value||'';
+      const bf=el('dm-band')?.value||'';
+      const sy=dmYrStart||DM_BASE_BE;
+      const ey=dmYrEnd||(DM_BASE_BE+4);
+      const yrs=ey-sy+1;
+      const parts=[gf?`กลุ่ม ${gf}`:'',pf||'',bf?`Band ${bf}`:''].filter(Boolean);
+      const scope=parts.length?parts.join(' · '):'วว. ทั้งหมด';
+
+      // Re-compute exactly like renderDemandForecast
+      const isGovF=pos=>GOV_TYPES.includes(pos);
+      const filterRowsF=rows=>{
+        let r=gf?rows.filter(x=>x.group===gf):rows;
+        if(pf==='gov') r=r.filter(x=>isGovF(x.positioning||'พนักงาน'));
+        else if(pf) r=r.filter(x=>(x.positioning||'พนักงาน')===pf);
+        if(bf) r=r.filter(x=>String(x.band)===bf);
+        return r;
+      };
+      const base=filterRowsF(allData);
+      const approvedTotal=APPROVED.emp+APPROVED.perm;
+      const govAll=allData.filter(r=>isGovF(r.positioning||'พนักงาน'));
+      const govFiltered=filterRowsF(govAll);
+      let approvedBase;
+      if(pf==='ลูกจ้างทั่วไป'||pf==='ลูกจ้างเฉพาะกิจ') approvedBase=null;
+      else approvedBase=gf
+        ?Math.round((govFiltered.length/Math.max(govAll.length,1))*approvedTotal)
+        :approvedTotal;
+
+      const curTotal=base.length;
+      const retY=base.filter(r=>r.retireCountdown!==null&&r.retireCountdown>=0&&r.retireCountdown<yrs).length;
+      const supplyY=curTotal-retY;
+      const gapY=approvedBase!=null?approvedBase-supplyY:null;
+
+      const frameTxt=approvedBase!=null?`กรอบอนุมัติ ${n(approvedBase)} อัตรา`:'ไม่อยู่ในกรอบรัฐ (วว.จ้างเอง)';
+      const gapResultTxt=gapY!=null?(gapY>0?`ขาดแคลน ${n(gapY)} คน`:`เพียงพอ (เกิน ${n(-gapY)} คน)`):'N/A';
+
+      // dm-supply & dm-gap charts: compute per-group from raw data (no Chart.js)
+      let retGrpTxt='', worstGrpTxt='';
+      if(!gf){
+        const isGovF2=pos=>GOV_TYPES.includes(pos);
+        const filterR2=rows=>{
+          if(pf==='gov') rows=rows.filter(x=>isGovF2(x.positioning||'พนักงาน'));
+          else if(pf) rows=rows.filter(x=>(x.positioning||'พนักงาน')===pf);
+          if(bf) rows=rows.filter(x=>String(x.band)===bf);
+          return rows;
+        };
+        const govAll2=allData.filter(r=>isGovF2(r.positioning||'พนักงาน'));
+        const apprTotal2=APPROVED.emp+APPROVED.perm;
+        const activeGroups2=GROUP_ORDER.filter(g=>allData.some(r=>r.group===g));
+        const grpRows2=activeGroups2.map(g=>{
+          const gr=filterR2(allData.filter(r=>r.group===g));
+          const govGr=filterR2(allData.filter(r=>r.group===g&&isGovF2(r.positioning||'พนักงาน')));
+          const ry=gr.filter(r=>r.retireCountdown!==null&&r.retireCountdown>=0&&r.retireCountdown<yrs).length;
+          const sup=gr.length-ry;
+          const appr=approvedBase!=null?Math.round((govGr.length/Math.max(govAll2.length,1))*apprTotal2):null;
+          return {g,ry,sup,gp:appr!=null?appr-sup:null};
+        });
+        // supply chart insight: who retires most
+        const topRet2=[...grpRows2].sort((a,b)=>b.ry-a.ry)[0];
+        if(topRet2&&topRet2.ry>0) retGrpTxt=`กลุ่มที่เกษียณมากสุด: ${topRet2.g} (${n(topRet2.ry)} คน)`;
+        // gap chart insight: worst shortfall group
+        if(approvedBase!=null){
+          const worst2=[...grpRows2].filter(d=>d.gp>0).sort((a,b)=>b.gp-a.gp)[0];
+          if(worst2) worstGrpTxt=`กลุ่มขาดแคลนมากสุด: ${worst2.g} (${n(worst2.gp)} คน)`;
+        }
+      }
+
+      const row3_dm=[retGrpTxt,worstGrpTxt].filter(Boolean).join(' · ');
+      return `📈 Demand Forecast [${scope}]\n`+
+        `${frameTxt} · ปัจจุบัน ${n(curTotal)} คน · เกษียณ ${sy}–${ey}: ${n(retY)} คน · Supply คาดการณ์ ${n(supplyY)} คน · ${gapResultTxt}\n`+
+        `${row3_dm||'วิเคราะห์เฉพาะกลุ่มงาน: ใช้ตัวกรองด้านบนเพื่อดูรายละเอียด'}`;
+    }
+
+    /* ── DASHBOARD 4: รายชื่อบุคลากร ── */
+    if(tab==='people'){
+      const gf=el('pf-group')?.value||'';
+      const pf=el('pf-pos')?.value||'';
+      const bf=el('pf-band')?.value||'';
+      const sch=el('pf-name')?.value||'';
+      const parts=[gf?`กลุ่ม ${gf}`:'',pf||'',bf?`Band ${bf}`:'',sch?`"${sch}"`:''].filter(Boolean);
+      const scope=parts.length?parts.join(' · '):'ทั้งหมด';
+
+      // Re-filter same logic as applyPeopleFilters
+      const rows=allData.filter(r=>{
+        if(gf&&r.group!==gf) return false;
+        if(pf&&(r.positioning||'พนักงาน')!==pf) return false;
+        if(bf&&String(r.band)!==bf) return false;
+        if(sch){
+          const q=sch.toLowerCase();
+          const nm=((r.prefix||'')+' '+(r.name||'')).toLowerCase();
+          if(!nm.includes(q)&&!(r.deptName||'').toLowerCase().includes(q)) return false;
+        }
+        return true;
+      });
+      const total=rows.length;
+      const male=rows.filter(r=>r.prefix==='นาย').length;
+      const mPct=total?Math.round(male/total*100):0;
+
+      // position breakdown (top 3)
+      const pc_p={};
+      rows.forEach(r=>{ const p=r.positioning||'พนักงาน'; pc_p[p]=(pc_p[p]||0)+1; });
+      const posBreak=topNOf(pc_p,3).map(([k,v])=>`${k} ${n(v)} คน`).join(' · ');
+
+      // group breakdown (top 3 when unfiltered)
+      let grpBreak='';
+      if(!gf){
+        const gc_p={};
+        rows.forEach(r=>{ if(r.group) gc_p[r.group]=(gc_p[r.group]||0)+1; });
+        grpBreak=topNOf(gc_p,3).map(([k,v])=>`${k} ${n(v)} คน`).join(' · ');
+      }
+
+      const capNote=total>500?` (แสดง 500 จาก ${n(total)} คน)`:'';
+      return `👤 รายชื่อบุคลากร [${scope}]\n`+
+        `แสดง ${n(Math.min(total,500))} คน${capNote} · ชาย ${mPct}% / หญิง ${100-mPct}%\n`+
+        `${posBreak}${grpBreak?' | กลุ่ม: '+grpBreak:''}`;
+    }
+  }catch(e){ return `ไม่สามารถสร้างสรุปได้: ${e.message}`; }
+  return '';
+}
+
+// ============================================================
 // FORECAST TAB — FILTERS & KPIs
 // ============================================================
 function populateFcGroupFilter(){
@@ -3099,6 +4023,7 @@ function applyForecastFilters(){
   renderRetireBandChart(base,pf,yrs);
   renderRetireEduChart(base,pf,yrs);
   renderForecastTable(yrs);
+  if(_sumOpen&&_activeTab==='forecast') updateSummary('forecast');
 }
 
 function resetForecastFilters(){
@@ -3126,6 +4051,11 @@ function renderForecastKPIs(base,yrs){
   sy(['fc-hero-1yr',k1]);
   sy(['fc-hero-3yr',k3]);
   sy(['fc-hero-10yr',k10]);
+  // update hero tags
+  const n=v=>v.toLocaleString('th-TH');
+  const tt=document.getElementById('fc-tag-total'); if(tt) tt.textContent=`บุคลากร ${n(base.length)} คน`;
+  const t5=document.getElementById('fc-tag-retire5'); if(t5) t5.textContent=`เกษียณ 5 ปี ${n(k5)} คน`;
+  const ta=document.getElementById('fc-tag-avg'); if(ta) ta.textContent=`อายุเฉลี่ย ${kavg!==null?kavg.toFixed(1):'—'} ปี`;
 }
 
 // ============================================================
