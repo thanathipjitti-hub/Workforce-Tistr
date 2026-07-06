@@ -760,6 +760,13 @@ body{background:linear-gradient(160deg,#eaecf5 0%,#f0f2f8 60%,#e8edf6 100%);min-
 .ms-divider{border-top:1px solid var(--bdr);margin:4px 0;padding:2px 13px 0;font-size:.7rem;color:var(--muted);font-family:'Sarabun',sans-serif;line-height:1.4}
 .ms-badge{background:var(--accent);color:#fff;font-size:.65rem;font-weight:700;border-radius:10px;
   padding:1px 6px;margin-left:4px;vertical-align:middle}
+/* Period filter bar */
+.period-bar{display:flex;align-items:center;gap:10px;padding:7px 24px;background:var(--surface);
+  border-bottom:1px solid var(--bdr);flex-wrap:wrap}
+.period-bar.hidden{display:none}
+.period-tag{background:var(--gold,.#f59e0b);color:#fff;font-size:.72rem;font-weight:700;
+  border-radius:20px;padding:2px 10px;display:none}
+.period-tag.visible{display:inline-block}
 /* TTS button */
 .btn-tts{background:#7c3aed;color:#fff;border:none;border-radius:8px;padding:7px 14px;
   font-family:'Sarabun',sans-serif;font-size:.82rem;font-weight:600;cursor:pointer;
@@ -1064,6 +1071,17 @@ body{background:linear-gradient(160deg,#eaecf5 0%,#f0f2f8 60%,#e8edf6 100%);min-
   <button class="sum-close" onclick="toggleSummary()">✕</button>
 </div>
 
+<div id="period-bar" class="period-bar hidden">
+  <span class="fl" style="font-size:.78rem;font-weight:600;color:var(--muted)">📅 ช่วงเวลา</span>
+  <select class="fsel" id="g-year" onchange="applyPeriodFilter()" style="min-width:100px">
+    <option value="">ทุกปี</option>
+  </select>
+  <select class="fsel" id="g-month" onchange="applyPeriodFilter()" style="min-width:120px">
+    <option value="">ทุกเดือน</option>
+  </select>
+  <button class="btn btn-sm" onclick="clearPeriod()" style="font-size:.75rem;padding:4px 10px">✕ ล้าง</button>
+  <span id="period-tag" class="period-tag"></span>
+</div>
 <div id="loading"><div class="spin"></div><div style="font-size:.9rem">กำลังโหลดข้อมูลจาก Google Sheets...</div></div>
 
 <div id="content">
@@ -1766,7 +1784,10 @@ const L2_SET      = new Set(Object.values(PARENT_MAP));
 // L2 units with no L3 children (standalone sections/centres)
 const L2_EXPLICIT = new Set(['สตส.','ศนอ.','ศนส.','ศคช.','ศนว.','ศนย.']);
 
-let allData=[], filtered=[], charts={}, pendingResolve=null, _todayDateStr='';
+let allData=[], fullData=[], filtered=[], charts={}, pendingResolve=null, _todayDateStr='';
+let _selYear=null, _selMonth=null;
+const THAI_MONTHS=['','มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
+const THAI_MONTHS_S=['','ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
 
 // ============================================================
 // GVIZ LOADER
@@ -1820,12 +1841,17 @@ function onDataLoad(resp){
     sb:         g(r,'SB'),           deptCode:    normCode(g(r,'สังกัด')),
     deptName:   g(r,'สังกัดหน่วยงาน'), group:    g(r,'กลุ่มงาน'),
     code:       g(r,'รหัส'),         edu:         g(r,'ระดับการศึกษา'),
+    gender:     (v=>v==='ชาย'?'M':v==='หญิง'?'F':null)(g(r,'เพศ')),
     retireDate: g(r,'วันเกษียณอายุ'),
     retireYearBE: parseRetireYearBE(g(r,'วันเกษียณอายุ')),
     retireCountdown: parseCountdownYrs(g(r,'นับถอยหลัง (ปีเกษียณ)')),
     ageYrs:     parseAgeYrs(g(r,'อายุ')),
+    yearBE:     (v=>v?parseInt(v):null)(g(r,'ปี พ.ศ.')),
+    monthNum:   (v=>v?parseInt(v):null)(g(r,'เดือน')),
   })).filter(r=>r.name&&r.name.trim());
 
+  fullData=[...allData];
+  populatePeriodFilter();
   filtered=[...allData];
   populateAllFilters();
   // Dashboard 3: default ประเภท to กรอบรัฐ
@@ -1852,8 +1878,74 @@ function buildPrintPageHeader(){
       </div>
     </div>
     <div class="phdr-title">ตารางสรุปข้อมูลอัตรากำลัง</div>
-    <div class="phdr-date">ข้อมูล ณ วันที่ ${_todayDateStr}</div>
+    <div class="phdr-date">${getPeriodStr()?`ข้อมูล ณ ${getPeriodStr()}`:`ข้อมูล ณ วันที่ ${_todayDateStr}`}</div>
   </div>`;
+}
+
+// ============================================================
+// PERIOD FILTER (ปี พ.ศ. + เดือน — global filter on top of allData)
+// ============================================================
+function getPeriodStr(short=false){
+  const mn=short?THAI_MONTHS_S:THAI_MONTHS;
+  if(!_selYear&&!_selMonth) return null;
+  const m=_selMonth?mn[_selMonth]||'':'';
+  const y=_selYear?`พ.ศ. ${_selYear}`:'';
+  if(m&&y) return `เดือน${m} ${y}`;
+  if(m) return `เดือน${m}`;
+  return y;
+}
+
+function populatePeriodFilter(){
+  const bar=document.getElementById('period-bar');
+  const yrs=[...new Set(fullData.map(r=>r.yearBE).filter(Boolean))].sort();
+  const mths=[...new Set(fullData.map(r=>r.monthNum).filter(Boolean))].sort((a,b)=>a-b);
+  if(!yrs.length&&!mths.length){ if(bar) bar.classList.add('hidden'); return; }
+  // Build year options
+  const ySel=document.getElementById('g-year');
+  if(ySel){
+    const cur=ySel.value;
+    ySel.innerHTML='<option value="">ทุกปี</option>'+yrs.map(y=>`<option value="${y}">${y}</option>`).join('');
+    if(yrs.includes(parseInt(cur))) ySel.value=cur;
+  }
+  // Build month options
+  const mSel=document.getElementById('g-month');
+  if(mSel){
+    const cur=mSel.value;
+    mSel.innerHTML='<option value="">ทุกเดือน</option>'+mths.map(m=>`<option value="${m}">${THAI_MONTHS[m]||m}</option>`).join('');
+    if(mths.includes(parseInt(cur))) mSel.value=cur;
+  }
+  if(bar) bar.classList.remove('hidden');
+}
+
+function applyPeriodFilter(){
+  const y=parseInt(document.getElementById('g-year')?.value)||null;
+  const m=parseInt(document.getElementById('g-month')?.value)||null;
+  _selYear=y; _selMonth=m;
+  allData=fullData.filter(r=>{
+    if(y&&r.yearBE!==y) return false;
+    if(m&&r.monthNum!==m) return false;
+    return true;
+  });
+  // Update tag
+  const tag=document.getElementById('period-tag');
+  const ps=getPeriodStr(true);
+  if(tag){ tag.textContent=ps||''; tag.classList.toggle('visible',!!ps); }
+  // Update hero date tag
+  const dtag=document.getElementById('dash-hero-updated');
+  if(dtag) dtag.textContent=ps?`ข้อมูล ณ ${ps}`:`ข้อมูล ณ ${new Date().toLocaleDateString('th-TH',{day:'numeric',month:'long',year:'numeric'})}`;
+  // Re-populate inner filters and re-render
+  filtered=[...allData];
+  populateAllFilters();
+  renderAll();
+  if(_sumOpen) updateSummary(_activeTab);
+}
+
+function clearPeriod(){
+  const ySel=document.getElementById('g-year');
+  const mSel=document.getElementById('g-month');
+  if(ySel) ySel.value='';
+  if(mSel) mSel.value='';
+  applyPeriodFilter();
 }
 
 // ============================================================
@@ -2165,7 +2257,7 @@ function renderKPIs(){
   se('dash-stat-support',n(support));
   se('dash-stat-vacant',n(totalVacant));
   const dtag=document.getElementById('dash-hero-updated');
-  if(dtag){const now=new Date();dtag.textContent='ข้อมูล ณ '+now.toLocaleDateString('th-TH',{day:'numeric',month:'long',year:'numeric'});}
+  if(dtag){ const ps=getPeriodStr(true); dtag.textContent=ps?`ข้อมูล ณ ${ps}`:'ข้อมูล ณ '+new Date().toLocaleDateString('th-TH',{day:'numeric',month:'long',year:'numeric'}); }
 }
 
 // ============================================================
@@ -3016,12 +3108,15 @@ function r2EduGroup(e){
   if(e.includes('ตรี')) return 'ป.ตรี';
   return 'ต่ำกว่าป.ตรี';
 }
-function r2Gender(prefix){
-  const p=(prefix||'').trim(); return p==='นาย'?'M':'F';
+function r2Gender(row){
+  // ใช้คอลัมน์ เพศ ก่อน ถ้าไม่มีค่อย fallback จากคำนำหน้า
+  if(row.gender==='M') return 'M';
+  if(row.gender==='F') return 'F';
+  return (row.prefix||'').trim()==='นาย'?'M':'F';
 }
 function r2cnt(rows,filterFn){
   const r={M:0,F:0,tot:0};
-  rows.filter(filterFn).forEach(d=>{ const g=r2Gender(d.prefix); r[g]=(r[g]||0)+1; r.tot++; });
+  rows.filter(filterFn).forEach(d=>{ const g=r2Gender(d); r[g]=(r[g]||0)+1; r.tot++; });
   return r;
 }
 function r2z(n){ return n===0?`<td class="rz">—</td>`:`<td>${n}</td>`; }
@@ -3063,10 +3158,12 @@ function renderFormalReport(){
   // Dynamic columns: if group filter active → show only that group; else show all
   const activeGroups = grpF ? [grpF] : R2_GROUPS;
 
-  const asOf = (()=>{
+  const _ps=getPeriodStr();
+  const asOf = _ps||((()=>{
     try{ return new Intl.DateTimeFormat('th-TH',{day:'numeric',month:'long',year:'numeric',calendar:'buddhist'}).format(new Date()); }
     catch(e){ return new Date().toLocaleDateString('th-TH'); }
-  })();
+  })());
+  const asOfLabel=_ps?`ณ ${_ps}`:`ณ วันที่ ${asOf}`;
   const filterNote = grpF ? ` — กลุ่ม ${grpF}${dptF?' / '+dptF:''}` : (dptF?' — '+dptF:'');
 
   const totB=data.filter(d=>d.positioning==='ผู้บริหาร').length;
@@ -3081,10 +3178,10 @@ function renderFormalReport(){
     <div class="p2-org-th" style="text-align:center">สถาบันวิจัยวิทยาศาสตร์และเทคโนโลยีแห่งประเทศไทย (วว.)</div>
     <div class="p2-org-en" style="text-align:center">Thailand Institute of Scientific and Technological Research (TISTR)</div>
     <div class="p2-title">สรุปจำนวนพนักงานและลูกจ้าง${filterNote}</div>
-    <div class="p2-date">ข้อมูล ณ วันที่ ${asOf}</div>
+    <div class="p2-date">ข้อมูล ${asOfLabel}</div>
   </div>`;
 
-  const pf=(n)=>`<div class="p2-pf"><span>วว. — รายงานอัตรากำลัง ณ วันที่ ${asOf}</span><span>หน้า ${n}</span></div>`;
+  const pf=(n)=>`<div class="p2-pf"><span>วว. — รายงานอัตรากำลัง ${asOfLabel}</span><span>หน้า ${n}</span></div>`;
 
   const krow=`<div class="p2-krow">
     ${totB>0?`<div class="p2-kbox" style="border-top-color:#0F2347"><div class="p2-knum" style="color:#0F2347">${totB}</div><div class="p2-klbl">ผู้บริหาร</div></div>`:''}
@@ -3556,8 +3653,8 @@ document.addEventListener('keydown',e=>{ if(e.key==='Escape') closePplModal(); }
 function renderGenderChart(){
   dc('gender');
   const groups=GROUP_ORDER.filter(g=>filtered.some(r=>r.group===g));
-  const mCnt=groups.map(g=>filtered.filter(r=>r.group===g&&r.prefix==='นาย').length);
-  const fCnt=groups.map(g=>filtered.filter(r=>r.group===g&&(r.prefix==='น.ส.'||r.prefix==='นาง'||r.prefix==='นางสาว')).length);
+  const mCnt=groups.map(g=>filtered.filter(r=>r.group===g&&r2Gender(r)==='M').length);
+  const fCnt=groups.map(g=>filtered.filter(r=>r.group===g&&r2Gender(r)==='F').length);
   if(!groups.length) return;
 
   charts['gender']=new Chart(document.getElementById('ch-gender').getContext('2d'),{
@@ -3781,7 +3878,7 @@ function exportFormalReportToExcel(){
   const data=allData.filter(r=>(!grpF||r.group===grpF)&&(!dptF||r.deptCode===dptF));
   const activeGroups=grpF?[grpF]:R2_GROUPS;
 
-  const asOf=(()=>{
+  const asOf=getPeriodStr()||(()=>{
     try{ return new Intl.DateTimeFormat('th-TH',{day:'numeric',month:'long',year:'numeric',calendar:'buddhist'}).format(new Date()); }
     catch(e){ return new Date().toLocaleDateString('th-TH'); }
   })();
@@ -3948,7 +4045,7 @@ function generateSummary(tab){
       const perm=base.filter(r=>r.positioning==='ลูกจ้างประจำ').length;
       const gen=base.filter(r=>r.positioning==='ลูกจ้างทั่วไป').length;
       const spec=base.filter(r=>r.positioning==='ลูกจ้างเฉพาะกิจ').length;
-      const male=base.filter(r=>r.prefix==='นาย').length;
+      const male=base.filter(r=>r2Gender(r)==='M').length;
       const mPct=total?Math.round(male/total*100):0;
 
       // Gap (proportional when group-filtered)
@@ -4007,7 +4104,7 @@ function generateSummary(tab){
       const ages=base.map(r=>r.ageYrs).filter(v=>v&&!isNaN(v));
       const avgAge=ages.length?Math.round(ages.reduce((a,b)=>a+b,0)/ages.length):null;
       const kPct=total?Math.round(k10/total*100):0;
-      const male_fc=base.filter(r=>r.prefix==='นาย').length;
+      const male_fc=base.filter(r=>r2Gender(r)==='M').length;
       const mPct_fc=total?Math.round(male_fc/total*100):0;
       const now_fc=new Date(); const curYrBE_fc=now_fc.getFullYear()+543;
 
@@ -4078,7 +4175,7 @@ function generateSummary(tab){
         :approvedTotal;
 
       const curTotal=base.length;
-      const male_dm=base.filter(r=>r.prefix==='นาย').length;
+      const male_dm=base.filter(r=>r2Gender(r)==='M').length;
       const mPct_dm=curTotal?Math.round(male_dm/curTotal*100):0;
       const govSupplyBase_dm=approvedBase!=null?govFiltered:base;
       const retY=govSupplyBase_dm.filter(r=>r.retireCountdown!==null&&r.retireCountdown>=0&&r.retireCountdown<yrs).length;
@@ -4150,7 +4247,7 @@ function generateSummary(tab){
         return true;
       });
       const total=rows.length;
-      const male=rows.filter(r=>r.prefix==='นาย').length;
+      const male=rows.filter(r=>r2Gender(r)==='M').length;
       const mPct=total?Math.round(male/total*100):0;
 
       // position breakdown (top 3)
