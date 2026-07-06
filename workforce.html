@@ -757,6 +757,7 @@ body{background:linear-gradient(160deg,#eaecf5 0%,#f0f2f8 60%,#e8edf6 100%);min-
 .ms-item:hover{background:rgba(59,130,246,.08)}
 .ms-item.all-opt{border-bottom:1px solid var(--bdr);font-weight:600;color:var(--accent)}
 .ms-item input[type=checkbox]{accent-color:var(--gold,#f59e0b);width:15px;height:15px;cursor:pointer;flex-shrink:0}
+.ms-divider{border-top:1px solid var(--bdr);margin:4px 0;padding:2px 13px 0;font-size:.7rem;color:var(--muted);font-family:'Sarabun',sans-serif;line-height:1.4}
 .ms-badge{background:var(--accent);color:#fff;font-size:.65rem;font-weight:700;border-radius:10px;
   padding:1px 6px;margin-left:4px;vertical-align:middle}
 /* TTS button */
@@ -1108,7 +1109,7 @@ body{background:linear-gradient(160deg,#eaecf5 0%,#f0f2f8 60%,#e8edf6 100%);min-
     <span class="fl">กลุ่มงาน</span>
     <div class="ms-wrap" id="ms-f-group"></div>
     <span class="fl">หน่วยงาน</span>
-    <select class="fsel" id="f-dept" onchange="applyFilters()" style="min-width:175px"><option value="">ทั้งหมด</option></select>
+    <div class="ms-wrap" id="ms-f-dept" style="min-width:175px"></div>
     <div class="fsep"></div>
     <span class="fl">ประเภท</span>
     <div class="ms-wrap" id="ms-f-pos"></div>
@@ -1827,6 +1828,9 @@ function onDataLoad(resp){
 
   filtered=[...allData];
   populateAllFilters();
+  // Dashboard 3: default ประเภท to กรอบรัฐ
+  const dmPosEl=document.getElementById('dm-pos');
+  if(dmPosEl) dmPosEl.value='gov';
   setTodayDate();
   renderAll();
   document.getElementById('loading').style.display='none';
@@ -1877,6 +1881,7 @@ const MS={
     const drop=document.createElement('div');
     drop.className='ms-drop';drop.id='msdrop-'+id;
     this._buildItems(id,drop,placeholder);
+    drop.addEventListener('click',e=>e.stopPropagation());
     wrap.appendChild(btn);wrap.appendChild(drop);
   },
 
@@ -1890,7 +1895,14 @@ const MS={
     allItem.appendChild(allCb);
     allItem.appendChild(document.createTextNode(placeholder||'ทั้งหมด'));
     drop.appendChild(allItem);
-    (this._opts[id]||[]).forEach(({value,label})=>{
+    (this._opts[id]||[]).forEach(opt=>{
+      if(opt.divider){
+        const div=document.createElement('div');
+        div.className='ms-divider';
+        if(opt.label){ const sp=document.createElement('span');sp.textContent=opt.label;div.appendChild(sp); }
+        drop.appendChild(div);return;
+      }
+      const {value,label}=opt;
       const item=document.createElement('label');
       item.className='ms-item';
       const cb=document.createElement('input');cb.type='checkbox';
@@ -1965,6 +1977,9 @@ document.addEventListener('click',()=>{
 // arr=[] means "all"; otherwise check if val is in arr
 function msMatch(arr,val){ return arr.length===0||arr.includes(val); }
 
+// Normalize band value — null/undefined/empty → 'ไม่ระบุ'
+function normBand(r){ return r.band?String(r.band):'ไม่ระบุ'; }
+
 function populateAllFilters(){
   const groups=[...new Set(allData.map(r=>r.group).filter(Boolean))];
   const ordered=GROUP_ORDER.filter(g=>groups.includes(g));
@@ -1990,12 +2005,20 @@ function populateAllFilters(){
     {value:'ผู้บริหาร',label:'ผู้บริหาร'},{value:'พนักงาน',label:'พนักงาน'},
     {value:'ลูกจ้างประจำ',label:'ลูกจ้างประจำ'},{value:'ลูกจ้างทั่วไป',label:'ลูกจ้างทั่วไป'},
     {value:'ลูกจ้างเฉพาะกิจ',label:'ลูกจ้างเฉพาะกิจ'}];
-  const bandOpts=[1,2,3,4,5,6,7].map(b=>({value:String(b),label:'Band '+b}));
-  const bandOptsD1=[1,2,3,4].map(b=>({value:String(b),label:'Band '+b}));
+  // Dashboard 2 (forecast) pos opts — with section divider
+  const fcPosOpts=[
+    {value:'ผู้บริหาร',label:'ผู้บริหาร'},{value:'พนักงาน',label:'พนักงาน'},
+    {value:'ลูกจ้างประจำ',label:'ลูกจ้างประจำ'},
+    {divider:true,label:'วว. จ้างเอง'},
+    {value:'ลูกจ้างทั่วไป',label:'ลูกจ้างทั่วไป'},
+    {value:'ลูกจ้างเฉพาะกิจ',label:'ลูกจ้างเฉพาะกิจ'}];
+  // Band 1-4 only + ไม่ระบุ (no band 5-7)
+  const bandOpts=[1,2,3,4].map(b=>({value:String(b),label:'Band '+b}))
+    .concat([{value:'ไม่ระบุ',label:'ไม่ระบุ'}]);
 
   MS.init('f-pos',posOpts,()=>applyFilters(),'ประเภท');
-  MS.init('f-band',bandOptsD1,()=>applyFilters(),'Band');
-  MS.init('fc-pos',posOpts,()=>applyForecastFilters(),'ประเภท');
+  MS.init('f-band',bandOpts,()=>applyFilters(),'Band');
+  MS.init('fc-pos',fcPosOpts,()=>applyForecastFilters(),'ประเภท');
   MS.init('fc-band',bandOpts,()=>applyForecastFilters(),'Band');
   MS.init('dm-band',bandOpts,()=>renderDemandForecast(),'Band');
   MS.init('pf-pos',posOpts,()=>applyPeopleFilters(),'ประเภท');
@@ -2003,15 +2026,22 @@ function populateAllFilters(){
 }
 
 function populateDashDept(grpF){
-  // grpF can be a string or array
-  const sel=document.getElementById('f-dept'); if(!sel) return;
-  const cur=sel.value; sel.innerHTML='<option value="">ทั้งหมด</option>';
+  // grpF can be a string or array; builds MS widget for f-dept
   const grpArr=Array.isArray(grpF)?grpF:(grpF?[grpF]:[]);
   const depts=[...new Map(allData.filter(r=>(grpArr.length===0||grpArr.includes(r.group))&&r.deptCode&&r.deptName)
     .map(r=>[r.deptCode,{code:r.deptCode,name:r.deptName}])).values()]
     .sort((a,b)=>a.name.localeCompare(b.name,'th'));
-  depts.forEach(d=>{ const o=document.createElement('option'); o.value=d.code; o.textContent=d.code===d.name?d.code:(d.name&&d.name.trim()&&d.name.trim()!==d.code.trim()?`${d.code} ${d.name}`:d.code); sel.appendChild(o); });
-  if([...sel.options].some(o=>o.value===cur)) sel.value=cur;
+  const opts=depts.map(d=>({
+    value:d.code,
+    label:d.code===d.name?d.code:(d.name&&d.name.trim()&&d.name.trim()!==d.code.trim()?`${d.code} ${d.name}`:d.code)
+  }));
+  if(MS._state['f-dept']===undefined){
+    // First time: init
+    MS.init('f-dept',opts,()=>applyFilters(),'หน่วยงาน');
+  } else {
+    // Group filter changed: rebuild options (keep valid selections)
+    MS.setOptions('f-dept',opts,'หน่วยงาน');
+  }
 }
 
 function populatePvDept(grpF){
@@ -2060,22 +2090,21 @@ function isResearch(posNew,band){
 // ============================================================
 function applyFilters(){
   const g=MS.get('f-group');
-  const d=document.getElementById('f-dept').value;
+  const d=MS.get('f-dept');
   const p=MS.get('f-pos');
   const b=MS.get('f-band');
   filtered=allData.filter(r=>
-    msMatch(g,r.group)&&(!d||r.deptCode===d)&&
-    msMatch(p,r.positioning||'พนักงาน')&&msMatch(b,String(r.band)));
+    msMatch(g,r.group)&&msMatch(d,r.deptCode)&&
+    msMatch(p,r.positioning||'พนักงาน')&&msMatch(b,normBand(r)));
   const info=document.getElementById('f-info');
-  if(g.length||d||p.length||b.length) info.textContent=`แสดง ${filtered.length.toLocaleString('th-TH')} จาก ${allData.length.toLocaleString('th-TH')} คน`;
+  if(g.length||d.length||p.length||b.length) info.textContent=`แสดง ${filtered.length.toLocaleString('th-TH')} จาก ${allData.length.toLocaleString('th-TH')} คน`;
   else info.textContent='';
   renderAll();
   if(_sumOpen&&_activeTab==='dash') updateSummary('dash');
 }
 
 function resetFilters(){
-  MS.clear('f-group');MS.clear('f-pos');MS.clear('f-band');
-  const d=document.getElementById('f-dept'); if(d) d.value='';
+  MS.clear('f-group');MS.clear('f-dept');MS.clear('f-pos');MS.clear('f-band');
   populateDashDept([]);
   filtered=[...allData];
   document.getElementById('f-info').textContent='';
@@ -2566,7 +2595,7 @@ function applyPeopleFilters(){
   const n=(document.getElementById('pf-name').value||'').toLowerCase();
   const rows=allData.filter(r=>
     msMatch(g,r.group)&&msMatch(p,r.positioning||'พนักงาน')&&
-    msMatch(b,String(r.band))&&
+    msMatch(b,normBand(r))&&
     (!n||(r.name||'').toLowerCase().includes(n)||(r.deptName||'').toLowerCase().includes(n))
   );
   document.getElementById('pf-info').textContent=`แสดง ${rows.length.toLocaleString('th-TH')} คน`;
@@ -2695,7 +2724,7 @@ function renderDemandForecast(){
     let r=gf.length?rows.filter(x=>gf.includes(x.group)):rows;
     if(pf==='gov') r=r.filter(x=>isGov(x.positioning||'พนักงาน'));
     else if(pf) r=r.filter(x=>(x.positioning||'พนักงาน')===pf);
-    if(bf.length) r=r.filter(x=>bf.includes(String(x.band)));
+    if(bf.length) r=r.filter(x=>bf.includes(normBand(x)));
     return r;
   }
 
@@ -3902,11 +3931,11 @@ function generateSummary(tab){
     /* ── DASHBOARD 1: ภาพรวม ── */
     if(tab==='dash'){
       const gf=MS.get('f-group');
-      const df=el('f-dept')?.value||'';
+      const df=MS.get('f-dept');
       const pf=MS.get('f-pos');
       const bf=MS.get('f-band');
       const parts=[gf.length?`กลุ่ม ${gf.join('+')}`:''
-        ,df?`สังกัด ${df}`:''
+        ,df.length?`สังกัด ${df.join('+')}`:''
         ,pf.length?pf.join('+'):''
         ,bf.length?`Band ${bf.join('+')}`:''
       ].filter(Boolean);
@@ -3950,7 +3979,7 @@ function generateSummary(tab){
 
       const row2=[topGrpTxt,topBandTxt,topEduTxt].filter(Boolean).join(' · ');
       return `📊 ภาพรวม [${scope}]\n`+
-        `บุคลากร ${n(total)} คน — พนักงาน ${n(emp)} · ผู้บริหาร ${n(exec)} · ลจ.ประจำ ${n(perm)} · ลจ.ทั่วไป ${n(gen)} · ลจ.เฉพาะกิจ ${n(spec)} · ชาย ${mPct}%/หญิง ${100-mPct}%\n`+
+        `บุคลากร ${n(total)} คน · ชาย ${mPct}% / หญิง ${100-mPct}% — พนักงาน ${n(emp)} · ผู้บริหาร ${n(exec)} · ลจ.ประจำ ${n(perm)} · ลจ.ทั่วไป ${n(gen)} · ลจ.เฉพาะกิจ ${n(spec)}\n`+
         `${row2?row2+' · ':''}${gapTxt}`;
     }
 
@@ -3969,12 +3998,12 @@ function generateSummary(tab){
       const base=allData.filter(r=>
         msMatch(gf,r.group)&&
         msMatch(pf,r.positioning||'พนักงาน')&&
-        msMatch(bf,String(r.band)));
+        msMatch(bf,normBand(r)));
       const total=base.length;
       const k1=base.filter(r=>r.retireCountdown!==null&&r.retireCountdown>=0&&r.retireCountdown<=0).length;
-      const k3=base.filter(r=>r.retireCountdown!==null&&r.retireCountdown>=0&&r.retireCountdown<=2).length;
-      const k5=base.filter(r=>r.retireCountdown!==null&&r.retireCountdown>=0&&r.retireCountdown<=4).length;
-      const k10=base.filter(r=>r.retireCountdown!==null&&r.retireCountdown>=0&&r.retireCountdown<yrs).length;
+      const k3=base.filter(r=>r.retireCountdown!==null&&r.retireCountdown>=0&&r.retireCountdown<=3).length;
+      const k5=base.filter(r=>r.retireCountdown!==null&&r.retireCountdown>=0&&r.retireCountdown<=5).length;
+      const k10=base.filter(r=>r.retireCountdown!==null&&r.retireCountdown>=0&&r.retireCountdown<=yrs).length;
       const ages=base.map(r=>r.ageYrs).filter(v=>v&&!isNaN(v));
       const avgAge=ages.length?Math.round(ages.reduce((a,b)=>a+b,0)/ages.length):null;
       const kPct=total?Math.round(k10/total*100):0;
@@ -3982,8 +4011,8 @@ function generateSummary(tab){
       const mPct_fc=total?Math.round(male_fc/total*100):0;
       const now_fc=new Date(); const curYrBE_fc=now_fc.getFullYear()+543;
 
-      // retiring pool for chart insights (raw data — no Chart.js)
-      const retiring_fc=base.filter(r=>r.retireCountdown!==null&&r.retireCountdown>=0&&r.retireCountdown<yrs);
+      // retiring pool for chart insights — use same threshold as KPI (<=yrs)
+      const retiring_fc=base.filter(r=>r.retireCountdown!==null&&r.retireCountdown>=0&&r.retireCountdown<=yrs);
 
       // retireyr chart: peak year
       const yrCnt_fc={};
@@ -4035,7 +4064,7 @@ function generateSummary(tab){
         let r=gf.length?rows.filter(x=>gf.includes(x.group)):rows;
         if(pf==='gov') r=r.filter(x=>isGovF(x.positioning||'พนักงาน'));
         else if(pf) r=r.filter(x=>(x.positioning||'พนักงาน')===pf);
-        if(bf.length) r=r.filter(x=>bf.includes(String(x.band)));
+        if(bf.length) r=r.filter(x=>bf.includes(normBand(x)));
         return r;
       };
       const base=filterRowsF(allData);
@@ -4066,7 +4095,7 @@ function generateSummary(tab){
         const filterR2=rows=>{
           if(pf==='gov') rows=rows.filter(x=>isGovF2(x.positioning||'พนักงาน'));
           else if(pf) rows=rows.filter(x=>(x.positioning||'พนักงาน')===pf);
-          if(bf.length) rows=rows.filter(x=>bf.includes(String(x.band)));
+          if(bf.length) rows=rows.filter(x=>bf.includes(normBand(x)));
           return rows;
         };
         const govAll2=allData.filter(r=>isGovF2(r.positioning||'พนักงาน'));
@@ -4112,7 +4141,7 @@ function generateSummary(tab){
       const rows=allData.filter(r=>{
         if(!msMatch(gf,r.group)) return false;
         if(!msMatch(pf,r.positioning||'พนักงาน')) return false;
-        if(!msMatch(bf,String(r.band))) return false;
+        if(!msMatch(bf,normBand(r))) return false;
         if(sch){
           const q=sch.toLowerCase();
           const nm=((r.prefix||'')+' '+(r.name||'')).toLowerCase();
@@ -4156,7 +4185,7 @@ function applyForecastFilters(){
   const pf=MS.get('fc-pos');
   const bf=MS.get('fc-band');
   const yrs=parseInt(document.getElementById('fc-yrs')?.value||'10');
-  const base=allData.filter(r=>msMatch(gf,r.group)&&msMatch(pf,r.positioning||'พนักงาน')&&msMatch(bf,String(r.band)));
+  const base=allData.filter(r=>msMatch(gf,r.group)&&msMatch(pf,r.positioning||'พนักงาน')&&msMatch(bf,normBand(r)));
   const el=document.getElementById('fc-info');
   if(el) el.textContent=`${base.length.toLocaleString('th-TH')} คน`;
   renderForecastKPIs(base,yrs);
