@@ -3015,7 +3015,7 @@ function renderDemandForecast(){
 
   // Table
   const tbody=document.getElementById('dm-tbody'); if(!tbody) return;
-  const showRows=gf?grpData.filter(d=>d.g===gf):grpData;
+  const showRows=gf.length?grpData.filter(d=>gf.includes(d.g)):grpData;
   let totCur=0,totR1=0,totR3=0,totR5=0,totSupply=0,totApproved=0,totGap=0;
   tbody.innerHTML=showRows.map(d=>{
     totCur+=d.cur; totR1+=d.r1; totR3+=d.r3; totR5+=d.r5; totSupply+=d.supply;
