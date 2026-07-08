@@ -159,6 +159,9 @@ td{font-size:.84rem;font-weight:500;padding:8px 13px;border-bottom:1px solid var
 .tr-u{cursor:pointer}.tr-u:hover td{background:#E8EFF9!important}
 .tr-g2 td:first-child{padding-left:24px}
 .tr-u td:first-child{padding-left:46px}
+.tr-sum td{background:#EEF2FF;font-size:.82rem;font-style:italic;color:#4338ca;border-top:1px solid #c7d2fe}
+.tr-sum:hover td{background:#e0e7ff!important;cursor:pointer}
+.tr-sum td:first-child{padding-left:24px}
 .tr-dir{cursor:pointer}.tr-dir td:first-child{padding-left:24px}
 .tr-dir:hover td{background:#E8EFF9!important}
 
@@ -219,7 +222,9 @@ td{font-size:.84rem;font-weight:500;padding:8px 13px;border-bottom:1px solid var
 .ptbl th.sth{background:#2B4F8A;color:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact}
 .ptbl .tr-gr td{background:#D6E4F0;font-weight:700;color:#000;font-size:.85rem;-webkit-print-color-adjust:exact;print-color-adjust:exact}
 .ptbl .tr-l2 td{background:#EEF4FB;font-weight:600;color:#000;font-size:.83rem;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.ptbl .tr-l2-hi td{background:#C8E6C9;font-weight:700;color:#1B5E20;font-size:.83rem;-webkit-print-color-adjust:exact;print-color-adjust:exact}
 .ptbl .tr-ur td{color:#000;font-weight:400;background:#fff}
+.ptbl .tr-sum td{background:#DDE6F5;font-style:italic;color:#1e3a8a;font-size:.81rem;-webkit-print-color-adjust:exact;print-color-adjust:exact}
 .ptbl .tr-tot td{background:#BFD3E8;font-weight:700;color:#000;font-size:.85rem;-webkit-print-color-adjust:exact;print-color-adjust:exact}
 .ptbl .z{color:#888;font-size:.78rem}
 /* phdr - styled like pview2 header */
@@ -325,7 +330,9 @@ td{font-size:.84rem;font-weight:500;padding:8px 13px;border-bottom:1px solid var
   .ptbl th.sth{color:#fff!important;background:#2B4F8A!important}
   .ptbl .tr-gr td{background:#D6E4F0!important;color:#000!important}
   .ptbl .tr-l2 td{background:#EEF4FB!important;color:#000!important}
+  .ptbl .tr-l2-hi td{background:#C8E6C9!important;color:#1B5E20!important}
   .ptbl .tr-ur td{background:#fff!important;color:#000!important}
+  .ptbl .tr-sum td{background:#DDE6F5!important;color:#1e3a8a!important}
   .ptbl .tr-tot td{background:#BFD3E8!important;color:#000!important}
   .phdr h2{font-size:1.05rem;color:#000}
   .phdr p{font-size:.85rem;color:#000}
@@ -400,6 +407,7 @@ body{background:linear-gradient(160deg,#eaecf5 0%,#f0f2f8 60%,#e8edf6 100%);min-
   body.printing-v1 .ptbl td{padding:2px 5px;font-weight:500}
   body.printing-v1 .ptbl .tr-gr td{font-weight:700;font-size:.73rem}
   body.printing-v1 .ptbl .tr-l2 td{font-weight:650}
+  body.printing-v1 .ptbl .tr-l2-hi td{font-weight:700;background:#C8E6C9!important;color:#1B5E20!important}
   body.printing-v1 .phdr{margin-bottom:4px!important}
   /* PDF2 — lock แต่ละ .p2page เป็น 1 หน้า A4 landscape และ push footer ลงล่าง */
   .p2pages{zoom:1!important}
@@ -1071,15 +1079,15 @@ body{background:linear-gradient(160deg,#eaecf5 0%,#f0f2f8 60%,#e8edf6 100%);min-
   <button class="sum-close" onclick="toggleSummary()">✕</button>
 </div>
 
-<div id="period-bar" class="period-bar hidden">
+<div id="period-bar" class="period-bar">
   <span class="fl" style="font-size:.78rem;font-weight:600;color:var(--muted)">📅 ช่วงเวลา</span>
-  <select class="fsel" id="g-year" onchange="applyPeriodFilter()" style="min-width:100px">
-    <option value="">ทุกปี</option>
+  <select class="fsel" id="g-year" onchange="loadYearData(this.value)" style="min-width:100px">
+    <!-- สร้างจาก YEAR_SHEETS โดย initYearSelector() -->
   </select>
   <select class="fsel" id="g-month" onchange="applyPeriodFilter()" style="min-width:120px">
     <option value="">ทุกเดือน</option>
   </select>
-  <button class="btn btn-sm" onclick="clearPeriod()" style="font-size:.75rem;padding:4px 10px">✕ ล้าง</button>
+  <button class="btn btn-sm" onclick="clearMonth()" style="font-size:.75rem;padding:4px 10px">✕ ล้างเดือน</button>
   <span id="period-tag" class="period-tag"></span>
 </div>
 <div id="loading"><div class="spin"></div><div style="font-size:.9rem">กำลังโหลดข้อมูลจาก Google Sheets...</div></div>
@@ -1680,6 +1688,10 @@ body{background:linear-gradient(160deg,#eaecf5 0%,#f0f2f8 60%,#e8edf6 100%);min-
 <div id="pview">
   <div class="pctrl">
     <div class="pctrl-title">ตารางสรุปอัตรากำลัง — สถาบันวิจัยวิทยาศาสตร์และเทคโนโลยีแห่งประเทศไทย (วว.)</div>
+    <span class="fl">ปี</span>
+    <select class="fsel" id="pv-year" onchange="onPvYearChange(this.value)" style="min-width:80px"></select>
+    <span class="fl">เดือน</span>
+    <select class="fsel" id="pv-month" onchange="renderPrintTable()" style="min-width:120px"><option value="">ทุกเดือน</option></select>
     <span class="fl">กลุ่มงาน</span>
     <select class="fsel" id="pv-group" onchange="onPvGroupChange()"><option value="">ทั้งหมด</option></select>
     <span class="fl">หน่วยงาน</span>
@@ -1697,6 +1709,10 @@ body{background:linear-gradient(160deg,#eaecf5 0%,#f0f2f8 60%,#e8edf6 100%);min-
 <div id="pview2">
   <div class="p2ctrl">
     <div class="p2ctrl-title">รายงานอัตรากำลัง — สถาบันวิจัยวิทยาศาสตร์และเทคโนโลยีแห่งประเทศไทย (วว.)</div>
+    <span class="fl">ปี</span>
+    <select class="fsel" id="pv2-year" onchange="onPv2YearChange(this.value)" style="min-width:80px"></select>
+    <span class="fl">เดือน</span>
+    <select class="fsel" id="pv2-month" onchange="renderFormalReport()" style="min-width:120px"><option value="">ทุกเดือน</option></select>
     <span class="fl">กลุ่มงาน</span>
     <select class="fsel" id="r2-group" onchange="onR2GroupChange()"><option value="">ทั้งหมด</option></select>
     <span class="fl">หน่วยงาน</span>
@@ -1714,8 +1730,8 @@ body{background:linear-gradient(160deg,#eaecf5 0%,#f0f2f8 60%,#e8edf6 100%);min-
 // ============================================================
 // CONFIG
 // ============================================================
-const SHEET_ID   = '1I2ujJYdHvnhMJ562EI5NHDzqpFV9x4pywZPtl6CGsaQ';
-const SHEET_NAME = 'DataEmployee';
+const SHEET_ID    = '1I2ujJYdHvnhMJ562EI5NHDzqpFV9x4pywZPtl6CGsaQ';
+const YEAR_SHEETS = ['2568','2569','2570','2571']; // ชื่อ Sheet ตามปี พ.ศ.
 
 const GROUP_ORDER  = ['ขึ้นตรง ผวว.','อช.','พย.','ยธ.','บอ.','บห.'];
 const POS_LIST     = ['ผู้บริหาร','พนักงาน','ลูกจ้างประจำ','ลูกจ้างทั่วไป','ลูกจ้างเฉพาะกิจ'];
@@ -1755,8 +1771,8 @@ const GROUP_CODES = {
   'ยธ.':'ยธ.','บอ.':'บอ.','บห.':'บห.'
 };
 
-// L3 → L2 (child → parent) from TISTR org chart
-const PARENT_MAP = {
+// L3 → L2 base map (ไม่ขึ้นกับปี)
+const PARENT_MAP_BASE = {
   // ขึ้นตรง ผวว.
   'กลข.':'สผวว.','กวส.':'สผวว.',
   'กสน.':'สสอ.', 'กปส.':'สสอ.',
@@ -1775,17 +1791,29 @@ const PARENT_MAP = {
   'หป.ทบ.':'ศบท.','หป.พบ.':'ศบท.',
   'หป.พร.':'ศทร.',
   'กปร.':'สรร.','กจบ.':'สรร.','กปผ.':'สรร.',
-  // อช.
-  'สลค.':'ศนก.',
-  // พย.
-  'สสส.':'ศนพ.',
+  // บห.
+  'หบร.':'ศบล.','หบน.':'ศบล.',
 };
-const L2_SET      = new Set(Object.values(PARENT_MAP));
+// ปี 2568 และก่อนหน้า: สลค. ใต้ ศนก., สสส. ใต้ ศนพ.
+const PARENT_MAP_PRE2569 = {'สลค.':'ศนก.','สสส.':'ศนพ.'};
+
+let PARENT_MAP = {...PARENT_MAP_BASE};
+let L2_SET     = new Set(Object.values(PARENT_MAP));
 // L2 units with no L3 children (standalone sections/centres)
-const L2_EXPLICIT = new Set(['สตส.','ศนอ.','ศนส.','ศคช.','ศนว.','ศนย.']);
+const L2_EXPLICIT = new Set(['สตส.','ศนอ.','ศนส.','ศคช.','ศนว.','ศนย.','ศอล.','ศนพ.','ศนก.']);
+// หน่วยงานที่ force เป็น dirU (ขาว) แม้ชื่อจะขึ้นต้นด้วย สำนัก/สถาบัน (ใช้เฉพาะปี 2569+)
+let L2_EXCLUDE = new Set(['สสส.','สลค.']);
+const HIGHLIGHTED_UNITS = new Set([]);
+
+function refreshParentMap(year){
+  const pre2569 = parseInt(year||0) <= 2568;
+  PARENT_MAP = pre2569 ? {...PARENT_MAP_BASE,...PARENT_MAP_PRE2569} : {...PARENT_MAP_BASE};
+  L2_SET     = new Set(Object.values(PARENT_MAP));
+  L2_EXCLUDE = pre2569 ? new Set() : new Set(['สสส.','สลค.']);
+}
 
 let allData=[], fullData=[], filtered=[], charts={}, pendingResolve=null, _todayDateStr='';
-let _selYear=null, _selMonth=null;
+let _selSheetYear=YEAR_SHEETS[0], _selMonth=null;
 const THAI_MONTHS=['','มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
 const THAI_MONTHS_S=['','ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
 
@@ -1797,12 +1825,44 @@ window.google.visualization=window.google.visualization||{};
 window.google.visualization.Query=window.google.visualization.Query||{};
 window.google.visualization.Query.setResponse=r=>{ if(pendingResolve){pendingResolve(r);pendingResolve=null;} };
 
-function loadData(){
+function initYearSelector(){
+  const sel=document.getElementById('g-year');
+  if(!sel) return;
+  sel.innerHTML=YEAR_SHEETS.map(y=>`<option value="${y}"${y===_selSheetYear?' selected':''}>${y}</option>`).join('');
+}
+
+function loadYearData(year){
+  if(!year) return;
+  _selSheetYear=year;
+  _selMonth=null;
+  const mSel=document.getElementById('g-month');
+  if(mSel) mSel.value='';
+  // ล้างข้อมูลเก่า + destroy charts
+  allData=[]; fullData=[]; filtered=[];
+  Object.values(charts).forEach(c=>{try{c.destroy();}catch(e){}});
+  charts={};
+  // แสดง loading
+  const loadDiv=document.getElementById('loading');
+  const contentDiv=document.getElementById('content');
+  if(contentDiv) contentDiv.style.display='none';
+  if(loadDiv){ loadDiv.style.display='block'; loadDiv.innerHTML=`<p>⏳ กำลังโหลดข้อมูลปี พ.ศ. ${year}…</p>`; }
+  // โหลด sheet ใหม่
   pendingResolve=r=>onDataLoad(r);
+  // timeout fallback — ถ้า 12 วิไม่มีข้อมูล แสดง error
+  const _timeout=setTimeout(()=>{
+    if(pendingResolve){ pendingResolve=null; if(loadDiv) loadDiv.innerHTML=`<p style="color:#dc2626">❌ โหลดไม่สำเร็จ — ตรวจสอบชื่อ Sheet "<b>${year}</b>" ให้ตรงกับใน Google Sheets และสิทธิ์ Public</p>`; }
+  },12000);
+  const origResolve=pendingResolve;
+  pendingResolve=r=>{ clearTimeout(_timeout); origResolve(r); };
   const s=document.createElement('script');
-  s.src=`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(SHEET_NAME)}`;
-  s.onerror=()=>{ pendingResolve=null; document.getElementById('loading').innerHTML='<p style="color:#dc2626">❌ โหลดไม่สำเร็จ — ตรวจสอบ Internet หรือสิทธิ์ Google Sheets</p>'; };
+  s.src=`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(year)}`;
+  s.onerror=()=>{ clearTimeout(_timeout); pendingResolve=null; if(loadDiv) loadDiv.innerHTML=`<p style="color:#dc2626">❌ โหลดไม่สำเร็จ — ตรวจสอบชื่อ Sheet "<b>${year}</b>" หรือสิทธิ์ Google Sheets</p>`; };
   document.head.appendChild(s);
+}
+
+function loadData(){
+  initYearSelector();
+  loadYearData(YEAR_SHEETS[0]);
 }
 
 // Parse BE year from "30 กันยายน 2577"
@@ -1828,30 +1888,65 @@ function parseAgeYrs(s){
   return m?parseInt(m[1]):null;
 }
 
+function normGroup(v){
+  if(!v) return null;
+  v=String(v).trim();
+  if(GROUP_ORDER.includes(v)) return v;
+  // ลองเติมจุดท้าย (เช่น 'อช' → 'อช.')
+  const vd=v.endsWith('.')?v:v+'.';
+  if(GROUP_ORDER.includes(vd)) return vd;
+  // ลอง match จาก substring (เช่น 'กลุ่ม อช.' → 'อช.')
+  for(const k of GROUP_ORDER){ if(v.includes(k.replace('.',''))||v.includes(k)) return k; }
+  return v; // คืนค่าเดิมถ้า map ไม่ได้
+}
+
 function onDataLoad(resp){
+  refreshParentMap(_selSheetYear);
   const cols=resp.table.cols, cmap={};
   cols.forEach((c,i)=>{ if(c.label) cmap[c.label.trim()]=i; });
+  // gm = get with multiple fallback keys (รองรับชื่อ column ที่ต่างกันในแต่ละปี)
   const g=(r,k)=>{ const i=cmap[k]; return i!==undefined?(r.c[i]?.v??null):null; };
+  const gm=(r,...keys)=>{ for(const k of keys){ const v=g(r,k); if(v!==null&&v!==undefined&&v!=='') return v; } return null; };
+
+  // ตรวจสอบ column ที่มีในชีต (log เพื่อ debug)
+  const availCols=cols.map(c=>c.label?.trim()).filter(Boolean);
+  console.log('[workforce] columns found:', availCols.join(', '));
+
+  // normPositioning: ทำให้ค่า positioning สม่ำเสมอ
+  const POS_NORM={'ผู้บริหาร':'ผู้บริหาร','พนักงาน':'พนักงาน',
+    'ลูกจ้างประจำ':'ลูกจ้างประจำ','ลูกจ้าง ประจำ':'ลูกจ้างประจำ',
+    'ลูกจ้างทั่วไป':'ลูกจ้างทั่วไป','ลูกจ้าง ทั่วไป':'ลูกจ้างทั่วไป',
+    'ลูกจ้างเฉพาะกิจ':'ลูกจ้างเฉพาะกิจ','ลูกจ้าง เฉพาะกิจ':'ลูกจ้างเฉพาะกิจ'};
+  const normPos=v=>{ if(!v) return null; const t=String(v).trim(); return POS_NORM[t]||t; };
 
   allData=resp.table.rows.map(r=>({
-    name:       g(r,'ชื่อ-ชื่อสกุล'), prefix:  g(r,'คำนำหน้า'),
-    empId:      g(r,'เลขบัตร 6 ตัว')||g(r,'เลขบัตร'),
-    position:   g(r,'ตำแหน่ง'),     posNew:      g(r,'ตำแหน่งใหม่'),
-    positioning:g(r,'positioning'),  band:        g(r,'Band'),
-    sb:         g(r,'SB'),           deptCode:    normCode(g(r,'สังกัด')),
-    deptName:   g(r,'สังกัดหน่วยงาน'), group:    g(r,'กลุ่มงาน'),
-    code:       g(r,'รหัส'),         edu:         g(r,'ระดับการศึกษา'),
-    gender:     (v=>v==='ชาย'?'M':v==='หญิง'?'F':null)(g(r,'เพศ')),
-    retireDate: g(r,'วันเกษียณอายุ'),
-    retireYearBE: parseRetireYearBE(g(r,'วันเกษียณอายุ')),
-    retireCountdown: parseCountdownYrs(g(r,'นับถอยหลัง (ปีเกษียณ)')),
-    ageYrs:     parseAgeYrs(g(r,'อายุ')),
-    yearBE:     (v=>v?parseInt(v):null)(g(r,'ปี พ.ศ.')),
-    monthNum:   (v=>v?parseInt(v):null)(g(r,'เดือน')),
+    name:       gm(r,'ชื่อ-ชื่อสกุล','ชื่อสกุล','ชื่อ'), prefix: gm(r,'คำนำหน้า'),
+    empId:      gm(r,'เลขบัตร 6 ตัว','เลขบัตร','รหัสพนักงาน'),
+    position:   gm(r,'ตำแหน่ง'),
+    posNew:     gm(r,'ตำแหน่งใหม่','ตำแหน่ง (ใหม่)','ตำแหน่งปัจจุบัน'),
+    positioning:normPos(gm(r,'positioning','ประเภท','ประเภทบุคลากร')),
+    band:       gm(r,'Band','band','แบนด์','BAND'),
+    sb:         gm(r,'SB','sb'),
+    deptCode:   normCode(gm(r,'สังกัด','รหัสสังกัด')),
+    deptName:   gm(r,'สังกัดหน่วยงาน','ชื่อสังกัด'),
+    group:      normGroup(gm(r,'กลุ่มงาน','กลุ่ม')),
+    code:       gm(r,'รหัส'),
+    edu:        gm(r,'ระดับการศึกษา','การศึกษา'),
+    gender:     (v=>v==='ชาย'?'M':v==='หญิง'?'F':null)(gm(r,'เพศ')),
+    retireDate: gm(r,'วันเกษียณอายุ','เกษียณ'),
+    retireYearBE: parseRetireYearBE(gm(r,'วันเกษียณอายุ','เกษียณ')),
+    retireCountdown: parseCountdownYrs(gm(r,'นับถอยหลัง (ปีเกษียณ)','นับถอยหลัง')),
+    ageYrs:     parseAgeYrs(gm(r,'อายุ')),
+    monthNum:   (v=>v?parseInt(v):null)(gm(r,'เดือน','Month','month')),
   })).filter(r=>r.name&&r.name.trim());
 
   fullData=[...allData];
   populatePeriodFilter();
+  initYearSelector();
+  initPvYearSelector();
+  populatePvMonth();
+  initPv2YearSelector();
+  populatePv2Month();
   filtered=[...allData];
   populateAllFilters();
   // Dashboard 3: default ประเภท to กรอบรัฐ
@@ -1859,8 +1954,27 @@ function onDataLoad(resp){
   if(dmPosEl) dmPosEl.value='gov';
   setTodayDate();
   renderAll();
+  // re-render tab ที่ active อยู่ (ถ้าไม่ใช่ dash)
+  if(_activeTab==='forecast') applyForecastFilters();
+  else if(_activeTab==='demand') renderDemandForecast();
+  else if(_activeTab==='people') renderPeopleTable(filtered);
   document.getElementById('loading').style.display='none';
   document.getElementById('content').style.display='block';
+  // ถ้าเปลี่ยนปีจาก PDF tab → กลับไปแสดง PDF พร้อม re-render
+  if(_pvShowAfterLoad){
+    _pvShowAfterLoad=false;
+    document.getElementById('screen-view').style.display='none';
+    document.getElementById('pview').style.display='block';
+    document.body.classList.add('printing-v1');
+    renderPrintTable();
+  }
+  if(_pv2ShowAfterLoad){
+    _pv2ShowAfterLoad=false;
+    document.getElementById('screen-view').style.display='none';
+    document.getElementById('pview2').style.display='block';
+    document.body.classList.add('printing-v2');
+    renderFormalReport();
+  }
 }
 
 function setTodayDate(){
@@ -1878,7 +1992,7 @@ function buildPrintPageHeader(){
       </div>
     </div>
     <div class="phdr-title">ตารางสรุปข้อมูลอัตรากำลัง</div>
-    <div class="phdr-date">${getPeriodStr()?`ข้อมูล ณ ${getPeriodStr()}`:`ข้อมูล ณ วันที่ ${_todayDateStr}`}</div>
+    <div class="phdr-date">${getPvPeriodStr()?`ข้อมูล ณ ${getPvPeriodStr()}`:`ข้อมูล ณ วันที่ ${_todayDateStr}`}</div>
   </div>`;
 }
 
@@ -1887,42 +2001,40 @@ function buildPrintPageHeader(){
 // ============================================================
 function getPeriodStr(short=false){
   const mn=short?THAI_MONTHS_S:THAI_MONTHS;
-  if(!_selYear&&!_selMonth) return null;
   const m=_selMonth?mn[_selMonth]||'':'';
-  const y=_selYear?`พ.ศ. ${_selYear}`:'';
+  const y=_selSheetYear?`พ.ศ. ${_selSheetYear}`:'';
   if(m&&y) return `เดือน${m} ${y}`;
   if(m) return `เดือน${m}`;
-  return y;
+  if(y) return y;
+  return null;
+}
+function getPvPeriodStr(){
+  const pvYear=document.getElementById('pv-year')?.value||_selSheetYear||'';
+  const pvMonVal=parseInt(document.getElementById('pv-month')?.value)||null;
+  const m=pvMonVal?THAI_MONTHS[pvMonVal]||'':'';
+  const y=pvYear?`พ.ศ. ${pvYear}`:'';
+  if(m&&y) return `เดือน${m} ${y}`;
+  if(m) return `เดือน${m}`;
+  if(y) return y;
+  return null;
 }
 
 function populatePeriodFilter(){
-  const bar=document.getElementById('period-bar');
-  const yrs=[...new Set(fullData.map(r=>r.yearBE).filter(Boolean))].sort();
+  // Year selector เป็น static จาก YEAR_SHEETS — ดูแลโดย initYearSelector()
+  // ที่นี่จัดการแค่ month dropdown จากข้อมูลจริงใน sheet
   const mths=[...new Set(fullData.map(r=>r.monthNum).filter(Boolean))].sort((a,b)=>a-b);
-  if(!yrs.length&&!mths.length){ if(bar) bar.classList.add('hidden'); return; }
-  // Build year options
-  const ySel=document.getElementById('g-year');
-  if(ySel){
-    const cur=ySel.value;
-    ySel.innerHTML='<option value="">ทุกปี</option>'+yrs.map(y=>`<option value="${y}">${y}</option>`).join('');
-    if(yrs.includes(parseInt(cur))) ySel.value=cur;
-  }
-  // Build month options
   const mSel=document.getElementById('g-month');
   if(mSel){
     const cur=mSel.value;
     mSel.innerHTML='<option value="">ทุกเดือน</option>'+mths.map(m=>`<option value="${m}">${THAI_MONTHS[m]||m}</option>`).join('');
     if(mths.includes(parseInt(cur))) mSel.value=cur;
   }
-  if(bar) bar.classList.remove('hidden');
 }
 
 function applyPeriodFilter(){
-  const y=parseInt(document.getElementById('g-year')?.value)||null;
   const m=parseInt(document.getElementById('g-month')?.value)||null;
-  _selYear=y; _selMonth=m;
+  _selMonth=m;
   allData=fullData.filter(r=>{
-    if(y&&r.yearBE!==y) return false;
     if(m&&r.monthNum!==m) return false;
     return true;
   });
@@ -1940,10 +2052,8 @@ function applyPeriodFilter(){
   if(_sumOpen) updateSummary(_activeTab);
 }
 
-function clearPeriod(){
-  const ySel=document.getElementById('g-year');
+function clearMonth(){
   const mSel=document.getElementById('g-month');
-  if(ySel) ySel.value='';
   if(mSel) mSel.value='';
   applyPeriodFilter();
 }
@@ -2084,10 +2194,13 @@ function populateAllFilters(){
   MS.init('dm-group',grpOpts,()=>renderDemandForecast());
   MS.init('pf-group',grpOpts,()=>applyPeopleFilters());
 
-  // Legacy selects (pv-group, r2-group) keep as-is
+  // Legacy selects (pv-group, r2-group) — clear first then populate
   ['pv-group','r2-group'].forEach(id=>{
     const sel=document.getElementById(id); if(!sel) return;
+    const cur=sel.value;
+    sel.innerHTML='<option value="">ทั้งหมด</option>';
     ordered.forEach(g=>{ const o=document.createElement('option'); o.value=g; o.textContent=g; sel.appendChild(o); });
+    if(ordered.includes(cur)) sel.value=cur;
   });
 
   populateDashDept([]); populatePvDept(''); populateR2Dept('');
@@ -2136,17 +2249,78 @@ function populateDashDept(grpF){
   }
 }
 
+// reverse map: root code → group name (ใช้กรอง anomalies ใน dept dropdown)
+const CODE_TO_GROUP=Object.fromEntries(Object.entries(GROUP_CODES).map(([g,c])=>[c,g]));
 function populatePvDept(grpF){
   const sel=document.getElementById('pv-dept'); if(!sel) return;
   sel.innerHTML='<option value="">ทั้งหมด</option>';
-  const depts=[...new Map(allData.filter(r=>(!grpF||r.group===grpF)&&r.deptCode&&r.deptName)
-    .map(r=>[r.deptCode,{code:r.deptCode,name:r.deptName}])).values()]
+  const base=fullData.length?fullData:allData;
+  const depts=[...new Map(base.filter(r=>{
+    if(!r.deptCode||!r.deptName) return false;
+    if(grpF&&r.group!==grpF) return false;
+    // กรอง cross-group anomaly: deptCode เป็น root ของกลุ่มอื่น
+    const expectedGrp=CODE_TO_GROUP[normCode(r.deptCode)];
+    if(expectedGrp&&r.group&&expectedGrp!==r.group) return false;
+    return true;
+  }).map(r=>[r.deptCode,{code:r.deptCode,name:r.deptName}])).values()]
     .sort((a,b)=>a.name.localeCompare(b.name,'th'));
   depts.forEach(d=>{ const o=document.createElement('option'); o.value=d.code; o.textContent=d.code===d.name?d.code:(d.name&&d.name.trim()&&d.name.trim()!==d.code.trim()?`${d.code} ${d.name}`:d.code); sel.appendChild(o); });
 }
 
 function onDashGroupChange(){ populateDashDept(MS.get('f-group')); applyFilters(); }
 function onPvGroupChange(){ populatePvDept(document.getElementById('pv-group').value); renderPrintTable(); }
+
+function initPvYearSelector(){
+  const sel=document.getElementById('pv-year'); if(!sel) return;
+  sel.innerHTML=YEAR_SHEETS.map(y=>`<option value="${y}"${y===_selSheetYear?' selected':''}>${y}</option>`).join('');
+}
+function populatePvMonth(){
+  const mths=[...new Set(fullData.map(r=>r.monthNum).filter(Boolean))].sort((a,b)=>a-b);
+  const sel=document.getElementById('pv-month'); if(!sel) return;
+  const cur=sel.value;
+  sel.innerHTML='<option value="">ทุกเดือน</option>'+mths.map(m=>`<option value="${m}">${THAI_MONTHS[m]||m}</option>`).join('');
+  if(mths.includes(parseInt(cur))) sel.value=cur;
+}
+let _pvShowAfterLoad=false;
+function onPvYearChange(year){
+  if(!year) return;
+  const gYear=document.getElementById('g-year');
+  if(gYear) gYear.value=year;
+  // reset เดือนเมื่อเปลี่ยนปี เพื่อไม่ให้ filter เดือนเก่าทำให้ข้อมูลหาย
+  const pvMonth=document.getElementById('pv-month');
+  if(pvMonth) pvMonth.value='';
+  _pvShowAfterLoad=true;
+  loadYearData(year);
+}
+
+function initPv2YearSelector(){
+  const sel=document.getElementById('pv2-year'); if(!sel) return;
+  sel.innerHTML=YEAR_SHEETS.map(y=>`<option value="${y}"${y===_selSheetYear?' selected':''}>${y}</option>`).join('');
+}
+function populatePv2Month(){
+  const mths=[...new Set(fullData.map(r=>r.monthNum).filter(Boolean))].sort((a,b)=>a-b);
+  const sel=document.getElementById('pv2-month'); if(!sel) return;
+  const cur=sel.value;
+  sel.innerHTML='<option value="">ทุกเดือน</option>'+mths.map(m=>`<option value="${m}">${THAI_MONTHS[m]||m}</option>`).join('');
+  if(mths.includes(parseInt(cur))) sel.value=cur;
+}
+function getPv2PeriodStr(){
+  const y=document.getElementById('pv2-year')?.value||_selSheetYear||'';
+  const mn=parseInt(document.getElementById('pv2-month')?.value)||null;
+  const m=mn?THAI_MONTHS[mn]||'':'';
+  if(m&&y) return `เดือน${m} พ.ศ. ${y}`;
+  return y?`พ.ศ. ${y}`:m||'';
+}
+let _pv2ShowAfterLoad=false;
+function onPv2YearChange(year){
+  if(!year) return;
+  const gYear=document.getElementById('g-year');
+  if(gYear) gYear.value=year;
+  const pv2Month=document.getElementById('pv2-month');
+  if(pv2Month) pv2Month.value='';
+  _pv2ShowAfterLoad=true;
+  loadYearData(year);
+}
 
 function populateR2Dept(grpF){
   const sel=document.getElementById('r2-dept'); if(!sel) return;
@@ -2159,6 +2333,8 @@ function populateR2Dept(grpF){
 function onR2GroupChange(){ populateR2Dept(document.getElementById('r2-group').value); renderFormalReport(); }
 function resetR2Filters(){
   document.getElementById('r2-group').value='';
+  const pv2Mon=document.getElementById('pv2-month');
+  if(pv2Mon) pv2Mon.value='';
   populateR2Dept('');
   renderFormalReport();
 }
@@ -2166,14 +2342,30 @@ function resetR2Filters(){
 // ============================================================
 // CLASSIFICATION
 // ============================================================
-function isResearch(posNew,band){
-  // ตำแหน่งพิเศษที่เป็นสายวิจัยเสมอ (override Band)
+const RESEARCH_GROUPS=new Set(['อช.','พย.','บอ.']);
+// หน่วยงานที่เป็นสายวิจัย/วิชาการ แม้ group จะขึ้นกับ ผวว. หรือกลุ่มอื่น
+// (Band 1+2 = วิจัย เหมือน RESEARCH_GROUPS)
+// สลค. ขึ้นตรง อช. (org) แต่สายบังคับบัญชาไป ผวว. / สสส. ขึ้นตรง พย. แต่สายบังคับบัญชาไป ผวว.
+// ทั้งคู่เป็นหน่วยวิจัย → Band 1+2 = วิจัย เหมือน RESEARCH_GROUPS
+const RESEARCH_DEPTS=new Set(['สสส.','สลค.']);
+function isResearch(posNew,band,positioning,group,deptCode){
+  // ตำแหน่งพิเศษที่เป็นสายวิจัยเสมอ (override ทุกอย่าง)
   if(posNew&&/นักบริหารพิเศษ|ผู้เชี่ยวชาญพิเศษ/.test(posNew)) return true;
-  const b=Number(band);
-  if(!isNaN(b)&&b>0) return b===2;
+  // ลูกจ้างทุกประเภท → ดู posNew keyword เท่านั้น (ไม่ใช้ Band)
+  const isLJ=positioning&&/ลูกจ้าง/.test(positioning);
+  if(!isLJ){
+    const b=Number(band);
+    if(!isNaN(b)&&b>0){
+      // กลุ่มวิจัย (อช./พย./บอ.) หรือหน่วยงานวิจัยพิเศษ: Band 1,2 = วิจัย
+      if(RESEARCH_GROUPS.has(group)||RESEARCH_DEPTS.has(normCode(deptCode||''))) return b===1||b===2;
+      // กลุ่มอื่น (ยธ./บห./ผวว.): Band 2 = วิจัย
+      return b===2;
+    }
+  }
+  // Fallback: keyword จาก posNew
   if(!posNew) return false;
-  if(/บัญชี|การเงิน|พัสดุ|ประชาสัมพันธ์|ทรัพยากรบุคคล|กฎหมาย|นิติกร|ธุรการ|สารบรรณ|วิเคราะห์นโยบาย|จัดการงานทั่วไป/.test(posNew)) return false;
-  if(/วิจัย|วิทยาศาสตร์|เชี่ยวชาญ|เทคนิค|วิศวกร|ปฏิบัติการทาง|นักเคมี|นักฟิสิกส์|นักชีว/.test(posNew)) return true;
+  if(/บัญชี|การเงิน|พัสดุ|ประชาสัมพันธ์|ทรัพยากรบุคคล|กฎหมาย|นิติกร|ธุรการ|สารบรรณ|วิเคราะห์นโยบาย|จัดการงานทั่วไป|คนงาน|ขับรถ|รักษาความปลอดภัย|แม่บ้าน|พนักงานสถานที่/.test(posNew)) return false;
+  if(/วิจัย|วิชาการ|วิทยาศาสตร์|เชี่ยวชาญ|เทคนิค|วิศวกร|ปฏิบัติการทาง|นักเคมี|นักฟิสิกส์|นักชีว|ตรวจป่า/.test(posNew)) return true;
   return false;
 }
 
@@ -2249,7 +2441,7 @@ function renderKPIs(){
   });
 
   // Hero dashboard stats
-  const research=filtered.filter(r=>isResearch(r.posNew||r.position,r.band)).length;
+  const research=filtered.filter(r=>isResearch(r.posNew||r.position,r.band,r.positioning,r.group,r.deptCode)).length;
   const support=filtered.length-research;
   const totalVacant=(empGap>0?empGap:0)+(permGap>0?permGap:0);
   se('dash-stat-total',n(filtered.length));
@@ -2454,7 +2646,7 @@ function deptLevel(code,name,grpCode){
   if(PARENT_MAP[nc])         return 'l3';
   if(L2_SET.has(nc))         return 'l2';
   if(L2_EXPLICIT.has(nc))    return 'l2';
-  if(/^(สำนัก|ศูนย์|สถาบัน|สถานีวิจัย)/.test(name||'')) return 'l2';
+  if(!L2_EXCLUDE.has(nc)&&/^(สำนัก|ศูนย์|สถาบัน|สถานีวิจัย)/.test(name||'')) return 'l2';
   // "กลุ่มภายใต้ ..." หรือ deptCode ขึ้นต้น "กลุ่ม " (เช่น "กลุ่ม อช.", "กลุ่ม พย.")
   // = ตัวกลุ่มเอง → นับรวมใน root ไม่แสดง row แยก
   if(/^กลุ่มภายใต้/.test(name||'')) return 'root';
@@ -2569,33 +2761,36 @@ function renderDeptTable(){
     });
     l2s.forEach(([l2code,l2d])=>{
       const l2Id='g2-'+l2code.replace(/\W/g,'_');
-      const l2pos={...l2d.ownPos};
-      l2d.children.forEach(c=>{ Object.entries(c.dv.pos).forEach(([p,v])=>{ l2pos[p]=(l2pos[p]||0)+v; }); });
-      const l2tot=Object.values(l2pos).reduce((s,v)=>s+v,0);
       const hasCh=l2d.children.length>0;
-
+      const l2ownTot=Object.values(l2d.ownPos).reduce((s,v)=>s+v,0);
+      // รวม (own + children) — ใช้สำหรับ row รวม ท้ายศูนย์/สำนัก
+      const l2totPos={...l2d.ownPos};
+      l2d.children.forEach(c=>{ Object.entries(c.dv.pos).forEach(([p,v])=>{ l2totPos[p]=(l2totPos[p]||0)+v; }); });
+      const l2tot=Object.values(l2totPos).reduce((s,v)=>s+v,0);
       const l2Codes=[l2code,...l2d.children.map(c=>c.code)];
-      const l2tr=document.createElement('tr'); l2tr.className='tr-g2'; l2tr.dataset.gid=gId; l2tr.dataset.l2id=l2Id;
+
+      // แถว ศูนย์/สำนัก — แสดงเฉพาะ own staff (ไม่รวม กอง)
+      const l2tr=document.createElement('tr'); l2tr.className='tr-g2'; l2tr.dataset.gid=gId;
       l2tr.innerHTML=`
-        <td>${hasCh?`<span class="tog" id="tog-${l2Id}" onclick="event.stopPropagation();toggleL2('${l2Id}')">−</span>`:''}<b>${l2d.name}</b></td>
-        <td class="c">${posB(l2pos)}</td>
-        <td class="r">${nf(l2pos['ผู้บริหาร']||0)}</td>
-        <td class="r">${nf(l2pos['พนักงาน']||0)}</td>
-        <td class="r">${nf(l2pos['ลูกจ้างประจำ']||0)}</td>
-        <td class="r">${nf(l2pos['ลูกจ้างทั่วไป']||0)}</td>
-        <td class="r">${nf(l2pos['ลูกจ้างเฉพาะกิจ']||0)}</td>
-        <td class="r"><b>${l2tot.toLocaleString('th-TH')}</b></td>`;
-      l2tr.onclick=()=>showDeptPeople(l2Codes,l2d.name,grp);
+        <td><b>${l2d.name}</b></td>
+        <td class="c">${posB(l2d.ownPos)}</td>
+        <td class="r">${nf(l2d.ownPos['ผู้บริหาร']||0)}</td>
+        <td class="r">${nf(l2d.ownPos['พนักงาน']||0)}</td>
+        <td class="r">${nf(l2d.ownPos['ลูกจ้างประจำ']||0)}</td>
+        <td class="r">${nf(l2d.ownPos['ลูกจ้างทั่วไป']||0)}</td>
+        <td class="r">${nf(l2d.ownPos['ลูกจ้างเฉพาะกิจ']||0)}</td>
+        <td class="r">${l2ownTot>0?`<b>${l2ownTot.toLocaleString('th-TH')}</b>`:'<span style="color:#c4cad8">—</span>'}</td>`;
+      l2tr.onclick=()=>showDeptPeople([l2code],l2d.name,grp);
       tbody.appendChild(l2tr);
 
+      // แถว กอง/หน่วยปฏิบัติ (l3)
       l2d.children.sort((a,b)=>dTot(b.dv)-dTot(a.dv)).forEach(({code,dv})=>{
         const tot=dTot(dv); if(!tot) return;
-        const posTypes=POS_LIST.filter(p=>dv.pos[p]);
-        const tr=document.createElement('tr'); tr.className='tr-u'; tr.dataset.gid=gId; tr.dataset.l2id=l2Id;
+        const tr=document.createElement('tr'); tr.className='tr-u'; tr.dataset.gid=gId;
         tr.onclick=()=>showDeptPeople([code],dv.name,grp);
         tr.innerHTML=`
           <td>${dv.name}</td>
-          <td class="c">${posTypes.map(p=>BADGE[p]).join('')}</td>
+          <td class="c">${posB(dv.pos)}</td>
           <td class="r">${nf(dv.pos['ผู้บริหาร']||0)}</td>
           <td class="r">${nf(dv.pos['พนักงาน']||0)}</td>
           <td class="r">${nf(dv.pos['ลูกจ้างประจำ']||0)}</td>
@@ -2604,6 +2799,22 @@ function renderDeptTable(){
           <td class="r">${tot.toLocaleString('th-TH')}</td>`;
         tbody.appendChild(tr);
       });
+
+      // แถว รวม (เฉพาะเมื่อมี กอง — ไม่งั้น own เดียวก็พอ)
+      if(hasCh){
+        const sumTr=document.createElement('tr'); sumTr.className='tr-sum'; sumTr.dataset.gid=gId;
+        sumTr.onclick=()=>showDeptPeople(l2Codes,`รวม ${l2d.name}`,grp);
+        sumTr.innerHTML=`
+          <td>รวม ${l2d.name}</td>
+          <td class="c">${posB(l2totPos)}</td>
+          <td class="r">${nf(l2totPos['ผู้บริหาร']||0)}</td>
+          <td class="r">${nf(l2totPos['พนักงาน']||0)}</td>
+          <td class="r">${nf(l2totPos['ลูกจ้างประจำ']||0)}</td>
+          <td class="r">${nf(l2totPos['ลูกจ้างทั่วไป']||0)}</td>
+          <td class="r">${nf(l2totPos['ลูกจ้างเฉพาะกิจ']||0)}</td>
+          <td class="r"><b>${l2tot.toLocaleString('th-TH')}</b></td>`;
+        tbody.appendChild(sumTr);
+      }
     });
 
     // Direct units (L2-level, not nested under any section)
@@ -3066,6 +3277,9 @@ function showPrintView(){
   document.getElementById('screen-view').style.display='none';
   document.getElementById('pview').style.display='block';
   document.body.classList.add('printing-v1');
+  initPvYearSelector();
+  populatePvMonth();
+  // ไม่ auto-sync เดือน: ให้ user เลือกเองเพื่อป้องกัน records ที่ไม่มีเดือนหาย
   renderPrintTable();
 }
 function hidePrintView(){
@@ -3099,6 +3313,13 @@ const R2_SB_LBL = {
   '4-1':'เจ้าหน้าที่ปฏิบัติการ','4-2':'เจ้าหน้าที่','4-3':'นักบริหารการเงิน การคลัง','4-4':'นักบริหารการเงิน การคลังอาวุโส',
 };
 const R2_SB_ORDER = {'1':['1-3','1-2','1-1'],'2':['2-5','2-4','2-3','2-2','2-1'],'3':['3-3','3-2','3-1'],'4':['4-4','4-3','4-2','4-1']};
+// SB keys ที่ต้องแตกเป็นหลาย sub-row โดยกรองจาก posNew/position
+const R2_SB_SPLIT = {
+  '1-3':[
+    {label:'รอง ผวว.',  filter:d=>/รอง/i.test(d.posNew||d.position||'')},
+    {label:'นบพ.',       filter:d=>!/รอง/i.test(d.posNew||d.position||'')},
+  ]
+};
 
 function r2EduGroup(e){
   if(!e) return 'ต่ำกว่าป.ตรี';
@@ -3124,6 +3345,9 @@ function r2z(n){ return n===0?`<td class="rz">—</td>`:`<td>${n}</td>`; }
 function showPrintView2(){
   document.getElementById('screen-view').style.display='none';
   document.getElementById('pview2').style.display='block';
+  document.body.classList.add('printing-v2');
+  initPv2YearSelector();
+  populatePv2Month();
   renderFormalReport();
 }
 function hidePrintView2(){
@@ -3153,17 +3377,36 @@ function doPrintV2(){
 function renderFormalReport(){
   const grpF = document.getElementById('r2-group')?.value || '';
   const dptF = document.getElementById('r2-dept')?.value || '';
-  const data = allData.filter(r=>(!grpF||r.group===grpF)&&(!dptF||r.deptCode===dptF));
+  const pv2Mon = parseInt(document.getElementById('pv2-month')?.value)||null;
+
+  // baseSrc: same dedup logic as renderPrintTable
+  const baseSrc=pv2Mon?(()=>{
+    const withMon=fullData.filter(r=>r.monthNum===pv2Mon);
+    const seenIds=new Set(withMon.map(r=>r.empId||r.name));
+    const nullDedup=[...new Map(
+      fullData.filter(r=>r.monthNum===null&&!(seenIds.has(r.empId||r.name)))
+        .map(r=>[r.empId||r.name,r])
+    ).values()];
+    return [...withMon,...nullDedup];
+  })():(()=>{
+    const byId=new Map();
+    (fullData.length?fullData:allData).forEach(r=>{
+      const id=r.empId||r.name; if(!id) return;
+      const prev=byId.get(id);
+      if(!prev){byId.set(id,r); return;}
+      const pm=prev.monthNum??-1, nm=r.monthNum??-1;
+      if(nm>pm) byId.set(id,r);
+    });
+    return [...byId.values()];
+  })();
+
+  const data = baseSrc.filter(r=>(!grpF||r.group===grpF)&&(!dptF||r.deptCode===dptF));
 
   // Dynamic columns: if group filter active → show only that group; else show all
   const activeGroups = grpF ? [grpF] : R2_GROUPS;
 
-  const _ps=getPeriodStr();
-  const asOf = _ps||((()=>{
-    try{ return new Intl.DateTimeFormat('th-TH',{day:'numeric',month:'long',year:'numeric',calendar:'buddhist'}).format(new Date()); }
-    catch(e){ return new Date().toLocaleDateString('th-TH'); }
-  })());
-  const asOfLabel=_ps?`ณ ${_ps}`:`ณ วันที่ ${asOf}`;
+  const _ps=getPv2PeriodStr();
+  const asOfLabel=_ps?`ณ ${_ps}`:`ณ วันที่ ${_todayDateStr}`;
   const filterNote = grpF ? ` — กลุ่ม ${grpF}${dptF?' / '+dptF:''}` : (dptF?' — '+dptF:'');
 
   const totB=data.filter(d=>d.positioning==='ผู้บริหาร').length;
@@ -3171,6 +3414,7 @@ function renderFormalReport(){
   const totP=data.filter(d=>d.positioning==='ลูกจ้างประจำ').length;
   const totG=data.filter(d=>d.positioning==='ลูกจ้างทั่วไป').length;
   const totS=data.filter(d=>d.positioning==='ลูกจ้างเฉพาะกิจ').length;
+  const totLJ=totP+totG+totS;
   const totA=data.length;
 
   const ph=`<div class="p2-ph">
@@ -3207,20 +3451,25 @@ function renderFormalReport(){
     ${pf(1)}`;
   pages.appendChild(p1);
 
-  // PAGE 2 — Education (all types)
-  const p2=document.createElement('div'); p2.className='p2page';
-  p2.innerHTML=`${ph}
-    <div class="p2-sec">3. แยกตามระดับการศึกษา (พนักงานและลูกจ้างทุกประเภท)</div>
-    ${r2EduTable(data,activeGroups)}
-    ${pf(2)}`;
-  pages.appendChild(p2);
+  // PAGE 2 — Education (only if data exists)
+  const hasEduData = data.some(r=>r.edu&&String(r.edu).trim());
+  if(hasEduData){
+    const p2=document.createElement('div'); p2.className='p2page';
+    p2.innerHTML=`${ph}
+      <div class="p2-sec">3. แยกตามระดับการศึกษา (พนักงานและลูกจ้างทุกประเภท)</div>
+      ${r2EduTable(data,activeGroups)}
+      ${pf(2)}`;
+    pages.appendChild(p2);
+  }
 
-  // PAGE 3 — Band
+  // PAGE 3 — Band (page number depends on whether edu page was added)
+  const bandPageNo = hasEduData ? 3 : 2;
+  const bandSecNo  = hasEduData ? 4 : 3;
   const p3=document.createElement('div'); p3.className='p2page';
   p3.innerHTML=`${ph}
-    <div class="p2-sec">4. พนักงาน แยกตามตำแหน่ง (Band / Sub band)</div>
+    <div class="p2-sec">${bandSecNo}. พนักงาน แยกตามตำแหน่ง (Band / Sub band)</div>
     ${r2BandTable(data,activeGroups)}
-    ${pf(3)}`;
+    ${pf(bandPageNo)}`;
   pages.appendChild(p3);
 }
 
@@ -3237,11 +3486,19 @@ function r2TableHead(extra='', groups=R2_GROUPS){
   return h+'</tr></thead>';
 }
 
+// Row definitions for summary table — ผู้บริหาร+พนักงาน รวมเป็น row เดียว
+const R2_POS_ROWS=[
+  {label:'พนักงาน', types:['ผู้บริหาร','พนักงาน']},
+  {label:'ลจ.ประจำ',           types:['ลูกจ้างประจำ']},
+  {label:'ลจ.ทั่วไป',          types:['ลูกจ้างทั่วไป']},
+  {label:'ลจ.เฉพาะกิจ',        types:['ลูกจ้างเฉพาะกิจ']},
+];
+
 function r2SummaryTable(data, groups=R2_GROUPS){
   const multi = groups.length > 1;
   let body='<tbody>'; let gM=0,gF=0;
-  R2_POS.forEach(pos=>{
-    const rows=data.filter(d=>d.positioning===pos);
+  R2_POS_ROWS.forEach(({label,types})=>{
+    const rows=data.filter(d=>types.includes(d.positioning));
     let rM=0,rF=0,cells='';
     groups.forEach(g=>{
       const c=r2cnt(rows,d=>d.group===g);
@@ -3250,7 +3507,7 @@ function r2SummaryTable(data, groups=R2_GROUPS){
     if(multi) cells+=`<td><b>${rM}</b></td><td><b>${rF}</b></td>`;
     cells+=`<td><b>${rM+rF}</b></td>`;
     gM+=rM; gF+=rF;
-    body+=`<tr><td class="rh">${R2_POS_SHORT[pos]}</td>${cells}</tr>`;
+    body+=`<tr><td class="rh">${label}</td>${cells}</tr>`;
   });
   let gc='';
   groups.forEach(g=>{ const c=r2cnt(data,d=>d.group===g); gc+=`<td>${c.M}</td><td>${c.F}</td>`; });
@@ -3305,33 +3562,66 @@ function r2EduTable(data, groups=R2_GROUPS){
   groups.forEach(g=>{ const c=r2cnt(data,d=>d.group===g); gc+=`<td>${c.M}</td><td>${c.F}</td>`; });
   if(multi) gc+=`<td>${gM}</td><td>${gF}</td>`;
   gc+=`<td>${gM+gF}</td>`;
-  body+=`<tr class="rtot"><td>รวมทั้งสิ้น</td>${gc}</tr></tbody>`;
+  body+=`<tr class="rtot"><td>รวมทั้งสิ้น</td>${gc}</tr>`;
+  // 5 แถวสรุปประเภทบุคลากร — แถว 2 = รวมพนักงาน+ผู้บริหาร (จงใจ overlap → ไม่ sum แถว)
+  const EDU_SUMMARY_ROWS=[
+    {lbl:'ผู้บริหาร',            flt: d=>d.positioning==='ผู้บริหาร'},
+    {lbl:'พนักงาน (รวมผู้บริหาร)', flt: d=>d.positioning==='ผู้บริหาร'||d.positioning==='พนักงาน'},
+    {lbl:'ลจ.ประจำ',             flt: d=>d.positioning==='ลูกจ้างประจำ'},
+    {lbl:'ลจ.ทั่วไป',            flt: d=>d.positioning==='ลูกจ้างทั่วไป'},
+    {lbl:'ลจ.เฉพาะ',             flt: d=>d.positioning==='ลูกจ้างเฉพาะกิจ'},
+  ];
+  EDU_SUMMARY_ROWS.forEach(({lbl,flt})=>{
+    const pRows=data.filter(flt);
+    let pM=0,pF=0,pCells='';
+    groups.forEach(g=>{const c=r2cnt(pRows,d=>d.group===g);pCells+=r2z(c.M)+r2z(c.F);pM+=c.M;pF+=c.F;});
+    if(multi) pCells+=`<td>${pM||'—'}</td><td>${pF||'—'}</td>`;
+    pCells+=`<td>${pM+pF||'—'}</td>`;
+    body+=`<tr style="background:#F8F9FC"><td style="font-size:.72rem;color:#475569">${lbl}</td>${pCells}</tr>`;
+  });
+  body+=`</tbody>`;
   return `<table class="p2tbl">${r2TableHead('ระดับการศึกษา',groups)}${body}</table>`;
 }
 
 function r2GenderTable(data, groups=R2_GROUPS){
-  const multi = groups.length > 1;
-  const allPosTypes = ['ผู้บริหาร','พนักงาน','ลูกจ้างประจำ','ลูกจ้างทั่วไป','ลูกจ้างเฉพาะกิจ'];
+  const GOV_POS = ['ผู้บริหาร','พนักงาน'];
+  const LJ_POS  = ['ลูกจ้างประจำ','ลูกจ้างทั่วไป','ลูกจ้างเฉพาะกิจ'];
+  const allPosTypes = [...GOV_POS, ...LJ_POS];
   const posLabels = {'ผู้บริหาร':'ผู้บริหาร','พนักงาน':'พนักงาน','ลูกจ้างประจำ':'ลจ.ประจำ','ลูกจ้างทั่วไป':'ลจ.ทั่วไป','ลูกจ้างเฉพาะกิจ':'ลจ.เฉพาะกิจ'};
-
-  // Header: ประเภท | กลุ่ม…(ช./ญ.) | รวม(ช./ญ./รวม)
+  // Header: ประเภท | กลุ่ม…(ช./ญ.) | รวม(ช./ญ./รวม) | รวมทั้งสิ้น(ลูกจ้างmerge)
   let hdr=`<thead><tr><th rowspan="2" style="text-align:left;min-width:100px">ประเภท</th>`;
   groups.forEach(g=>{ hdr+=`<th colspan="2" class="st">${R2_GRP_SHORT[g]||g}</th>`; });
-  hdr+=`<th colspan="3" class="st">รวม</th></tr><tr>`;
+  hdr+=`<th colspan="3" class="st">รวม</th><th rowspan="2" class="st" style="min-width:52px">รวมทั้งสิ้น</th></tr><tr>`;
   for(let i=0;i<groups.length;i++) hdr+=`<th class="st2">ช.</th><th class="st2">ญ.</th>`;
   hdr+=`<th class="st2">ช.</th><th class="st2">ญ.</th><th class="st2">รวม</th></tr></thead>`;
 
-  let body='<tbody>'; let totM=0,totF=0;
+  // คำนวณยอดรวมลูกจ้างทั้ง 3 ประเภทล่วงหน้า (สำหรับ rowspan)
+  let ljTotM=0, ljTotF=0;
+  LJ_POS.forEach(p=>{ const c=r2cnt(data.filter(d=>d.positioning===p),()=>true); ljTotM+=c.M; ljTotF+=c.F; });
+  const ljTotAll=ljTotM+ljTotF;
+
+  let body='<tbody>'; let totM=0,totF=0; let ljIdx=0;
   allPosTypes.forEach(pos=>{
     const rows=data.filter(d=>d.positioning===pos);
+    const isLJ=LJ_POS.includes(pos);
     let rM=0,rF=0,cells='';
-    groups.forEach(g=>{
-      const c=r2cnt(rows,d=>d.group===g);
-      cells+=r2z(c.M)+r2z(c.F); rM+=c.M; rF+=c.F;
-    });
-    cells+=`<td><b>${rM||'—'}</b></td><td><b>${rF||'—'}</b></td><td><b>${(rM+rF)||'—'}</b></td>`;
+    groups.forEach(g=>{ const c=r2cnt(rows,d=>d.group===g); rM+=c.M; rF+=c.F; cells+=r2z(c.M)+r2z(c.F); });
+    if(isLJ){
+      if(ljIdx===0){
+        cells+=`<td rowspan="3" style="text-align:center;vertical-align:middle"><b>${ljTotM||'—'}</b></td>`;
+        cells+=`<td rowspan="3" style="text-align:center;vertical-align:middle"><b>${ljTotF||'—'}</b></td>`;
+        cells+=`<td><b>${(rM+rF)||'—'}</b></td>`;
+        // รวมทั้งสิ้น: merge ลูกจ้าง 3 ประเภท rowspan=3
+        cells+=`<td rowspan="3" style="text-align:center;vertical-align:middle;font-weight:700;color:#1e40af">${ljTotAll||'—'}</td>`;
+      } else {
+        cells+=`<td><b>${(rM+rF)||'—'}</b></td>`;
+      }
+      ljIdx++;
+    } else {
+      cells+=`<td><b>${rM||'—'}</b></td><td><b>${rF||'—'}</b></td><td><b>${(rM+rF)||'—'}</b></td>`;
+      cells+=`<td style="font-weight:700;color:#1e40af">${(rM+rF)||'—'}</td>`;
+    }
     totM+=rM; totF+=rF;
-    // Highlight ผู้บริหาร row differently
     const rowStyle = pos==='ผู้บริหาร' ? ' style="background:#EBF2FC"' : '';
     body+=`<tr${rowStyle}><td class="rh">${posLabels[pos]||pos}</td>${cells}</tr>`;
   });
@@ -3340,6 +3630,7 @@ function r2GenderTable(data, groups=R2_GROUPS){
   let gc='';
   groups.forEach(g=>{ const c=r2cnt(data,d=>d.group===g); gc+=`<td>${c.M}</td><td>${c.F}</td>`; });
   gc+=`<td>${totM}</td><td>${totF}</td><td>${totM+totF}</td>`;
+  gc+=`<td style="font-weight:700;color:#1e40af">${totM+totF}</td>`;
   body+=`<tr class="rtot"><td>รวมทั้งสิ้น</td>${gc}</tr></tbody>`;
   return `<table class="p2tbl">${hdr}${body}</table>`;
 }
@@ -3361,14 +3652,26 @@ function r2BandTable(data, groups=R2_GROUPS){
     groups.forEach(g=>{ const n=bRows.filter(d=>d.group===g).length; bCells+=`<td><b>${n||'—'}</b></td>`; });
     bCells+=`<td><b>${bRows.length}</b></td>`;
     body+=`<tr><td class="rb" colspan="3">${R2_BAND_LBL[band]}</td>${bCells}</tr>`;
-    (R2_SB_ORDER[band]||[]).forEach((sbKey,idx)=>{
+    let seqCounter=0;
+    (R2_SB_ORDER[band]||[]).forEach((sbKey)=>{
       const sbNum=sbKey.split('-')[1];
-      const seqNo=idx+1;
       const sbRows=bRows.filter(d=>String(d.sb)===sbNum);
-      let sCells='';
-      groups.forEach(g=>{ const n=sbRows.filter(d=>d.group===g).length; sCells+=n?`<td>${n}</td>`:`<td class="rz">—</td>`; });
-      sCells+=sbRows.length?`<td>${sbRows.length}</td>`:`<td class="rz">—</td>`;
-      body+=`<tr><td style="text-align:center;color:#9BA8C0;font-size:.8rem">·</td><td style="text-align:center;font-size:.64rem;color:#6B82A0">${seqNo}</td><td class="rs">${R2_SB_LBL[sbKey]||'Sub band '+sbNum}</td>${sCells}</tr>`;
+      if(R2_SB_SPLIT[sbKey]){
+        R2_SB_SPLIT[sbKey].forEach((sp)=>{
+          seqCounter++;
+          const spRows=sbRows.filter(sp.filter);
+          let sCells='';
+          groups.forEach(g=>{ const n=spRows.filter(d=>d.group===g).length; sCells+=n?`<td>${n}</td>`:`<td class="rz">—</td>`; });
+          sCells+=spRows.length?`<td>${spRows.length}</td>`:`<td class="rz">—</td>`;
+          body+=`<tr><td style="text-align:center;color:#9BA8C0;font-size:.8rem">·</td><td style="text-align:center;font-size:.64rem;color:#6B82A0">${seqCounter}</td><td class="rs">${sp.label}</td>${sCells}</tr>`;
+        });
+      } else {
+        seqCounter++;
+        let sCells='';
+        groups.forEach(g=>{ const n=sbRows.filter(d=>d.group===g).length; sCells+=n?`<td>${n}</td>`:`<td class="rz">—</td>`; });
+        sCells+=sbRows.length?`<td>${sbRows.length}</td>`:`<td class="rz">—</td>`;
+        body+=`<tr><td style="text-align:center;color:#9BA8C0;font-size:.8rem">·</td><td style="text-align:center;font-size:.64rem;color:#6B82A0">${seqCounter}</td><td class="rs">${R2_SB_LBL[sbKey]||'Sub band '+sbNum}</td>${sCells}</tr>`;
+      }
     });
   });
   let gCells='';
@@ -3380,6 +3683,45 @@ function r2BandTable(data, groups=R2_GROUPS){
 
 const EMPTY_AGG=()=>({total:0,emp:{r:0,s:0},perm:{r:0,s:0},gen:{r:0,s:0},spec:{r:0,s:0}});
 const POS_KEYS={พนักงาน:'emp',ลูกจ้างประจำ:'perm',ลูกจ้างทั่วไป:'gen',ลูกจ้างเฉพาะกิจ:'spec'};
+
+// ลำดับหน่วยงานตาม Excel อัตรากำลังแยกหน่วยงาน
+const DEPT_SORT={
+  // ผวว. — l2
+  'สผวว.':1,'สสอ.':2,'สตส.':3,
+  // ผวว. — l3
+  'กลข.':1,'กวส.':2,          // ใต้ สผวว.
+  'กสน.':1,'กปส.':2,          // ใต้ สสอ.
+  // อช. — l2
+  'ศนก.':1,'ศนอ.':2,'ศนส.':3,'ศคช.':4,
+  // อช. — l3
+  'สลค.':1,                    // ใต้ ศนก.
+  // พย. — l2
+  'ศนพ.':1,'ศนว.':2,'ศนย.':3,
+  // พย. — l3
+  'สสส.':1,                    // ใต้ ศนพ.
+  // ยธ. — l2
+  'สยศ.':1,'สจท.':2,
+  // ยธ. — l3
+  'กนผ.':1,'กตป.':2,'กพร.':3, // ใต้ สยศ.
+  'กบน.':1,'กพน.':2,           // ใต้ สจท.
+  // บอ. — l2
+  'ศทม.':1,'ศพว.':2,'ศบท.':3,'ศทร.':4,'สรร.':5,
+  // บอ. — l3
+  'หป.ฟอ.':1,'หป.สอ.':2,'หป.วก.':3,'หป.ทฟ.':4,'หป.คม.':5,'หป.ชจ.':6, // ใต้ ศทม.
+  'หป.สส.':1,'หป.สป.':2,'หป.สช.':3,   // ใต้ ศพว.
+  'หป.ทบ.':1,'หป.พบ.':2,               // ใต้ ศบท.
+  'หป.พร.':1,                           // ใต้ ศทร.
+  'กปร.':1,'กจบ.':2,'กปผ.':3,          // ใต้ สรร.
+  // บห. — l2
+  'สทบ.':1,'สกค.':2,'สทส.':3,'สบก.':4,'ศบล.':5,'ศอล.':6,
+  // บห. — l3
+  'กบค.':1,'กพค.':2,           // ใต้ สทบ.
+  'กงบ.':1,'กพด.':2,           // ใต้ สกค.
+  'กพท.':1,'กจค.':2,           // ใต้ สทส.
+  'กกล.':1,'กบร.':2,           // ใต้ สบก.
+  'หบร.':1,'หบน.':2,           // ใต้ ศบล.
+};
+const dSort=(code)=>DEPT_SORT[normCode(code)]??99;
 function addAgg(d,s){d.total+=s.total;['emp','perm','gen','spec'].forEach(k=>{d[k].r+=s[k].r;d[k].s+=s[k].s;});}
 
 const ROWS_PER_PAGE=17;
@@ -3399,7 +3741,42 @@ const PRINT_THEAD=`<thead><tr>
 function renderPrintTable(){
   const grpF=document.getElementById('pv-group')?.value||'';
   const dptF=document.getElementById('pv-dept')?.value||'';
-  const src=allData.filter(r=>(!grpF||r.group===grpF)&&(!dptF||r.deptCode===dptF));
+  const pvMon=parseInt(document.getElementById('pv-month')?.value)||null;
+  const baseSrc=pvMon?(()=>{
+    // เลือกเดือน: ใช้ record ของเดือนนั้น + null-month dedup เฉพาะคนที่ไม่มีในเดือนนั้น
+    const withMon=fullData.filter(r=>r.monthNum===pvMon);
+    const seenIds=new Set(withMon.map(r=>r.empId||r.name));
+    const nullDedup=[...new Map(
+      fullData.filter(r=>r.monthNum===null&&!(seenIds.has(r.empId||r.name)))
+        .map(r=>[r.empId||r.name,r])
+    ).values()];
+    return [...withMon,...nullDedup];
+  })():(()=>{
+    // ทุกเดือน: dedup ด้วย empId/name เลือก record ที่ monthNum สูงสุด (ล่าสุด)
+    // กันไม่ให้คนที่มีข้อมูล 6 เดือนถูกนับ 6 ครั้ง
+    const byId=new Map();
+    (fullData.length?fullData:allData).forEach(r=>{
+      const id=r.empId||r.name; if(!id) return;
+      const prev=byId.get(id);
+      if(!prev){ byId.set(id,r); return; }
+      const pm=prev.monthNum??-1, nm=r.monthNum??-1;
+      if(nm>pm) byId.set(id,r);
+    });
+    return [...byId.values()];
+  })();
+  const src=baseSrc.filter(r=>(!grpF||r.group===grpF)&&(!dptF||r.deptCode===dptF));
+
+  // DEBUG: log รายคนใน สทส./สสส.
+  const _DBG_CODES=new Set(['สทส.','สสส.','กพท.','กจค.','ศนพ.']);
+  console.group('[PDF DEBUG] isResearch per-person for สทส./สสส./related');
+  src.forEach(r=>{
+    const nc=normCode(r.deptCode||'');
+    if(_DBG_CODES.has(nc)){
+      const research=isResearch(r.posNew,r.band,r.positioning,r.group,r.deptCode);
+      console.log(`  ${nc} | ${r.name||'?'} | positioning=${r.positioning} | band=${r.band} | posNew=${r.posNew||'—'} | group=${r.group} → ${research?'วิจัย':'สนับสนุน'}`);
+    }
+  });
+  console.groupEnd();
 
   const grpMap={};
   src.forEach(r=>{
@@ -3407,11 +3784,13 @@ function renderPrintTable(){
     if(!grpMap[g]) grpMap[g]={};
     if(!grpMap[g][d]) grpMap[g][d]={name:r.deptName||d,agg:EMPTY_AGG()};
     const a=grpMap[g][d].agg,k=POS_KEYS[r.positioning]||'emp';
-    a.total++; a[k][isResearch(r.posNew,r.band)?'r':'s']++;
+    a.total++; a[k][isResearch(r.posNew,r.band,r.positioning,r.group,r.deptCode)?'r':'s']++;
   });
 
   const nv=v=>v>0?v:'<span class="z">—</span>';
   const aC=agg=>['emp','perm','gen','spec'].map(k=>`<td>${nv(agg[k].r)}</td><td>${nv(agg[k].s)}</td>`).join('');
+  // tr-sum helper: รวม วิจัย+สนับสนุน ด้วย colspan=2 ต่อประเภท
+  const aCsum=agg=>['emp','perm','gen','spec'].map(k=>{const t=agg[k].r+agg[k].s;return `<td colspan="2" style="text-align:center">${t>0?`<b>${t}</b>`:'<span class="z">—</span>'}</td>`;}).join('');
   const totAll=EMPTY_AGG();
   let rowNo=0;
   const allRows=[];
@@ -3430,22 +3809,26 @@ function renderPrintTable(){
       const isCrossGrp=r=>OTHER_GRP_CODES.has(normCode(r.deptCode||''));
 
       const pvvSrc=src.filter(r=>r.group===grp);
-      const specialPVV  = pvvSrc.filter(r=>SPECIAL_POS.includes(r.posNew));
-      const crossGrpPVV = pvvSrc.filter(r=>!SPECIAL_POS.includes(r.posNew)&&isCrossGrp(r));
-      const regularPVV  = pvvSrc.filter(r=>!SPECIAL_POS.includes(r.posNew)&&!isCrossGrp(r));
+      const pvvPos=r=>(r.posNew||r.position||'').trim();
+      const SPECIAL_RE=/นักบริหารพิเศษ|ผู้เชี่ยวชาญพิเศษ/;
+      const isSpecial=r=>SPECIAL_RE.test(pvvPos(r));
+      const specialPVV  = pvvSrc.filter(r=>isSpecial(r));
+      const crossGrpPVV = pvvSrc.filter(r=>!isSpecial(r)&&isCrossGrp(r));
+      const regularPVV  = pvvSrc.filter(r=>!isSpecial(r)&&!isCrossGrp(r));
 
-      // Aggregate special positions
+      // Aggregate special positions — group by canonical SPECIAL_POS name
       const posCnt={};
       specialPVV.forEach(r=>{
-        const pos=r.posNew||'(ไม่ระบุ)';
+        const raw=pvvPos(r);
+        const pos=SPECIAL_POS.find(sp=>raw.includes(sp))||raw||'(ไม่ระบุ)';
         if(!posCnt[pos]) posCnt[pos]=EMPTY_AGG();
         const k=POS_KEYS[r.positioning]||'emp';
-        posCnt[pos].total++; posCnt[pos][k][isResearch(r.posNew,r.band)?'r':'s']++;
+        posCnt[pos].total++; posCnt[pos][k][isResearch(r.posNew,r.band,r.positioning,r.group,r.deptCode)?'r':'s']++;
       });
 
       // Cross-group people → รวมเป็น 1 row "รองผู้ว่าการและขึ้นตรง"
       const crossAgg=EMPTY_AGG();
-      crossGrpPVV.forEach(r=>{ const k=POS_KEYS[r.positioning]||'emp'; crossAgg.total++; crossAgg[k][isResearch(r.posNew,r.band)?'r':'s']++; });
+      crossGrpPVV.forEach(r=>{ const k=POS_KEYS[r.positioning]||'emp'; crossAgg.total++; crossAgg[k][isResearch(r.posNew,r.band,r.positioning,r.group,r.deptCode)?'r':'s']++; });
 
       // Dept map — เฉพาะ regularPVV (org units ที่จริงๆ ขึ้นตรง ผวว.)
       const pvvDeptMap={};
@@ -3453,27 +3836,31 @@ function renderPrintTable(){
         const d=r.deptCode||'?';
         if(!pvvDeptMap[d]) pvvDeptMap[d]={name:r.deptName||d,agg:EMPTY_AGG()};
         const k=POS_KEYS[r.positioning]||'emp';
-        pvvDeptMap[d].agg.total++; pvvDeptMap[d].agg[k][isResearch(r.posNew,r.band)?'r':'s']++;
+        pvvDeptMap[d].agg.total++; pvvDeptMap[d].agg[k][isResearch(r.posNew,r.band,r.positioning,r.group,r.deptCode)?'r':'s']++;
       });
 
       // Total (all people)
       const gSub=EMPTY_AGG();
-      pvvSrc.forEach(r=>{ const k=POS_KEYS[r.positioning]||'emp'; gSub.total++; gSub[k][isResearch(r.posNew,r.band)?'r':'s']++; });
+      pvvSrc.forEach(r=>{ const k=POS_KEYS[r.positioning]||'emp'; gSub.total++; gSub[k][isResearch(r.posNew,r.band,r.positioning,r.group,r.deptCode)?'r':'s']++; });
       addAgg(totAll,gSub);
 
       // Group header
-      allRows.push(`<tr class="tr-gr"><td></td><td style="text-align:left;padding-left:4px;font-weight:700">${GROUP_FULL[grp]||grp}</td>${aC(gSub)}<td><b>${gSub.total||'—'}</b></td></tr>`);
+      allRows.push(`<tr class="tr-gr"><td></td><td style="text-align:left;padding-left:4px;font-weight:700">${GROUP_FULL[grp]||grp}</td>${aCsum(gSub)}<td><b>${gSub.total||'—'}</b></td></tr>`);
 
       // Special position rows first (fixed order)
+      const spTot=EMPTY_AGG();
+      SPECIAL_POS.forEach(sp=>{ if(posCnt[sp]) addAgg(spTot,posCnt[sp]); });
       SPECIAL_POS.forEach(sp=>{
         if(!posCnt[sp]||!posCnt[sp].total) return;
         rowNo++;
         allRows.push(`<tr class="tr-ur"><td>${rowNo}</td><td style="text-align:left;padding-left:8px;font-style:italic">${sp}</td>${aC(posCnt[sp])}<td>${posCnt[sp].total||'—'}</td></tr>`);
       });
+      if(spTot.total>0) allRows.push(`<tr class="tr-sum"><td></td><td style="text-align:left;padding-left:8px">รวม ตำแหน่งพิเศษ</td>${aCsum(spTot)}<td><b>${spTot.total}</b></td></tr>`);
       // รองผู้ว่าการและขึ้นตรง (คนที่ group=ขึ้นตรง ผวว. แต่ deptCode เป็นกลุ่มอื่น)
       if(crossAgg.total>0){
         rowNo++;
         allRows.push(`<tr class="tr-ur"><td>${rowNo}</td><td style="text-align:left;padding-left:8px;font-style:italic;color:#555">รองผู้ว่าการและขึ้นตรง</td>${aC(crossAgg)}<td>${crossAgg.total||'—'}</td></tr>`);
+        allRows.push(`<tr class="tr-sum"><td></td><td style="text-align:left;padding-left:8px">รวม รองผู้ว่าการและขึ้นตรง</td>${aCsum(crossAgg)}<td><b>${crossAgg.total||'—'}</b></td></tr>`);
       }
 
       // Regular people by dept (same L2/L3 logic as normal groups)
@@ -3489,27 +3876,30 @@ function renderPrintTable(){
         } else if(lv==='l2'){
           if(!l2uPVV[code]) l2uPVV[code]={name:data.name,ownAgg:EMPTY_AGG(),children:{}};
           l2uPVV[code].name=data.name; addAgg(l2uPVV[code].ownAgg,data.agg);
-        } else {dirUPVV.push({name:data.name,agg:data.agg});}
+        } else {dirUPVV.push({code,name:data.name,agg:data.agg});}
       });
       // rootAggPVV นับในยอดกลุ่มแล้ว ไม่แสดง row แยก
-      const l2sPVV=Object.entries(l2uPVV).sort((a,b)=>{
-        const ta=a[1].ownAgg.total+Object.values(a[1].children).reduce((s,c)=>s+c.agg.total,0);
-        const tb=b[1].ownAgg.total+Object.values(b[1].children).reduce((s,c)=>s+c.agg.total,0);
-        return tb-ta;
-      });
-      l2sPVV.forEach(([,l2d])=>{
+      const l2sPVV=Object.entries(l2uPVV).sort((a,b)=>dSort(a[0])-dSort(b[0]));
+      l2sPVV.forEach(([l2code,l2d])=>{
         const l2T=EMPTY_AGG(); addAgg(l2T,l2d.ownAgg);
         Object.values(l2d.children).forEach(c=>addAgg(l2T,c.agg));
+        const hasCh=Object.keys(l2d.children).length>0;
+        const l2Cls=HIGHLIGHTED_UNITS.has(normCode(l2code))?'tr-l2-hi':'tr-l2';
+        // แถว ศูนย์/สำนัก — แสดงเฉพาะ own staff
         rowNo++;
-        allRows.push(`<tr class="tr-l2"><td>${rowNo}</td><td style="text-align:left;font-weight:600">${l2d.name}</td>${aC(l2T)}<td><b>${l2T.total||'—'}</b></td></tr>`);
-        Object.entries(l2d.children).sort((a,b)=>b[1].agg.total-a[1].agg.total).forEach(([,child])=>{
+        allRows.push(`<tr class="${l2Cls}"><td>${rowNo}</td><td style="text-align:left;font-weight:600">${l2d.name}</td>${aC(l2d.ownAgg)}<td>${l2d.ownAgg.total>0?`<b>${l2d.ownAgg.total}</b>`:'<span class="z">—</span>'}</td></tr>`);
+        // แถว กอง/หน่วยปฏิบัติ
+        Object.entries(l2d.children).sort((a,b)=>dSort(a[0])-dSort(b[0])).forEach(([,child])=>{
           rowNo++;
-          allRows.push(`<tr class="tr-ur"><td>${rowNo}</td><td style="text-align:left;padding-left:20px;font-size:.69rem">↳ ${child.name}</td>${aC(child.agg)}<td>${child.agg.total||'—'}</td></tr>`);
+          allRows.push(`<tr class="tr-ur"><td>${rowNo}</td><td style="text-align:left;padding-left:20px">${child.name}</td>${aC(child.agg)}<td>${child.agg.total||'—'}</td></tr>`);
         });
+        // แถว รวม (เฉพาะเมื่อมีกอง)
+        if(hasCh) allRows.push(`<tr class="tr-sum"><td></td><td style="text-align:left;padding-left:8px">รวม ${l2d.name}</td>${aCsum(l2T)}<td><b>${l2T.total||'—'}</b></td></tr>`);
       });
       dirUPVV.sort((a,b)=>b.agg.total-a.agg.total).forEach(u=>{
         rowNo++;
-        allRows.push(`<tr class="tr-ur"><td>${rowNo}</td><td style="text-align:left;padding-left:8px">${u.name}</td>${aC(u.agg)}<td>${u.agg.total||'—'}</td></tr>`);
+        const uCls=HIGHLIGHTED_UNITS.has(normCode(u.code||''))?'tr-l2-hi':'tr-ur';
+        allRows.push(`<tr class="${uCls}"><td>${rowNo}</td><td style="text-align:left;padding-left:8px">${u.name}</td>${aC(u.agg)}<td>${u.agg.total||'—'}</td></tr>`);
       });
       return;
     }
@@ -3528,7 +3918,7 @@ function renderPrintTable(){
       } else if(lv==='l2'){
         if(!l2u[code]) l2u[code]={name:data.name,ownAgg:EMPTY_AGG(),children:{}};
         l2u[code].name=data.name; addAgg(l2u[code].ownAgg,data.agg);
-      } else {dirU.push({name:data.name,agg:data.agg});}
+      } else {dirU.push({code,name:data.name,agg:data.agg});}
     });
 
     const gSub=EMPTY_AGG();
@@ -3537,37 +3927,41 @@ function renderPrintTable(){
     dirU.forEach(u=>addAgg(gSub,u.agg));
     addAgg(totAll,gSub);
 
-    allRows.push(`<tr class="tr-gr"><td></td><td style="text-align:left;padding-left:4px;font-weight:700">${GROUP_FULL[grp]||grp}</td>${aC(gSub)}<td><b>${gSub.total||'—'}</b></td></tr>`);
+    allRows.push(`<tr class="tr-gr"><td></td><td style="text-align:left;padding-left:4px;font-weight:700">${GROUP_FULL[grp]||grp}</td>${aCsum(gSub)}<td><b>${gSub.total||'—'}</b></td></tr>`);
 
     // แสดง rootAgg เป็นแถว "รองผู้ว่าการและขึ้นตรง"
     if(rootAgg.total>0){
       rowNo++;
       allRows.push(`<tr class="tr-ur"><td>${rowNo}</td><td style="text-align:left;padding-left:8px;font-style:italic;color:#555">รองผู้ว่าการและขึ้นตรง</td>${aC(rootAgg)}<td>${rootAgg.total}</td></tr>`);
+      allRows.push(`<tr class="tr-sum"><td></td><td style="text-align:left;padding-left:8px">รวม รองผู้ว่าการและขึ้นตรง</td>${aCsum(rootAgg)}<td><b>${rootAgg.total||'—'}</b></td></tr>`);
     }
 
-    const l2s=Object.entries(l2u).sort((a,b)=>{
-      const ta=a[1].ownAgg.total+Object.values(a[1].children).reduce((s,c)=>s+c.agg.total,0);
-      const tb=b[1].ownAgg.total+Object.values(b[1].children).reduce((s,c)=>s+c.agg.total,0);
-      return tb-ta;
-    });
-    l2s.forEach(([,l2d])=>{
+    const l2s=Object.entries(l2u).sort((a,b)=>dSort(a[0])-dSort(b[0]));
+    l2s.forEach(([l2code,l2d])=>{
       const l2T=EMPTY_AGG(); addAgg(l2T,l2d.ownAgg);
       Object.values(l2d.children).forEach(c=>addAgg(l2T,c.agg));
+      const hasCh=Object.keys(l2d.children).length>0;
+      const l2Cls=HIGHLIGHTED_UNITS.has(normCode(l2code))?'tr-l2-hi':'tr-l2';
+      // แถว ศูนย์/สำนัก — แสดงเฉพาะ own staff
       rowNo++;
-      allRows.push(`<tr class="tr-l2"><td>${rowNo}</td><td style="text-align:left;font-weight:600">${l2d.name}</td>${aC(l2T)}<td><b>${l2T.total||'—'}</b></td></tr>`);
-      Object.entries(l2d.children).sort((a,b)=>b[1].agg.total-a[1].agg.total).forEach(([,child])=>{
+      allRows.push(`<tr class="${l2Cls}"><td>${rowNo}</td><td style="text-align:left;font-weight:600">${l2d.name}</td>${aC(l2d.ownAgg)}<td>${l2d.ownAgg.total>0?`<b>${l2d.ownAgg.total}</b>`:'<span class="z">—</span>'}</td></tr>`);
+      // แถว กอง/หน่วยปฏิบัติ
+      Object.entries(l2d.children).sort((a,b)=>dSort(a[0])-dSort(b[0])).forEach(([,child])=>{
         rowNo++;
-        allRows.push(`<tr class="tr-ur"><td>${rowNo}</td><td style="text-align:left;padding-left:20px;font-size:.69rem">↳ ${child.name}</td>${aC(child.agg)}<td>${child.agg.total||'—'}</td></tr>`);
+        allRows.push(`<tr class="tr-ur"><td>${rowNo}</td><td style="text-align:left;padding-left:20px">${child.name}</td>${aC(child.agg)}<td>${child.agg.total||'—'}</td></tr>`);
       });
+      // แถว รวม (เฉพาะเมื่อมีกอง)
+      if(hasCh) allRows.push(`<tr class="tr-sum"><td></td><td style="text-align:left;padding-left:8px">รวม ${l2d.name}</td>${aCsum(l2T)}<td><b>${l2T.total||'—'}</b></td></tr>`);
     });
 
     dirU.sort((a,b)=>b.agg.total-a.agg.total).forEach(u=>{
       rowNo++;
-      allRows.push(`<tr class="tr-ur"><td>${rowNo}</td><td style="text-align:left;padding-left:8px">${u.name}</td>${aC(u.agg)}<td>${u.agg.total||'—'}</td></tr>`);
+      const uCls=HIGHLIGHTED_UNITS.has(normCode(u.code||''))?'tr-l2-hi':'tr-ur';
+      allRows.push(`<tr class="${uCls}"><td>${rowNo}</td><td style="text-align:left;padding-left:8px">${u.name}</td>${aC(u.agg)}<td>${u.agg.total||'—'}</td></tr>`);
     });
   });
 
-  const totRow=`<tr class="tr-tot"><td></td><td style="text-align:left">รวมทั้งหมด</td>${['emp','perm','gen','spec'].map(k=>`<td><b>${totAll[k].r||'—'}</b></td><td><b>${totAll[k].s||'—'}</b></td>`).join('')}<td><b>${totAll.total.toLocaleString('th-TH')}</b></td></tr>`;
+  const totRow=`<tr class="tr-tot"><td></td><td style="text-align:left">รวมทั้งหมด</td>${['emp','perm','gen','spec'].map(k=>{const t=totAll[k].r+totAll[k].s;return `<td colspan="2" style="text-align:center"><b>${t||'—'}</b></td>`;}).join('')}<td><b>${totAll.total.toLocaleString('th-TH')}</b></td></tr>`;
 
   // Split into pages — widow control: ถ้าแถวสุดท้ายเป็น group/L2 header ให้ย้ายไปหน้าถัดไป
   const pages=[];
@@ -3745,7 +4139,7 @@ function exportToExcel(){
     if(!grpMap[g]) grpMap[g]={};
     if(!grpMap[g][d]) grpMap[g][d]={name:r.deptName||d,agg:EMPTY_AGG()};
     const a=grpMap[g][d].agg,k=POS_KEYS[r.positioning]||'emp';
-    a.total++; a[k][isResearch(r.posNew,r.band)?'r':'s']++;
+    a.total++; a[k][isResearch(r.posNew,r.band,r.positioning,r.group,r.deptCode)?'r':'s']++;
   });
 
   const nv=v=>v>0?v:0;
@@ -3809,11 +4203,7 @@ function exportToExcel(){
       aoa.push(rowArr(rowNo,'ขึ้นตรง '+grpCode,rootAgg,1));
     }
 
-    const l2s=Object.entries(l2u).sort((a,b)=>{
-      const ta=a[1].ownAgg.total+Object.values(a[1].children).reduce((s,c)=>s+c.agg.total,0);
-      const tb=b[1].ownAgg.total+Object.values(b[1].children).reduce((s,c)=>s+c.agg.total,0);
-      return tb-ta;
-    });
+    const l2s=Object.entries(l2u).sort((a,b)=>dSort(a[0])-dSort(b[0]));
     l2s.forEach(([,l2d])=>{
       const l2T=EMPTY_AGG(); addAgg(l2T,l2d.ownAgg);
       Object.values(l2d.children).forEach(c=>addAgg(l2T,c.agg));
@@ -3897,9 +4287,9 @@ function exportFormalReportToExcel(){
   s1h1.push('รวมทั้งสิ้น');s1h2.push('');
   s1.push(s1h1);s1.push(s1h2);
   let gM=0,gF=0;
-  R2_POS.forEach(pos=>{
-    const rows=data.filter(d=>d.positioning===pos);
-    const row=[R2_POS_SHORT[pos]||pos];
+  R2_POS_ROWS.forEach(({label,types})=>{
+    const rows=data.filter(d=>types.includes(d.positioning));
+    const row=[label];
     let rM=0,rF=0;
     activeGroups.forEach(g=>{const c=r2cnt(rows,d=>d.group===g);row.push(c.M||0,c.F||0);rM+=c.M;rF+=c.F;});
     if(activeGroups.length>1) row.push(rM,rF);
@@ -3916,9 +4306,9 @@ function exportFormalReportToExcel(){
   sg1.push('รวม','','');sg2.push('ช.','ญ.','รวม');
   s1.push(sg1);s1.push(sg2);
   let tM=0,tF=0;
-  R2_POS.forEach(pos=>{
-    const rows=data.filter(d=>d.positioning===pos);
-    const row=[R2_POS_SHORT[pos]||pos];let rM=0,rF=0;
+  R2_POS_ROWS.forEach(({label,types})=>{
+    const rows=data.filter(d=>types.includes(d.positioning));
+    const row=[label];let rM=0,rF=0;
     activeGroups.forEach(g=>{const c=r2cnt(rows,d=>d.group===g);row.push(c.M||0,c.F||0);rM+=c.M;rF+=c.F;});
     row.push(rM,rF,rM+rF);tM+=rM;tF+=rF;s1.push(row);
   });
