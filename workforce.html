@@ -1864,11 +1864,14 @@ function loadData(){
   loadYearData(YEAR_SHEETS[0]);
 }
 
-// Parse BE year from "30 กันยายน 2577"
+// Parse BE year from "30 กันยายน 2577" OR "Date(2030,8,30)" (gviz date format)
 function parseRetireYearBE(s){
   if(!s) return null;
   const m=String(s).match(/(\d{4})/);
-  return m?parseInt(m[1]):null;
+  if(!m) return null;
+  const yr=parseInt(m[1]);
+  // ถ้าได้ปี ค.ศ. (< 2500) แปลงเป็นปี พ.ศ. อัตโนมัติ
+  return yr < 2500 ? yr + 543 : yr;
 }
 // Parse countdown years from "8 ปี" or numeric
 function parseCountdownYrs(s){
@@ -1910,6 +1913,10 @@ function onDataLoad(resp){
   // ตรวจสอบ column ที่มีในชีต (log เพื่อ debug)
   const availCols=cols.map(c=>c.label?.trim()).filter(Boolean);
   console.log('[workforce] columns found:', availCols.join(', '));
+  // log คอลัมน์เกษียณ
+  const retireCols=['วันเกษียณอายุ','นับถอยหลัง (ปีเกษียณ)','นับถอยหลัง','ปีที่เหลือ'];
+  const foundRetire=retireCols.filter(c=>availCols.includes(c));
+  console.log('[workforce] retire cols found:', foundRetire.join(', ')||'(ไม่มี)');
 
   // normPositioning: ทำให้ค่า positioning สม่ำเสมอ
   const POS_NORM={'ผู้บริหาร':'ผู้บริหาร','พนักงาน':'พนักงาน',
@@ -1932,12 +1939,23 @@ function onDataLoad(resp){
     code:       gm(r,'รหัส'),
     edu:        gm(r,'ระดับการศึกษา','การศึกษา'),
     gender:     (v=>v==='ชาย'?'M':v==='หญิง'?'F':null)(gm(r,'เพศ')),
-    retireDate: gm(r,'วันเกษียณอายุ','เกษียณ'),
-    retireYearBE: parseRetireYearBE(gm(r,'วันเกษียณอายุ','เกษียณ')),
-    retireCountdown: parseCountdownYrs(gm(r,'นับถอยหลัง (ปีเกษียณ)','นับถอยหลัง')),
+    retireDate: gm(r,'วันเกษียณอายุ','วันที่เกษียณ','วันเกษียณ','เกษียณอายุ','เกษียณ'),
+    retireYearBE: parseRetireYearBE(gm(r,'วันเกษียณอายุ','วันที่เกษียณ','วันเกษียณ','เกษียณอายุ','เกษียณ')),
+    retireCountdown: (()=>{
+      const cd=parseCountdownYrs(gm(r,'นับถอยหลัง (ปีเกษียณ)','นับถอยหลัง','ปีที่เหลือ'));
+      if(cd!==null) return cd;
+      // คำนวณจากวันเกษียณโดยตรงถ้าไม่มีคอลัมน์นับถอยหลัง
+      const yr=parseRetireYearBE(gm(r,'วันเกษียณอายุ','วันที่เกษียณ','วันเกษียณ','เกษียณอายุ','เกษียณ'));
+      if(!yr) return null;
+      return yr-(new Date().getFullYear()+543);
+    })(),
     ageYrs:     parseAgeYrs(gm(r,'อายุ')),
     monthNum:   (v=>v?parseInt(v):null)(gm(r,'เดือน','Month','month')),
   })).filter(r=>r.name&&r.name.trim());
+
+  // log ตัวอย่างข้อมูลเกษียณ (debug)
+  const rSample=allData.filter(r=>r.retireCountdown!==null).slice(0,3);
+  console.log('[workforce] retire sample:', rSample.map(r=>({n:r.name?.slice(0,4),yr:r.retireYearBE,cd:r.retireCountdown,dt:r.retireDate?.slice(0,12)})));
 
   fullData=[...allData];
   populatePeriodFilter();
@@ -2881,8 +2899,8 @@ function searchTable(q){
 // ============================================================
 function switchTab(tab){
   ['dash','people','forecast','demand'].forEach(t=>{
-    document.getElementById('view-'+t).style.display=t===tab?'':'none';
-    document.getElementById('tab-'+t).classList.toggle('on',t===tab);
+    const v=document.getElementById('view-'+t); if(v) v.style.display=t===tab?'':'none';
+    const b=document.getElementById('tab-'+t); if(b) b.classList.toggle('on',t===tab);
   });
   _activeTab=tab;
   if(tab==='people') renderPeopleTable(filtered);
@@ -4724,7 +4742,11 @@ function renderRetireYrChart(base,pf,yrs){
   dc('retireyr');
   const now=new Date(); const curYrBE=now.getFullYear()+543;
   const yrArr=[]; for(let i=0;i<=yrs;i++) yrArr.push(curYrBE+i);
-  const counts=yrArr.map(yr=>base.filter(r=>r.retireYearBE===yr).length);
+  // ใช้ retireYearBE ก่อน ถ้าไม่มีให้คำนวณจาก retireCountdown
+  const counts=yrArr.map(yr=>base.filter(r=>{
+    const ry=r.retireYearBE||(r.retireCountdown!==null?curYrBE+r.retireCountdown:null);
+    return ry===yr;
+  }).length);
   const ctx=document.getElementById('ch-retire-yr'); if(!ctx) return;
   charts['retireyr']=new Chart(ctx.getContext('2d'),{
     type:'bar',
