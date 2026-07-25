@@ -2070,6 +2070,30 @@ function onDataLoad(resp){
     return diffs;
   };
   console.log('[workforce] พิมพ์ checkMonthDiff() ใน console เพื่อตรวจข้อมูลที่ไม่สอดคล้องระหว่างเดือน');
+  // ตรวจ dept ที่ไม่ใช่ ศูนย์/สำนัก และไม่ถูกตัดออก → ขึ้นใน ศบล. เป็น "ขึ้นตรงกลุ่มงาน"
+  window.checkSblDepts=function(){
+    const byId=new Map();
+    fullData.forEach(r=>{const id=r.empId||r.name;if(!id)return;const prev=byId.get(id);if(!prev){byId.set(id,r);return;}if((r.monthNum??-1)>(prev.monthNum??-1))byId.set(id,r);});
+    const deduped=[...byId.values()];
+    const shown=deduped.filter(r=>(r.name||r.empId)&&!SBL_SUB_RE.test(r.deptName||'')&&!SBL_EXCLUDE_RE.test(r.deptCode||''));
+    const centers=new Set(),directs=new Set(),others=new Set();
+    shown.forEach(r=>{
+      const dn=(_sblDeptNameMap&&r.deptCode&&_sblDeptNameMap[r.deptCode])||r.deptName||'';
+      if(SBL_CENTER_RE.test(dn)) centers.add(`${dn} [${r.deptCode}]`);
+      else if(!dn||dn===r.deptCode) directs.add(`(ขึ้นตรง) deptCode=${r.deptCode||'-'} group=${r.group||'-'}`);
+      else others.add(`"${dn}" [${r.deptCode}] group=${r.group||'-'}`);
+    });
+    console.group('🏢 ศูนย์/สำนัก (sbl-dept-hdr สีน้ำเงิน)');
+    [...centers].sort().forEach(s=>console.log(s));
+    console.groupEnd();
+    console.group('📋 ขึ้นตรงกลุ่มงาน / ไม่มีชื่อ dept (sbl-direct-hdr สีทอง)');
+    [...directs].sort().forEach(s=>console.log(s));
+    console.groupEnd();
+    console.group('⚠️ อื่นๆ ที่ไม่ใช่ ศูนย์/สำนัก (ขึ้นเป็น sbl-direct-hdr — ตรวจว่าถูกต้อง)');
+    [...others].sort().forEach(s=>console.log(s));
+    console.groupEnd();
+    console.log(`รวม: ${centers.size} ศูนย์/สำนัก | ${directs.size} ขึ้นตรง | ${others.size} อื่นๆ`);
+  };
   populatePeriodFilter();
   initYearSelector();
   initPvYearSelector();
@@ -3824,24 +3848,23 @@ const POS_KEYS={พนักงาน:'emp',ลูกจ้างประจำ
 
 // ลำดับหน่วยงานตาม Excel อัตรากำลังแยกหน่วยงาน
 const DEPT_SORT={
-  // ผวว. — l2
-  'สผวว.':1,'สสอ.':2,'สตส.':3,
-  // ผวว. — l3
+  // ขึ้นตรงกลุ่ม (deptCode = group code) → บนสุดเสมอ
+  'ผวว.':0,'อช.':0,'พย.':0,'บอ.':0,'ยธ.':0,'บห.':0,
+  // ขึ้นตรง ผวว. — l2  (สทส. แทน สสอ., สสส./สลค. ท้ายสุด)
+  'สผวว.':1,'สทส.':2,'สตส.':3,'สสส.':4,'สลค.':5,
+  // ขึ้นตรง ผวว. — l3
   'กลข.':1,'กวส.':2,          // ใต้ สผวว.
-  'กสน.':1,'กปส.':2,          // ใต้ สสอ.
+  'กพท.':1,'กจค.':2,          // ใต้ สทส.
   // อช. — l2
   'ศนก.':1,'ศนอ.':2,'ศนส.':3,'ศคช.':4,
-  // อช. — l3
-  'สลค.':1,                    // ใต้ ศนก.
   // พย. — l2
   'ศนพ.':1,'ศนว.':2,'ศนย.':3,
-  // พย. — l3
-  'สสส.':1,                    // ใต้ ศนพ.
-  // ยธ. — l2
-  'สยศ.':1,'สจท.':2,
+  // ยธ. — l2  (เพิ่ม ศบล./ศอล.)
+  'สยศ.':1,'สจท.':2,'ศบล.':3,'ศอล.':4,
   // ยธ. — l3
   'กนผ.':1,'กตป.':2,'กพร.':3, // ใต้ สยศ.
   'กบน.':1,'กพน.':2,           // ใต้ สจท.
+  'หบร.':1,'หบน.':2,           // ใต้ ศบล.
   // บอ. — l2
   'ศทม.':1,'ศพว.':2,'ศบท.':3,'ศทร.':4,'สรร.':5,
   // บอ. — l3
@@ -3850,14 +3873,13 @@ const DEPT_SORT={
   'หป.ทบ.':1,'หป.พบ.':2,               // ใต้ ศบท.
   'หป.พร.':1,                           // ใต้ ศทร.
   'กปร.':1,'กจบ.':2,'กปผ.':3,          // ใต้ สรร.
-  // บห. — l2
-  'สทบ.':1,'สกค.':2,'สทส.':3,'สบก.':4,'ศบล.':5,'ศอล.':6,
+  // บห. — l2  (สสอ. แทน สทส., ตัด ศบล./ศอล. ออก)
+  'สทบ.':1,'สกค.':2,'สสอ.':3,'สบก.':4,
   // บห. — l3
   'กบค.':1,'กพค.':2,           // ใต้ สทบ.
   'กงบ.':1,'กพด.':2,           // ใต้ สกค.
-  'กพท.':1,'กจค.':2,           // ใต้ สทส.
+  'กสน.':1,'กปส.':2,           // ใต้ สสอ.
   'กกล.':1,'กบร.':2,           // ใต้ สบก.
-  'หบร.':1,'หบน.':2,           // ใต้ ศบล.
 };
 const dSort=(code)=>DEPT_SORT[normCode(code)]??99;
 function addAgg(d,s){d.total+=s.total;['emp','perm','gen','spec'].forEach(k=>{d[k].r+=s[k].r;d[k].s+=s[k].s;});}
@@ -5264,8 +5286,19 @@ function fmtSalary(n){
 }
 
 // ── ศบล. helpers ──
-const SBL_INDEPENDENT = new Set(['สสส.','สลค.']); // แยกเป็น group ตัวเองใน ศบล.
-const SBL_GRP_ORDER = ['ขึ้นตรง ผวว.','อช.','พย.','ยธ.','บอ.','บห.','สสส.','สลค.'];
+const SBL_INDEPENDENT = new Set([]); // (ว่าง — ไม่มีกลุ่มแยกอิสระแล้ว)
+const SBL_MERGE_TO_DIRECT = new Set(['สสส.','สลค.']); // deptCode ที่ให้ merge เข้า ขึ้นตรง ผวว.
+const SBL_GRP_ORDER = ['ขึ้นตรง ผวว.','อช.','พย.','บอ.','ยธ.','บห.'];
+// deptCode ที่ถือว่า "ขึ้นตรงกลุ่ม" (รหัสเดียวกับกลุ่มงาน)
+const SBL_GRP_DIRECT_CODES = new Set(['ผวว.','อช.','พย.','บอ.','ยธ.','บห.']);
+// include filter: ผ่านเฉพาะ ขึ้นตรงกลุ่ม / สำนัก / ศูนย์ / สสส. / สลค.
+function _sblTypeOk(r){
+  const code=normCode(r.deptCode||'');
+  if(SBL_GRP_DIRECT_CODES.has(code)) return true;
+  if(SBL_MERGE_TO_DIRECT.has(r.deptCode)||SBL_MERGE_TO_DIRECT.has(code)) return true;
+  const dn=(_sblDeptNameMap&&r.deptCode&&_sblDeptNameMap[r.deptCode])||r.deptName||'';
+  return /^ศูนย์|^สำนัก/.test(dn);
+}
 // positioning → band fallback (ถ้า Sheet ไม่มีคอลัมน์ Band)
 const SBL_POS_BAND = {'ผู้บริหาร':1,'พนักงาน':2,'ลูกจ้างประจำ':3,'ลูกจ้างทั่วไป':4,'ลูกจ้างเฉพาะกิจ':4};
 // SB order ตาม R2_SB_ORDER (ต่ำ=อาวุโส, สูง=ทั่วไป)
@@ -5274,7 +5307,7 @@ const SBL_SB_RANK = {'1-3':1,'1-2':2,'1-1':3,'2-5':1,'2-4':2,'2-3':3,'2-2':4,'2-
 let _sblDeptGroupMap={};  // deptCode → group (สร้างจาก non-ลูกจ้าง ก่อน เพื่อ consistency)
 let _sblDeptNameMap={};   // deptCode → ชื่อยาวที่สุด (normalize ชื่อย่อ vs ชื่อเต็ม)
 function sblGroupOf(r){
-  if(SBL_INDEPENDENT.has(r.deptCode)) return r.deptCode;
+  if(SBL_MERGE_TO_DIRECT.has(r.deptCode)||SBL_MERGE_TO_DIRECT.has(r.group)) return 'ขึ้นตรง ผวว.';
   // ใช้ lookup เป็นหลัก (group ของ non-ลูกจ้าง ใน dept เดียวกัน) → ทำให้ลูกจ้างอยู่กลุ่มเดียวกับพนักงาน
   return _sblDeptGroupMap[r.deptCode] || r.group || '(ไม่ระบุ)';
 }
@@ -5316,6 +5349,7 @@ function sblSortPos(posEntries){
 const SBL_CENTER_RE=/^ศูนย์|^สำนัก|^สถาบัน|^ฟาร์ม/; // ระดับ ศูนย์/สำนัก เท่านั้นที่แสดงเป็น dept header
 const SBL_DIRECT_KEY='__direct__'; // ขึ้นตรงกลุ่มงาน (ไม่มี ศูนย์/สำนัก)
 const SBL_SUB_RE=/^กอง|^ห้อง|^ฝ่าย/; // ระดับย่อยที่ตัดออก
+const SBL_EXCLUDE_RE=/^(หบน|หบร|หป)/; // สังกัดที่ไม่แสดงใน ศบล. (หบน., หบร., หป. ทุกรูปแบบ)
 
 function sblBuildTree(src){
   const tree={};
@@ -5385,33 +5419,46 @@ function renderSBLReport(){
     });
     return [...byId.values()];
   })();
-  const src=baseSrc.filter(r=>(r.name||r.empId)
-    &&(!grpFilter||(sblGroupOf(r)===grpFilter||r.group===grpFilter))
-    &&(!deptFilter||r.deptCode===deptFilter)
-    &&!SBL_SUB_RE.test(r.deptName||''));
-  // สร้าง deptCode→group lookup: เอา non-ลูกจ้าง ก่อน → ลูกจ้างจะ override ได้เฉพาะ dept ที่ยังไม่มี
+  // สร้าง lookup ก่อน src filter เพื่อให้ _sblTypeOk ใช้ชื่อที่ normalize แล้วได้
   _sblDeptGroupMap={};
   const _isLJ=r=>(r.positioning||'').startsWith('ลูกจ้าง');
   fullData.filter(r=>!_isLJ(r)).forEach(r=>{ if(r.deptCode&&r.group&&!_sblDeptGroupMap[r.deptCode]) _sblDeptGroupMap[r.deptCode]=r.group; });
   fullData.filter(r=>_isLJ(r)).forEach(r=>{ if(r.deptCode&&r.group&&!_sblDeptGroupMap[r.deptCode]) _sblDeptGroupMap[r.deptCode]=r.group; });
-  // normalize deptName: ใช้ชื่อยาวที่สุดของ deptCode จาก fullData ทุกเดือน (ป้องกันชื่อย่อ vs ชื่อเต็มไม่ตรงกัน)
   _sblDeptNameMap={};
   fullData.forEach(r=>{ if(r.deptCode&&r.deptName){ const cur=_sblDeptNameMap[r.deptCode]||''; if(r.deptName.length>cur.length) _sblDeptNameMap[r.deptCode]=r.deptName; } });
+  const src=baseSrc.filter(r=>(r.name||r.empId)
+    &&(!grpFilter||(sblGroupOf(r)===grpFilter||r.group===grpFilter))
+    &&(!deptFilter||r.deptCode===deptFilter)
+    &&!SBL_SUB_RE.test(r.deptName||'')
+    &&!SBL_EXCLUDE_RE.test(r.deptCode||'')
+    &&_sblTypeOk(r));
   const tree=sblBuildTree(src);
+  // build treeKey→deptCode map (เพื่อใช้ DEPT_SORT เรียงลำดับหน่วยงานใน PDF ศบล.)
+  const sblDeptKeyToCode={};
+  src.forEach(r=>{
+    const dn=(_sblDeptNameMap&&r.deptCode&&_sblDeptNameMap[r.deptCode])||r.deptName||'';
+    const d=SBL_CENTER_RE.test(dn)
+      ?(r.deptCode&&!dn.includes(`(${r.deptCode})`)?`${dn} (${r.deptCode})`:dn)
+      :(dn||(r.deptCode?`(${r.deptCode})`:SBL_DIRECT_KEY));
+    if(r.deptCode&&!sblDeptKeyToCode[d]) sblDeptKeyToCode[d]=r.deptCode;
+  });
   const groups=sblSortGroups(tree);
   const today=new Date();
   const thDate=`${today.getDate()} ${['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'][today.getMonth()]} ${today.getFullYear()+543}`;
   const logoSrc=document.querySelector('.hdr img')?.src||'';
   let html='';
   groups.forEach(grp=>{
-    // ศูนย์/สำนัก ก่อน (alphabetical), __direct__ ท้ายสุด
-    const depts=Object.keys(tree[grp]).sort((a,b)=>{
-      if(a===SBL_DIRECT_KEY) return 1;
-      if(b===SBL_DIRECT_KEY) return -1;
+    // __direct__ (ขึ้นตรงกลุ่ม) บนสุดก่อน แล้วตามด้วย center/สำนัก เรียงตาม DEPT_SORT
+    const _otherDepts=Object.keys(tree[grp]).filter(d=>d!==SBL_DIRECT_KEY).sort((a,b)=>{
+      const sa=dSort(sblDeptKeyToCode[a]||''), sb2=dSort(sblDeptKeyToCode[b]||'');
+      if(sa!==sb2) return sa-sb2;
       return a.localeCompare(b,'th');
     });
+    const depts=tree[grp][SBL_DIRECT_KEY]?[SBL_DIRECT_KEY,..._otherDepts]:_otherDepts;
+    console.log('[SBL-ORDER]',grp,'→',depts.join(' | '));
     let grpCount=0,grpSal=0;
-    let bodyHtml=`<div class="sbl-grp-hdr">${SBL_INDEPENDENT.has(grp)?'หน่วยงาน: ':'กลุ่มงาน: '}${grp}</div>`;
+    let bodyHtml=`<div class="sbl-grp-hdr">กลุ่มงาน: ${grp}</div>`;
+    let centerSeq=0; // เลขลำดับทุก dept ใน กลุ่มนี้ (reset ทุกกลุ่ม)
     depts.forEach(dept=>{
       const isCenter=SBL_CENTER_RE.test(dept);
       const posEntries=sblSortPos(Object.entries(tree[grp][dept]));
@@ -5425,11 +5472,12 @@ function renderSBLReport(){
       grpCount+=deptCount;grpSal+=deptSal;
       const deptHdrClass=isCenter?'sbl-dept-hdr':'sbl-direct-hdr';
       const deptDisplay=dept===SBL_DIRECT_KEY?`ขึ้นตรง ${grp}`:dept;
+      const seqPrefix=`${++centerSeq}. `;
       const sumLbl=`รวม ${deptDisplay}`;
-      bodyHtml+=`<div class="${deptHdrClass}">${deptDisplay}</div><table class="sbl-tbl"><thead><tr><th>ตำแหน่ง</th><th class="r" style="width:70px">จำนวน (คน)</th><th class="r" style="width:110px">เงินเดือนรวม (บาท)</th></tr></thead>
+      bodyHtml+=`<div class="${deptHdrClass}">${seqPrefix}${deptDisplay}</div><table class="sbl-tbl"><thead><tr><th>ตำแหน่ง</th><th class="r" style="width:70px">จำนวน (คน)</th><th class="r" style="width:110px">เงินเดือนรวม (บาท)</th></tr></thead>
 <tbody>${rows2}<tr class="sbl-sum"><td>${sumLbl}</td><td class="r">${deptCount}</td><td class="r">${fmtSalary(deptSal)}</td></tr></tbody></table>`;
     });
-    bodyHtml+=`<table class="sbl-tbl" style="margin-top:10px"><tbody><tr class="sbl-grand"><td>รวมทั้งหมด${SBL_INDEPENDENT.has(grp)?'':` กลุ่มงาน`} ${grp}</td><td class="r" style="width:70px">${grpCount}</td><td class="r" style="width:110px">${fmtSalary(grpSal)}</td></tr></tbody></table>`;
+    bodyHtml+=`<table class="sbl-tbl" style="margin-top:10px"><tbody><tr class="sbl-grand"><td>รวมทั้งหมด กลุ่มงาน ${grp}</td><td class="r" style="width:70px">${grpCount}</td><td class="r" style="width:110px">${fmtSalary(grpSal)}</td></tr></tbody></table>`;
     html+=`<div class="sbl-page">
   <div class="sbl-page-hdr">
     ${logoSrc?`<img class="sbl-page-logo" src="${logoSrc}" alt="วว.">`:'<div style="width:44px;height:44px;background:#1B3A6B;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:10pt">วว.</div>'}
@@ -5463,7 +5511,9 @@ function showSblVerify(){
 
   const src=deduped.filter(r=>(r.name||r.empId)
     &&(!grpFilter||(sblGroupOf(r)===grpFilter||r.group===grpFilter))
-    &&!SBL_SUB_RE.test(r.deptName||''));
+    &&!SBL_SUB_RE.test(r.deptName||'')
+    &&!SBL_EXCLUDE_RE.test(r.deptCode||'')
+    &&_sblTypeOk(r));
 
   // --- raw: ไม่ dedup ไม่ตัด กอง/ห้อง/ฝ่าย ---
   const rawSrc=pool.filter(r=>(r.name||r.empId)&&(!mnFilter||r.monthNum===mnFilter)&&(!grpFilter||(sblGroupOf(r)===grpFilter||r.group===grpFilter)));
@@ -5577,7 +5627,8 @@ function exportSBLToExcel(){
   const src=baseSrc2.filter(r=>(r.name||r.empId)
     &&(!grpFilter||(sblGroupOf(r)===grpFilter||r.group===grpFilter))
     &&(!deptFilter||r.deptCode===deptFilter)
-    &&!SBL_SUB_RE.test(r.deptName||''));
+    &&!SBL_SUB_RE.test(r.deptName||'')
+    &&!SBL_EXCLUDE_RE.test(r.deptCode||''));
 
   // build tree (ใช้ lookup เดียวกัน — _sblDeptGroupMap ถูก set ไว้แล้วใน renderSBLReport)
   const tree=sblBuildTree(src);
