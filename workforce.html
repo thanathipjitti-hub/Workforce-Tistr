@@ -212,20 +212,26 @@ td{font-size:.84rem;font-weight:500;padding:8px 13px;border-bottom:1px solid var
 
 /* PRINT VIEW */
 #pview{display:none;font-family:'Sarabun',sans-serif;background:#F0F2F5;min-height:100vh}
-.pctrl{padding:11px 26px;background:var(--w);border-bottom:1px solid var(--bdr);display:flex;align-items:center;gap:12px;flex-wrap:wrap;box-shadow:var(--sh2);position:sticky;top:0;z-index:200}
-.pctrl-title{font-family:'Prompt',sans-serif;font-size:.91rem;font-weight:600;color:var(--c1);flex:1}
+.pctrl{padding:12px 20px;background:linear-gradient(135deg,#0F2347 0%,#1B3A6B 60%,#2B4F8A 100%);border-bottom:3px solid #C8A84B;display:flex;align-items:center;gap:8px;flex-wrap:wrap;box-shadow:0 3px 12px rgba(15,35,71,.35);position:sticky;top:0;z-index:200}
+.pctrl-title{font-family:'Prompt',sans-serif;font-size:.95rem;font-weight:700;color:#fff;flex:1;letter-spacing:.02em}
+.pctrl .fl{color:#C8A84B;font-size:.8rem;font-weight:600}
+.pctrl .fsel{background:#fff;border:1.5px solid #C8A84B;color:#0F2347;font-weight:600;border-radius:6px;padding:4px 8px;font-size:.82rem}
+.pctrl .btn{font-size:.82rem;padding:6px 14px;border-radius:6px;font-weight:600}
+.pctrl .btn-n{background:#C8A84B!important;color:#0F2347!important;border-color:#C8A84B!important}
+.pctrl .btn-o{background:rgba(255,255,255,.15)!important;color:#fff!important;border:1.5px solid rgba(255,255,255,.4)!important}
+.pctrl .btn-o:hover{background:rgba(255,255,255,.25)!important}
 .ptwrap{padding:20px 28px;display:flex;flex-direction:column;align-items:center;gap:16px;zoom:.82}
-.ppage{background:#fff;width:297mm;box-shadow:0 4px 24px rgba(0,0,0,.10);border-radius:4px;padding:13mm 15mm;position:relative}
-.ptbl{width:100%;border-collapse:collapse;font-size:.84rem}
+.ppage{background:#fff;width:297mm;box-shadow:0 6px 28px rgba(15,35,71,.15);border-radius:6px;padding:13mm 15mm;position:relative;border-top:4px solid #C8A84B}
+.ptbl{width:100%;border-collapse:collapse;font-size:.84rem;border:1.5px solid #8FA8CC}
 .ptbl th,.ptbl td{border:1px solid #b0b8c8;padding:6px 8px;text-align:center;color:#000}
 .ptbl th{background:#1B3A6B;color:#fff;font-weight:700;font-size:.82rem;-webkit-print-color-adjust:exact;print-color-adjust:exact}
 .ptbl th.sth{background:#2B4F8A;color:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact}
-.ptbl .tr-gr td{background:#D6E4F0;font-weight:700;color:#000;font-size:.85rem;-webkit-print-color-adjust:exact;print-color-adjust:exact}
-.ptbl .tr-l2 td{background:#EEF4FB;font-weight:600;color:#000;font-size:.83rem;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.ptbl .tr-gr td{background:#1B3A6B;color:#fff;font-weight:700;font-size:.85rem;-webkit-print-color-adjust:exact;print-color-adjust:exact;border-left:4px solid #C8A84B!important}
+.ptbl .tr-l2 td{background:#EEF4FB;font-weight:600;color:#1a2a4a;font-size:.83rem;-webkit-print-color-adjust:exact;print-color-adjust:exact;border-left:3px solid #B8CCDF!important}
 .ptbl .tr-l2-hi td{background:#C8E6C9;font-weight:700;color:#1B5E20;font-size:.83rem;-webkit-print-color-adjust:exact;print-color-adjust:exact}
 .ptbl .tr-ur td{color:#000;font-weight:400;background:#fff}
-.ptbl .tr-sum td{background:#DDE6F5;font-style:italic;color:#1e3a8a;font-size:.81rem;-webkit-print-color-adjust:exact;print-color-adjust:exact}
-.ptbl .tr-tot td{background:#BFD3E8;font-weight:700;color:#000;font-size:.85rem;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.ptbl .tr-sum td{background:#DDE6F5;font-style:italic;color:#1e3a8a;font-size:.81rem;font-weight:600;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.ptbl .tr-tot td{background:#0F2347;color:#C8A84B;font-weight:700;font-size:.85rem;-webkit-print-color-adjust:exact;print-color-adjust:exact}
 .ptbl .z{color:#888;font-size:.78rem}
 /* phdr - styled like pview2 header */
 .phdr{text-align:center;margin-bottom:8mm;padding-bottom:5mm;border-bottom:2.5px solid #1B3A6B}
@@ -258,12 +264,51 @@ td{font-size:.84rem;font-weight:500;padding:8px 13px;border-bottom:1px solid var
 
 /* PVIEW2 — formal report */
 #pview2{display:none;font-family:'Sarabun',sans-serif;background:#F0F2F5;min-height:100vh}
-.p2ctrl{padding:11px 26px;background:#fff;border-bottom:1px solid var(--bdr);display:flex;align-items:center;gap:10px;flex-wrap:wrap;box-shadow:var(--sh2);position:sticky;top:0;z-index:200}
-.p2ctrl-title{font-family:'Prompt',sans-serif;font-size:.91rem;font-weight:600;color:var(--c1);flex:1}
+#pview-sbl{display:none;font-family:'Sarabun',sans-serif;background:#E8ECF3;min-height:100vh}
+/* ── ศบล. Filter Bar ── */
+#pview-sbl .p2ctrl{background:linear-gradient(135deg,#0F2347 0%,#1B3A6B 60%,#2B4F8A 100%);border-bottom:3px solid #C8A84B;padding:12px 20px;gap:8px;box-shadow:0 3px 12px rgba(15,35,71,.35)}
+#pview-sbl .p2ctrl-title{color:#fff;font-size:.95rem;font-weight:700;letter-spacing:.02em}
+#pview-sbl .p2ctrl .fl{color:#C8A84B;font-size:.8rem;font-weight:600}
+#pview-sbl .p2ctrl .fsel{background:#fff;border:1.5px solid #C8A84B;color:#0F2347;font-weight:600;border-radius:6px;padding:4px 8px;font-size:.82rem}
+#pview-sbl .p2ctrl .btn{font-size:.82rem;padding:6px 14px;border-radius:6px;font-weight:600}
+#pview-sbl .p2ctrl .btn-o{background:rgba(255,255,255,.15);color:#fff;border:1.5px solid rgba(255,255,255,.4)}
+#pview-sbl .p2ctrl .btn-o:hover{background:rgba(255,255,255,.25)}
+#pview-sbl .p2ctrl [onclick*="doPrint"],[onclick*="exportSBL"]{background:#C8A84B!important;color:#0F2347!important;border-color:#C8A84B!important}
+/* ── ศบล. Page ── */
+.sbl-page{background:#fff;width:210mm;min-height:297mm;margin:20px auto;padding:14mm 13mm;box-shadow:0 4px 24px rgba(15,35,71,.18);box-sizing:border-box;page-break-after:always;border-radius:4px}
+.sbl-page-hdr{display:flex;align-items:center;gap:14px;background:linear-gradient(135deg,#0F2347,#1B3A6B);border-radius:8px;padding:10px 14px;margin-bottom:18px}
+.sbl-page-logo{width:42px;height:42px;object-fit:contain;filter:brightness(0) invert(1)}
+.sbl-page-ttl{font-size:12pt;font-weight:700;color:#fff;line-height:1.3}
+.sbl-page-sub{font-size:8.5pt;color:#C8A84B;margin-top:3px;font-weight:600}
+/* Group header */
+.sbl-grp-hdr{background:linear-gradient(90deg,#0F2347,#1B3A6B);color:#fff;font-size:10.5pt;font-weight:700;padding:8px 14px;border-radius:0;margin:16px 0 0;border-left:5px solid #C8A84B;letter-spacing:.03em}
+/* ศูนย์/สำนัก dept header */
+.sbl-dept-hdr{background:#EEF2FB;color:#0F2347;font-size:9.5pt;font-weight:700;padding:6px 12px 6px 14px;border-left:4px solid #C8A84B;margin:1px 0 0;border-top:1px solid #D0D8EC}
+/* ขึ้นตรงกลุ่มงาน dept header */
+.sbl-direct-hdr{background:#F5F0E8;color:#7B5C00;font-size:9pt;font-weight:700;padding:5px 12px 5px 14px;border-left:4px solid #E0B830;margin:1px 0 0;border-top:1px solid #E8D89A;font-style:italic}
+/* Table */
+table.sbl-tbl{width:100%;border-collapse:collapse;font-size:8.5pt;border:1px solid #C8D0E8;margin-bottom:0}
+table.sbl-tbl th{background:#1B3A6B;color:#fff;padding:6px 10px;text-align:left;font-weight:700;font-size:8.5pt;border-right:1px solid rgba(255,255,255,.2)}
+table.sbl-tbl th.r{text-align:right}
+table.sbl-tbl td{padding:5px 10px;border-bottom:1px solid #DDE3F0;border-right:1px solid #EEF1F8;color:#1a1a1a}
+table.sbl-tbl td.r{text-align:right;font-variant-numeric:tabular-nums}
+table.sbl-tbl tr:nth-child(even) td{background:#F6F8FD}
+table.sbl-tbl tr:hover td{background:#EDF1FB}
+table.sbl-tbl tr.sbl-sum td{background:#1B3A6B;color:#fff;font-weight:700;border-top:none;border-bottom:none;padding:6px 10px;font-size:8.5pt}
+table.sbl-tbl tr.sbl-grand td{background:#0F2347;color:#C8A84B;font-weight:700;font-size:9pt;padding:8px 10px;border:none}
+table.sbl-tbl tr.sbl-grand td:first-child{border-left:5px solid #C8A84B}
+.p2ctrl{padding:12px 20px;background:linear-gradient(135deg,#0F2347 0%,#1B3A6B 60%,#2B4F8A 100%);border-bottom:3px solid #C8A84B;display:flex;align-items:center;gap:8px;flex-wrap:wrap;box-shadow:0 3px 12px rgba(15,35,71,.35);position:sticky;top:0;z-index:200}
+.p2ctrl-title{font-family:'Prompt',sans-serif;font-size:.95rem;font-weight:700;color:#fff;flex:1;letter-spacing:.02em}
+.p2ctrl .fl{color:#C8A84B;font-size:.8rem;font-weight:600}
+.p2ctrl .fsel{background:#fff;border:1.5px solid #C8A84B;color:#0F2347;font-weight:600;border-radius:6px;padding:4px 8px;font-size:.82rem}
+.p2ctrl .btn{font-size:.82rem;padding:6px 14px;border-radius:6px;font-weight:600}
+.p2ctrl .btn-n{background:#C8A84B!important;color:#0F2347!important;border-color:#C8A84B!important}
+.p2ctrl .btn-o{background:rgba(255,255,255,.15)!important;color:#fff!important;border:1.5px solid rgba(255,255,255,.4)!important}
+.p2ctrl .btn-o:hover{background:rgba(255,255,255,.25)!important}
 .p2pages{padding:20px 28px;display:flex;flex-direction:column;align-items:center;gap:16px}
 .p2page{
-  background:#fff;width:297mm;box-shadow:0 4px 24px rgba(0,0,0,.10);border-radius:4px;
-  padding:13mm 15mm;position:relative
+  background:#fff;width:297mm;box-shadow:0 6px 28px rgba(15,35,71,.15);border-radius:6px;
+  padding:13mm 15mm;position:relative;border-top:4px solid #C8A84B
 }
 .p2-ph{text-align:center;margin-bottom:8mm;padding-bottom:5mm;border-bottom:2.5px solid #1B3A6B}
 .p2-ph-logo{width:60px;height:60px;object-fit:contain;display:block;margin:0 auto 8px;-webkit-print-color-adjust:exact;print-color-adjust:exact}
@@ -279,18 +324,21 @@ td{font-size:.84rem;font-weight:500;padding:8px 13px;border-bottom:1px solid var
 .p2-krow{display:flex;gap:8px;margin-bottom:6mm}
 .p2-kbox{
   flex:1;background:#F4F7FC;border:1px solid #D0DCF0;border-radius:7px;
-  padding:7px 10px;text-align:center;border-top:3px solid #1B3A6B;
+  padding:7px 10px;text-align:center;border-top:3px solid #2B4F8A;
   -webkit-print-color-adjust:exact;print-color-adjust:exact
 }
-.p2-kbox.k2{border-top-color:#2C5282}.p2-kbox.k3{border-top-color:#2C5282}
-.p2-kbox.k4{border-top-color:#2C5282}.p2-kbox.kt{border-top-color:#1B3A6B;background:#EBF2FC}
+.p2-kbox.k2{border-top-color:#2B4F8A}.p2-kbox.k3{border-top-color:#2B4F8A}
+.p2-kbox.k4{border-top-color:#2B4F8A}.p2-kbox.kt{border-top-color:#C8A84B;background:#FBF6EC;border:1.5px solid #E0C870}
 .p2-knum{font-size:1.4rem;font-weight:700;color:#1B3A6B;line-height:1.1}
 .p2-kbox.k2 .p2-knum{color:#1B3A6B}.p2-kbox.k3 .p2-knum{color:#1B3A6B}
-.p2-kbox.k4 .p2-knum{color:#1B3A6B}.p2-kbox.kt .p2-knum{color:#0F2347;font-size:1.6rem}
+.p2-kbox.k4 .p2-knum{color:#1B3A6B}.p2-kbox.kt .p2-knum{color:#0F2347;font-size:1.6rem;font-weight:800}
 .p2-klbl{font-size:.65rem;color:#6B82A0;margin-top:2px}
+.p2-kbox.kt .p2-klbl{color:#8B6914;font-weight:600}
 .p2-sec{
-  font-size:.88rem;font-weight:700;color:#fff;background:#1B3A6B;
-  padding:5px 11px;border-radius:5px;margin-bottom:5px;margin-top:5mm;
+  font-size:.88rem;font-weight:700;color:#fff;
+  background:linear-gradient(90deg,#0F2347,#1B3A6B);
+  padding:6px 14px;border-radius:5px;margin-bottom:5px;margin-top:5mm;
+  border-left:5px solid #C8A84B;
   -webkit-print-color-adjust:exact;print-color-adjust:exact
 }
 .p2-sec:first-of-type{margin-top:0}
@@ -312,6 +360,7 @@ td{font-size:.84rem;font-weight:500;padding:8px 13px;border-bottom:1px solid var
   body.printing-v1 #pview{display:block!important}
   body.printing-v2 #screen-view{display:none!important}
   body.printing-v2 #pview2{display:block!important}
+  body.printing-sbl #pview-sbl{display:block!important}
   body:not(.printing-v1):not(.printing-v2) #screen-view{display:none!important}
   body:not(.printing-v1):not(.printing-v2) #pview{display:block!important}
   #pview,#pview2{min-height:0!important;background:none!important}
@@ -328,12 +377,12 @@ td{font-size:.84rem;font-weight:500;padding:8px 13px;border-bottom:1px solid var
   .ptbl th,.ptbl td{padding:4px 5px;color:#000}
   .ptbl th{color:#fff!important;background:#1B3A6B!important}
   .ptbl th.sth{color:#fff!important;background:#2B4F8A!important}
-  .ptbl .tr-gr td{background:#D6E4F0!important;color:#000!important}
+  .ptbl .tr-gr td{background:#1B3A6B!important;color:#fff!important;font-weight:700!important}
   .ptbl .tr-l2 td{background:#EEF4FB!important;color:#000!important}
   .ptbl .tr-l2-hi td{background:#C8E6C9!important;color:#1B5E20!important}
   .ptbl .tr-ur td{background:#fff!important;color:#000!important}
   .ptbl .tr-sum td{background:#DDE6F5!important;color:#1e3a8a!important}
-  .ptbl .tr-tot td{background:#BFD3E8!important;color:#000!important}
+  .ptbl .tr-tot td{background:#0F2347!important;color:#C8A84B!important;font-weight:700!important}
   .phdr h2{font-size:1.05rem;color:#000}
   .phdr p{font-size:.85rem;color:#000}
 }
@@ -1062,6 +1111,11 @@ body{background:linear-gradient(160deg,#eaecf5 0%,#f0f2f8 60%,#e8edf6 100%);min-
           <span class="pm-icon">📊</span>
           <span class="pm-lbl">รายงานอัตรากำลัง<span class="pm-sub">Band + การศึกษา + กลุ่ม</span></span>
         </div>
+        <div class="pdf-divider"></div>
+        <div class="pdf-menu-item" onclick="showPrintViewSBL();closePdfMenu()">
+          <span class="pm-icon">📤</span>
+          <span class="pm-lbl">ส่งข้อมูล ศบล.<span class="pm-sub">กลุ่มงาน · สังกัด · ตำแหน่ง · เงินเดือน</span></span>
+        </div>
       </div>
     </div>
     <button class="btn-fs" id="fs-btn" onclick="toggleFS()" title="เต็มจอ">⛶ เต็มจอ</button>
@@ -1730,6 +1784,27 @@ body{background:linear-gradient(160deg,#eaecf5 0%,#f0f2f8 60%,#e8edf6 100%);min-
   <div class="p2pages" id="p2pages"></div>
 </div>
 
+<div id="pview-sbl">
+  <div class="p2ctrl">
+    <div class="p2ctrl-title">ส่งข้อมูล ศบล. — สถาบันวิจัยวิทยาศาสตร์และเทคโนโลยีแห่งประเทศไทย (วว.)</div>
+    <span class="fl">ปี</span>
+    <select class="fsel" id="sbl-year" onchange="onSblYearChange(this.value)" style="min-width:80px"></select>
+    <span class="fl">เดือน</span>
+    <select class="fsel" id="sbl-month" onchange="renderSBLReport()" style="min-width:120px"><option value="">ทุกเดือน</option></select>
+    <span class="fl">กลุ่มงาน</span>
+    <select class="fsel" id="sbl-group" onchange="onSblGroupChange()" style="min-width:160px"><option value="">ทั้งหมด</option></select>
+    <span class="fl">หน่วยงาน</span>
+    <select class="fsel" id="sbl-dept" onchange="renderSBLReport()" style="min-width:185px"><option value="">ทั้งหมด</option></select>
+    <button class="btn btn-o" onclick="resetSblFilters()">↺ รีเซ็ต</button>
+    <div style="width:1px;height:22px;background:var(--bdr);margin:0 2px"></div>
+    <button class="btn btn-n" onclick="doPrintSBL()">🖨 พิมพ์ / บันทึก PDF</button>
+    <button class="btn btn-o" onclick="exportSBLToExcel()">📥 ดาวน์โหลด Excel</button>
+    <button class="btn btn-o" onclick="showSblVerify()" title="ตรวจสอบยอดรวมเทียบ raw data">🔍 ตรวจสอบยอด</button>
+    <button class="btn btn-o" onclick="hidePrintViewSBL()">← กลับแดชบอร์ด</button>
+  </div>
+  <div id="sbl-pages" style="padding:8px 0 40px"></div>
+</div>
+
 <script>
 // ============================================================
 // CONFIG
@@ -1840,7 +1915,7 @@ function loadYearData(year){
   _selSheetYear=year;
   _selMonth=null;
   const mSel=document.getElementById('g-month');
-  if(mSel) mSel.value='';
+  if(mSel){ mSel.innerHTML='<option value="">ทุกเดือน</option>'; mSel.value=''; }
   // ล้างข้อมูลเก่า + destroy charts
   allData=[]; fullData=[]; filtered=[];
   Object.values(charts).forEach(c=>{try{c.destroy();}catch(e){}});
@@ -1936,8 +2011,8 @@ function onDataLoad(resp){
     position:   gm(r,'ตำแหน่ง'),
     posNew:     gm(r,'ตำแหน่งใหม่','ตำแหน่ง (ใหม่)','ตำแหน่งปัจจุบัน'),
     positioning:normPos(gm(r,'positioning','ประเภท','ประเภทบุคลากร')),
-    band:       gm(r,'Band','band','แบนด์','BAND'),
-    sb:         gm(r,'SB','sb'),
+    band:       gm(r,'Band','band','แบนด์','BAND','Band ','band '),
+    sb:         gm(r,'SB','sb','Sub Band','Sub-Band','SubBand','subband','sub band','sub-band','ซับแบนด์','แบนด์ย่อย','SubBand ','SB '),
     deptCode:   normCode(gm(r,'สังกัด','รหัสสังกัด')),
     deptName:   gm(r,'สังกัดหน่วยงาน','ชื่อสังกัด'),
     group:      normGroup(gm(r,'กลุ่มงาน','กลุ่ม')),
@@ -1956,6 +2031,14 @@ function onDataLoad(resp){
     })(),
     ageYrs:     parseAgeYrs(gm(r,'อายุ')),
     monthNum:   (v=>v?parseInt(v):null)(gm(r,'เดือน','Month','month')),
+    salary:     (()=>{
+      const salKeys=['อัตราเงินเดือน','เงินเดือน','เงินเดือน (บาท)','Salary','salary'];
+      let raw=null;
+      for(const k of salKeys){const i=cmap[k];if(i!==undefined){const cell=r.c[i];if(cell){raw=cell.v??cell.f??null;console.log('[SAL]',k,i,'v=',cell.v,'f=',cell.f,'→raw=',raw);}if(raw!==null&&raw!==undefined&&raw!=='')break;raw=null;}}
+      if(raw===null||raw===undefined||raw==='')return 0;
+      const n=parseFloat(String(raw).replace(/,/g,'').replace(/\s/g,''));
+      return isNaN(n)?0:n;
+    })(),
   })).filter(r=>r.name&&r.name.trim());
 
   // log ตัวอย่างข้อมูลเกษียณ (debug)
@@ -1963,6 +2046,30 @@ function onDataLoad(resp){
   console.log('[workforce] retire sample:', rSample.map(r=>({n:r.name?.slice(0,4),yr:r.retireYearBE,cd:r.retireCountdown,dt:r.retireDate?.slice(0,12)})));
 
   fullData=[...allData];
+  // expose ฟังก์ชัน debug เพื่อตรวจความไม่สอดคล้องระหว่างเดือน
+  window.checkMonthDiff=function(){
+    const WATCH=['deptName','deptCode','group','positioning','posNew','band','sb'];
+    const byId={};
+    allData.forEach(r=>{
+      const id=r.empId||r.name; if(!id) return;
+      if(!byId[id]) byId[id]=[];
+      byId[id].push(r);
+    });
+    const diffs=[];
+    Object.entries(byId).forEach(([id,recs])=>{
+      if(recs.length<2) return;
+      WATCH.forEach(f=>{
+        const vals=[...new Set(recs.map(r=>String(r[f]??'')).filter(Boolean))];
+        if(vals.length>1) diffs.push({id,name:recs[0].name,field:f,values:vals,months:recs.map(r=>r.monthNum)});
+      });
+    });
+    if(!diffs.length){console.log('✅ ไม่พบความไม่สอดคล้อง');return;}
+    console.group(`⚠️ พบ ${diffs.length} รายการที่ต่างกันระหว่างเดือน`);
+    diffs.forEach(d=>console.log(`👤 ${d.name} | ${d.field}: [${d.values.join(' → ')}] (เดือน ${d.months.join(',')})`));
+    console.groupEnd();
+    return diffs;
+  };
+  console.log('[workforce] พิมพ์ checkMonthDiff() ใน console เพื่อตรวจข้อมูลที่ไม่สอดคล้องระหว่างเดือน');
   populatePeriodFilter();
   initYearSelector();
   initPvYearSelector();
@@ -1996,6 +2103,16 @@ function onDataLoad(resp){
     document.getElementById('pview2').style.display='block';
     document.body.classList.add('printing-v2');
     renderFormalReport();
+  }
+  if(_sblShowAfterLoad){
+    _sblShowAfterLoad=false;
+    document.getElementById('screen-view').style.display='none';
+    document.getElementById('pview-sbl').style.display='block';
+    document.body.classList.add('printing-sbl');
+    populateSblMonth();
+    populateSblGroup();
+    populateSblDept(document.getElementById('sbl-group')?.value||'');
+    renderSBLReport();
   }
 }
 
@@ -5071,6 +5188,455 @@ function animateCountUp(el,target,duration=700){
 }
 
 loadData();
+
+// ===== PVIEW-SBL — ส่งข้อมูล ศบล. =====
+function showPrintViewSBL(){
+  console.log('[SBL] showPrintViewSBL called');
+  document.getElementById('screen-view').style.display='none';
+  document.getElementById('pview-sbl').style.display='block';
+  document.body.classList.add('printing-sbl');
+  // year
+  const ys=document.getElementById('sbl-year');
+  ys.innerHTML=YEAR_SHEETS.map(y=>`<option value="${y}"${y===_selSheetYear?' selected':''}>${y}</option>`).join('');
+  // month
+  populateSblMonth();
+  // group
+  populateSblGroup();
+  // dept (all)
+  populateSblDept('');
+  renderSBLReport();
+}
+function populateSblMonth(){
+  const mths=[...new Set(fullData.map(r=>r.monthNum).filter(Boolean))].sort((a,b)=>a-b);
+  const sel=document.getElementById('sbl-month'); if(!sel) return;
+  const cur=sel.value;
+  sel.innerHTML='<option value="">ทุกเดือน</option>'+mths.map(m=>`<option value="${m}">${THAI_MONTHS[m]||m}</option>`).join('');
+  if(mths.includes(parseInt(cur))) sel.value=cur;
+}
+function populateSblGroup(){
+  const gs=document.getElementById('sbl-group'); if(!gs) return;
+  const grps=[...new Set(fullData.map(r=>r.group).filter(Boolean))].sort((a,b)=>{
+    const ai=GROUP_ORDER.indexOf(a),bi=GROUP_ORDER.indexOf(b);
+    return(ai<0&&bi<0)?a.localeCompare(b,'th'):(ai<0?1:bi<0?-1:ai-bi);
+  });
+  const cur=gs.value;
+  gs.innerHTML='<option value="">ทั้งหมด</option>'+grps.map(g=>`<option value="${g}">${g}</option>`).join('');
+  if(grps.includes(cur)) gs.value=cur;
+}
+function populateSblDept(grpF){
+  const sel=document.getElementById('sbl-dept'); if(!sel) return;
+  sel.innerHTML='<option value="">ทั้งหมด</option>';
+  const depts=[...new Map(allData.filter(r=>(!grpF||r.group===grpF)&&r.deptCode&&r.deptName)
+    .map(r=>[r.deptCode,{code:r.deptCode,name:r.deptName}])).values()]
+    .sort((a,b)=>a.name.localeCompare(b.name,'th'));
+  depts.forEach(d=>{ const o=document.createElement('option'); o.value=d.code; o.textContent=d.name&&d.name!==d.code?`${d.code} ${d.name}`:d.code; sel.appendChild(o); });
+}
+function onSblGroupChange(){ populateSblDept(document.getElementById('sbl-group').value); renderSBLReport(); }
+function onSblYearChange(year){
+  if(!year) return;
+  const gYear=document.getElementById('g-year');
+  if(gYear) gYear.value=year;
+  const sblMonth=document.getElementById('sbl-month');
+  if(sblMonth) sblMonth.value='';
+  _sblShowAfterLoad=true;
+  loadYearData(year);
+}
+let _sblShowAfterLoad=false;
+function resetSblFilters(){
+  document.getElementById('sbl-group').value='';
+  const sblMon=document.getElementById('sbl-month'); if(sblMon) sblMon.value='';
+  populateSblDept('');
+  renderSBLReport();
+}
+function hidePrintViewSBL(){
+  document.getElementById('pview-sbl').style.display='none';
+  document.getElementById('screen-view').style.display='block';
+  document.body.classList.remove('printing-sbl');
+}
+function doPrintSBL(){
+  _injectPageStyle('pgStSBL','@page{size:A4 portrait;margin:0}');
+  window.print();
+  setTimeout(()=>_removePageStyle('pgStSBL'),1500);
+}
+function fmtSalary(n){
+  if(!n||isNaN(n)||n===0) return '—';
+  return Number(n).toLocaleString('th-TH');
+}
+
+// ── ศบล. helpers ──
+const SBL_INDEPENDENT = new Set(['สสส.','สลค.']); // แยกเป็น group ตัวเองใน ศบล.
+const SBL_GRP_ORDER = ['ขึ้นตรง ผวว.','อช.','พย.','ยธ.','บอ.','บห.','สสส.','สลค.'];
+// positioning → band fallback (ถ้า Sheet ไม่มีคอลัมน์ Band)
+const SBL_POS_BAND = {'ผู้บริหาร':1,'พนักงาน':2,'ลูกจ้างประจำ':3,'ลูกจ้างทั่วไป':4,'ลูกจ้างเฉพาะกิจ':4};
+// SB order ตาม R2_SB_ORDER (ต่ำ=อาวุโส, สูง=ทั่วไป)
+const SBL_SB_RANK = {'1-3':1,'1-2':2,'1-1':3,'2-5':1,'2-4':2,'2-3':3,'2-2':4,'2-1':5,'3-3':1,'3-2':2,'3-1':3,'4-4':1,'4-3':2,'4-2':3,'4-1':4};
+
+let _sblDeptGroupMap={};  // deptCode → group (สร้างจาก non-ลูกจ้าง ก่อน เพื่อ consistency)
+let _sblDeptNameMap={};   // deptCode → ชื่อยาวที่สุด (normalize ชื่อย่อ vs ชื่อเต็ม)
+function sblGroupOf(r){
+  if(SBL_INDEPENDENT.has(r.deptCode)) return r.deptCode;
+  // ใช้ lookup เป็นหลัก (group ของ non-ลูกจ้าง ใน dept เดียวกัน) → ทำให้ลูกจ้างอยู่กลุ่มเดียวกับพนักงาน
+  return _sblDeptGroupMap[r.deptCode] || r.group || '(ไม่ระบุ)';
+}
+
+function sblNameSeniorityRank(posLabel){
+  // fallback เมื่อไม่มี SB data — ตรวจชื่อตำแหน่งเพื่อเรียงอาวุโส → ทั่วไป
+  const n = posLabel||'';
+  if(/ผู้อำนวยการ|ผอ\./.test(n)) return 1;
+  if(/อาวุโส/.test(n)) return 2;
+  if(/ชำนาญการพิเศษ/.test(n)) return 3;
+  if(/ชำนาญการ/.test(n)) return 4;
+  if(/ปฏิบัติการ/.test(n)) return 5;
+  if(/เจ้าหน้าที่/.test(n)) return 6;
+  return 7;
+}
+
+function sblPosSortKey(entry){
+  // PRIMARY: ประเภทการจ้าง (ผู้บริหาร=1 < พนักงาน=2 < ลูกจ้างประจำ=3 < ลูกจ้างทั่วไป=4)
+  // ใช้ positioning type เป็น primary เสมอ — ไม่ใช้ Sheet Band เป็น primary
+  const posTypeBand = SBL_POS_BAND[entry.positioning] || SBL_POS_BAND[entry.posLabel] || 2;
+  // SECONDARY: Sheet Band ASC (ต่ำ=อาวุโส) — มีความหมายเฉพาะพนักงาน/ผู้บริหาร
+  const sheetBand = parseInt(entry.band) || 9;
+  // TERTIARY: SB DESC (สูง=อาวุโส) หรือ name seniority rank
+  const sbNum = parseInt(entry.sb) || 0;
+  const sbKey = sbNum > 0 ? -sbNum : sblNameSeniorityRank(entry.posLabel);
+  return [posTypeBand, sheetBand, sbKey, entry.posLabel||''];
+}
+
+function sblSortPos(posEntries){
+  return posEntries.sort(([,a],[,b])=>{
+    const ka=sblPosSortKey(a), kb=sblPosSortKey(b);
+    if(ka[0]!==kb[0]) return ka[0]-kb[0]; // positioning type
+    if(ka[1]!==kb[1]) return ka[1]-kb[1]; // sheet band
+    if(ka[2]!==kb[2]) return ka[2]-kb[2]; // SB / seniority
+    return (ka[3]||'').localeCompare(kb[3]||'','th'); // ชื่อตำแหน่ง
+  });
+}
+
+const SBL_CENTER_RE=/^ศูนย์|^สำนัก|^สถาบัน|^ฟาร์ม/; // ระดับ ศูนย์/สำนัก เท่านั้นที่แสดงเป็น dept header
+const SBL_DIRECT_KEY='__direct__'; // ขึ้นตรงกลุ่มงาน (ไม่มี ศูนย์/สำนัก)
+const SBL_SUB_RE=/^กอง|^ห้อง|^ฝ่าย/; // ระดับย่อยที่ตัดออก
+
+function sblBuildTree(src){
+  const tree={};
+  src.forEach(r=>{
+    const g=sblGroupOf(r);
+    // normalize deptName: ใช้ชื่อยาวที่สุดจาก _sblDeptNameMap (ป้องกันชื่อย่อ vs ชื่อเต็ม)
+    const dn=(_sblDeptNameMap&&r.deptCode&&_sblDeptNameMap[r.deptCode])||r.deptName||'';
+    // ศูนย์/สำนัก/สถาบัน → ใช้ชื่อ+รหัส (center header)
+    // กอง/ห้อง/ฝ่าย → ถูก filter ออกแล้วจาก src
+    // ขึ้นตรงกลุ่มงาน → ใช้ deptName จริง (ไม่ merge รวมกัน)
+    let d;
+    if(SBL_CENTER_RE.test(dn)){
+      d=r.deptCode&&!dn.includes(`(${r.deptCode})`)?`${dn} (${r.deptCode})`:dn;
+    } else {
+      d=dn||(r.deptCode?`(${r.deptCode})`:SBL_DIRECT_KEY);
+    }
+    // position label: ลูกจ้าง → ใช้ positioning type ล้วนๆ (ตัด "()" ออก)
+    const rawPos=r.posNew||r.position||'(ไม่ระบุตำแหน่ง)';
+    const posType=r.positioning||'';
+    const p=posType.startsWith('ลูกจ้าง')
+      ?posType
+      :rawPos.startsWith('ลูกจ้าง')
+        ?(rawPos.replace(/\s*\([^)]*\)/g,'').trim()||rawPos)
+        :rawPos;
+    if(!tree[g])tree[g]={};
+    if(!tree[g][d])tree[g][d]={};
+    if(!tree[g][d][p]){
+      tree[g][d][p]={rows:[],band:'',sb:'',posLabel:p,positioning:''};
+    }
+    tree[g][d][p].rows.push(r);
+    if(!tree[g][d][p].band && r.band) tree[g][d][p].band=String(r.band);
+    if(!tree[g][d][p].sb && r.sb) tree[g][d][p].sb=String(r.sb);
+    if(!tree[g][d][p].positioning && r.positioning) tree[g][d][p].positioning=r.positioning;
+  });
+  return tree;
+}
+
+function sblSortGroups(tree){
+  return Object.keys(tree).sort((a,b)=>{
+    const ai=SBL_GRP_ORDER.indexOf(a),bi=SBL_GRP_ORDER.indexOf(b);
+    return(ai<0&&bi<0)?a.localeCompare(b,'th'):(ai<0?1:bi<0?-1:ai-bi);
+  });
+}
+
+function renderSBLReport(){
+  const grpFilter=document.getElementById('sbl-group')?.value||'';
+  const mnFilter=parseInt(document.getElementById('sbl-month')?.value)||null;
+  const deptFilter=document.getElementById('sbl-dept')?.value||'';
+  // ใช้ logic เดียวกับ PDF 1/2: dedup by empId/name เอา record เดือนล่าสุด
+  const pool=fullData.length?fullData:allData;
+  const baseSrc=mnFilter?(()=>{
+    const withMon=pool.filter(r=>r.monthNum===mnFilter);
+    const seenIds=new Set(withMon.map(r=>r.empId||r.name));
+    const nullDedup=[...new Map(
+      pool.filter(r=>!r.monthNum&&!(seenIds.has(r.empId||r.name)))
+        .map(r=>[r.empId||r.name,r])
+    ).values()];
+    return [...withMon,...nullDedup];
+  })():(()=>{
+    const byId=new Map();
+    pool.forEach(r=>{
+      const id=r.empId||r.name; if(!id) return;
+      const prev=byId.get(id);
+      if(!prev){byId.set(id,r);return;}
+      const pm=prev.monthNum??-1, nm=r.monthNum??-1;
+      if(nm>pm) byId.set(id,r);
+    });
+    return [...byId.values()];
+  })();
+  const src=baseSrc.filter(r=>(r.name||r.empId)
+    &&(!grpFilter||(sblGroupOf(r)===grpFilter||r.group===grpFilter))
+    &&(!deptFilter||r.deptCode===deptFilter)
+    &&!SBL_SUB_RE.test(r.deptName||''));
+  // สร้าง deptCode→group lookup: เอา non-ลูกจ้าง ก่อน → ลูกจ้างจะ override ได้เฉพาะ dept ที่ยังไม่มี
+  _sblDeptGroupMap={};
+  const _isLJ=r=>(r.positioning||'').startsWith('ลูกจ้าง');
+  fullData.filter(r=>!_isLJ(r)).forEach(r=>{ if(r.deptCode&&r.group&&!_sblDeptGroupMap[r.deptCode]) _sblDeptGroupMap[r.deptCode]=r.group; });
+  fullData.filter(r=>_isLJ(r)).forEach(r=>{ if(r.deptCode&&r.group&&!_sblDeptGroupMap[r.deptCode]) _sblDeptGroupMap[r.deptCode]=r.group; });
+  // normalize deptName: ใช้ชื่อยาวที่สุดของ deptCode จาก fullData ทุกเดือน (ป้องกันชื่อย่อ vs ชื่อเต็มไม่ตรงกัน)
+  _sblDeptNameMap={};
+  fullData.forEach(r=>{ if(r.deptCode&&r.deptName){ const cur=_sblDeptNameMap[r.deptCode]||''; if(r.deptName.length>cur.length) _sblDeptNameMap[r.deptCode]=r.deptName; } });
+  const tree=sblBuildTree(src);
+  const groups=sblSortGroups(tree);
+  const today=new Date();
+  const thDate=`${today.getDate()} ${['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'][today.getMonth()]} ${today.getFullYear()+543}`;
+  const logoSrc=document.querySelector('.hdr img')?.src||'';
+  let html='';
+  groups.forEach(grp=>{
+    // ศูนย์/สำนัก ก่อน (alphabetical), __direct__ ท้ายสุด
+    const depts=Object.keys(tree[grp]).sort((a,b)=>{
+      if(a===SBL_DIRECT_KEY) return 1;
+      if(b===SBL_DIRECT_KEY) return -1;
+      return a.localeCompare(b,'th');
+    });
+    let grpCount=0,grpSal=0;
+    let bodyHtml=`<div class="sbl-grp-hdr">${SBL_INDEPENDENT.has(grp)?'หน่วยงาน: ':'กลุ่มงาน: '}${grp}</div>`;
+    depts.forEach(dept=>{
+      const isCenter=SBL_CENTER_RE.test(dept);
+      const posEntries=sblSortPos(Object.entries(tree[grp][dept]));
+      let deptCount=0,deptSal=0,rows2='';
+      posEntries.forEach(([pos,pData])=>{
+        const cnt=pData.rows.length;
+        const sal=pData.rows.reduce((s,r)=>s+(r.salary||0),0);
+        deptCount+=cnt;deptSal+=sal;
+        rows2+=`<tr><td>${pos}</td><td class="r">${cnt}</td><td class="r">${fmtSalary(sal)}</td></tr>`;
+      });
+      grpCount+=deptCount;grpSal+=deptSal;
+      const deptHdrClass=isCenter?'sbl-dept-hdr':'sbl-direct-hdr';
+      const deptDisplay=dept===SBL_DIRECT_KEY?`ขึ้นตรง ${grp}`:dept;
+      const sumLbl=`รวม ${deptDisplay}`;
+      bodyHtml+=`<div class="${deptHdrClass}">${deptDisplay}</div><table class="sbl-tbl"><thead><tr><th>ตำแหน่ง</th><th class="r" style="width:70px">จำนวน (คน)</th><th class="r" style="width:110px">เงินเดือนรวม (บาท)</th></tr></thead>
+<tbody>${rows2}<tr class="sbl-sum"><td>${sumLbl}</td><td class="r">${deptCount}</td><td class="r">${fmtSalary(deptSal)}</td></tr></tbody></table>`;
+    });
+    bodyHtml+=`<table class="sbl-tbl" style="margin-top:10px"><tbody><tr class="sbl-grand"><td>รวมทั้งหมด${SBL_INDEPENDENT.has(grp)?'':` กลุ่มงาน`} ${grp}</td><td class="r" style="width:70px">${grpCount}</td><td class="r" style="width:110px">${fmtSalary(grpSal)}</td></tr></tbody></table>`;
+    html+=`<div class="sbl-page">
+  <div class="sbl-page-hdr">
+    ${logoSrc?`<img class="sbl-page-logo" src="${logoSrc}" alt="วว.">`:'<div style="width:44px;height:44px;background:#1B3A6B;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:10pt">วว.</div>'}
+    <div>
+      <div class="sbl-page-ttl">สถาบันวิจัยวิทยาศาสตร์และเทคโนโลยีแห่งประเทศไทย (วว.)</div>
+      <div class="sbl-page-sub">ข้อมูลอัตรากำลัง เพื่อส่ง ศบล. &nbsp;·&nbsp; ณ วันที่ ${thDate}</div>
+    </div>
+  </div>
+  ${bodyHtml}
+</div>`;
+  });
+  document.getElementById('sbl-pages').innerHTML=html||'<div style="padding:40px;text-align:center;color:#888">ไม่มีข้อมูล</div>';
+}
+
+function showSblVerify(){
+  const mnFilter=parseInt(document.getElementById('sbl-month')?.value)||null;
+  const grpFilter=document.getElementById('sbl-group')?.value||'';
+  const pool=fullData.length?fullData:allData;
+
+  // --- dedup logic เดียวกับ renderSBLReport ---
+  const deduped=mnFilter?(()=>{
+    const withMon=pool.filter(r=>r.monthNum===mnFilter);
+    const seenIds=new Set(withMon.map(r=>r.empId||r.name));
+    const nullDedup=[...new Map(pool.filter(r=>!r.monthNum&&!seenIds.has(r.empId||r.name)).map(r=>[r.empId||r.name,r])).values()];
+    return [...withMon,...nullDedup];
+  })():(()=>{
+    const byId=new Map();
+    pool.forEach(r=>{const id=r.empId||r.name;if(!id)return;const prev=byId.get(id);if(!prev){byId.set(id,r);return;}if((r.monthNum??-1)>(prev.monthNum??-1))byId.set(id,r);});
+    return [...byId.values()];
+  })();
+
+  const src=deduped.filter(r=>(r.name||r.empId)
+    &&(!grpFilter||(sblGroupOf(r)===grpFilter||r.group===grpFilter))
+    &&!SBL_SUB_RE.test(r.deptName||''));
+
+  // --- raw: ไม่ dedup ไม่ตัด กอง/ห้อง/ฝ่าย ---
+  const rawSrc=pool.filter(r=>(r.name||r.empId)&&(!mnFilter||r.monthNum===mnFilter)&&(!grpFilter||(sblGroupOf(r)===grpFilter||r.group===grpFilter)));
+
+  // นับ PDF vs raw แยก positioning
+  const POS_ORDER=['ผู้บริหาร','พนักงาน','ลูกจ้างประจำ','ลูกจ้างทั่วไป','ลูกจ้างเฉพาะกิจ'];
+  const countBy=(arr,fn)=>{const m={};arr.forEach(r=>{const k=fn(r);m[k]=(m[k]||0)+1;});return m;};
+  const pdfByPos=countBy(src,r=>r.positioning||'ไม่ระบุ');
+  const rawByPos=countBy(rawSrc,r=>r.positioning||'ไม่ระบุ');
+  const allKeys=[...new Set([...Object.keys(pdfByPos),...Object.keys(rawByPos)])].sort((a,b)=>{
+    const ai=POS_ORDER.indexOf(a),bi=POS_ORDER.indexOf(b);
+    return(ai<0&&bi<0)?a.localeCompare(b,'th'):(ai<0?1:bi<0?-1:ai-bi);
+  });
+
+  const pdfByGrp=countBy(src,r=>sblGroupOf(r));
+  const rawByGrp=countBy(rawSrc,r=>sblGroupOf(r));
+  const allGrps=[...new Set([...Object.keys(pdfByGrp),...Object.keys(rawByGrp)])].sort((a,b)=>{
+    const ai=SBL_GRP_ORDER.indexOf(a),bi=SBL_GRP_ORDER.indexOf(b);
+    return(ai<0&&bi<0)?a.localeCompare(b,'th'):(ai<0?1:bi<0?-1:ai-bi);
+  });
+
+  const mnLabel=mnFilter?`เดือน ${mnFilter}`:'ทุกเดือน';
+  const grpLabel=grpFilter||'ทั้งหมด';
+
+  let html=`<div style="font-family:'Sarabun',sans-serif;font-size:.9rem">
+  <div style="font-weight:700;font-size:1rem;margin-bottom:10px;color:#0F2347">🔍 ตรวจสอบยอด — ${mnLabel} | กลุ่มงาน: ${grpLabel}</div>
+  <p style="color:#666;font-size:.8rem;margin-bottom:12px">
+    <b>PDF (dedup)</b> = นับ 1 คนต่อ 1 record (ล่าสุด) ตัด กอง/ห้อง/ฝ่าย ออก<br>
+    <b>Raw Sheet</b> = นับทุก row ที่เดือนตรง (รวม กอง/ห้อง/ฝ่าย) — ใช้เทียบ pivot
+  </p>
+
+  <b>แยกตามประเภทบุคลากร</b>
+  <table style="width:100%;border-collapse:collapse;margin:8px 0 16px;font-size:.85rem">
+  <thead><tr style="background:#1B3A6B;color:#fff">
+    <th style="padding:6px 10px;text-align:left">ประเภท</th>
+    <th style="padding:6px 10px;text-align:center">PDF (dedup)</th>
+    <th style="padding:6px 10px;text-align:center">Raw Sheet</th>
+    <th style="padding:6px 10px;text-align:center">ต่าง</th>
+  </tr></thead><tbody>`;
+  let ptot=0,rtot=0;
+  allKeys.forEach((k,i)=>{
+    const p=pdfByPos[k]||0,r=rawByPos[k]||0,diff=p-r;
+    const bg=i%2?'#F6F8FD':'#fff';
+    const dc=diff===0?'#2e7d32':diff>0?'#c62828':'#e65100';
+    html+=`<tr style="background:${bg}"><td style="padding:5px 10px">${k}</td><td style="padding:5px 10px;text-align:center;font-weight:700">${p}</td><td style="padding:5px 10px;text-align:center">${r}</td><td style="padding:5px 10px;text-align:center;color:${dc};font-weight:700">${diff>0?'+':''}${diff===0?'✅':diff}</td></tr>`;
+    ptot+=p;rtot+=r;
+  });
+  const dtot=ptot-rtot,dtc=dtot===0?'#2e7d32':dtot>0?'#c62828':'#e65100';
+  html+=`<tr style="background:#0F2347;color:#C8A84B;font-weight:700"><td style="padding:6px 10px">รวมทั้งหมด</td><td style="padding:6px 10px;text-align:center">${ptot}</td><td style="padding:6px 10px;text-align:center">${rtot}</td><td style="padding:6px 10px;text-align:center;color:${dtot===0?'#C8A84B':dtot>0?'#ff8a80':'#69f0ae'}">${dtot>0?'+':''}${dtot===0?'✅':dtot}</td></tr>`;
+  html+=`</tbody></table>
+
+  <b>แยกตามกลุ่มงาน</b>
+  <table style="width:100%;border-collapse:collapse;margin:8px 0;font-size:.85rem">
+  <thead><tr style="background:#1B3A6B;color:#fff">
+    <th style="padding:6px 10px;text-align:left">กลุ่มงาน</th>
+    <th style="padding:6px 10px;text-align:center">PDF (dedup)</th>
+    <th style="padding:6px 10px;text-align:center">Raw Sheet</th>
+    <th style="padding:6px 10px;text-align:center">ต่าง</th>
+  </tr></thead><tbody>`;
+  allGrps.forEach((k,i)=>{
+    const p=pdfByGrp[k]||0,r=rawByGrp[k]||0,diff=p-r;
+    const bg=i%2?'#F6F8FD':'#fff';
+    const dc=diff===0?'#2e7d32':diff>0?'#c62828':'#e65100';
+    html+=`<tr style="background:${bg}"><td style="padding:5px 10px">${k}</td><td style="padding:5px 10px;text-align:center;font-weight:700">${p}</td><td style="padding:5px 10px;text-align:center">${r}</td><td style="padding:5px 10px;text-align:center;color:${dc};font-weight:700">${diff>0?'+':''}${diff===0?'✅':diff}</td></tr>`;
+  });
+  html+=`</tbody></table>
+  <p style="color:#888;font-size:.75rem;margin-top:8px">* ค่าต่าง ≠ 0 อาจเกิดจาก: คนมีข้อมูลหลายเดือน (dedup เลือก 1), อยู่ใน กอง/ห้อง/ฝ่าย (ตัดออก), หรือข้อมูลซ้ำในชีต</p>
+  </div>`;
+
+  // modal
+  let modal=document.getElementById('sbl-verify-modal');
+  if(!modal){
+    modal=document.createElement('div');
+    modal.id='sbl-verify-modal';
+    modal.style.cssText='position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);z-index:9999;display:flex;align-items:center;justify-content:center';
+    modal.onclick=e=>{if(e.target===modal)modal.remove();};
+    document.body.appendChild(modal);
+  }
+  modal.innerHTML=`<div style="background:#fff;border-radius:10px;padding:24px;max-width:640px;width:95%;max-height:85vh;overflow-y:auto;box-shadow:0 8px 40px rgba(0,0,0,.3);border-top:4px solid #C8A84B">
+    ${html}
+    <div style="text-align:right;margin-top:16px"><button onclick="document.getElementById('sbl-verify-modal').remove()" style="padding:8px 20px;background:#1B3A6B;color:#fff;border:none;border-radius:6px;cursor:pointer;font-family:Sarabun,sans-serif;font-size:.9rem">ปิด</button></div>
+  </div>`;
+  modal.style.display='flex';
+}
+
+function exportSBLToExcel(){
+  if(!window.XLSX){ alert('กำลังโหลด SheetJS — กรุณารอสักครู่แล้วลองใหม่'); return; }
+  const grpFilter=document.getElementById('sbl-group')?.value||'';
+  const mnFilter=parseInt(document.getElementById('sbl-month')?.value)||null;
+  const deptFilter=document.getElementById('sbl-dept')?.value||'';
+  const pool2=fullData.length?fullData:allData;
+  const baseSrc2=mnFilter?(()=>{
+    const withMon=pool2.filter(r=>r.monthNum===mnFilter);
+    const seenIds=new Set(withMon.map(r=>r.empId||r.name));
+    const nullDedup=[...new Map(
+      pool2.filter(r=>!r.monthNum&&!(seenIds.has(r.empId||r.name)))
+        .map(r=>[r.empId||r.name,r])
+    ).values()];
+    return [...withMon,...nullDedup];
+  })():(()=>{
+    const byId=new Map();
+    pool2.forEach(r=>{
+      const id=r.empId||r.name; if(!id) return;
+      const prev=byId.get(id);
+      if(!prev){byId.set(id,r);return;}
+      const pm=prev.monthNum??-1, nm=r.monthNum??-1;
+      if(nm>pm) byId.set(id,r);
+    });
+    return [...byId.values()];
+  })();
+  const src=baseSrc2.filter(r=>(r.name||r.empId)
+    &&(!grpFilter||(sblGroupOf(r)===grpFilter||r.group===grpFilter))
+    &&(!deptFilter||r.deptCode===deptFilter)
+    &&!SBL_SUB_RE.test(r.deptName||''));
+
+  // build tree (ใช้ lookup เดียวกัน — _sblDeptGroupMap ถูก set ไว้แล้วใน renderSBLReport)
+  const tree=sblBuildTree(src);
+  const groups=sblSortGroups(tree);
+
+  const today=new Date();
+  const thDate=`${today.getDate()} ${['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'][today.getMonth()]} ${today.getFullYear()+543}`;
+
+  const aoa=[];
+  aoa.push(['ข้อมูลอัตรากำลัง เพื่อส่ง ศบล.','','','']);
+  aoa.push([`สถาบันวิจัยวิทยาศาสตร์และเทคโนโลยีแห่งประเทศไทย (วว.) ณ วันที่ ${thDate}`,'','','']);
+  aoa.push([]);
+  aoa.push(['กลุ่มงาน','ศูนย์/สำนัก','ตำแหน่ง','จำนวน (คน)','เงินเดือนรวม (บาท)']);
+
+  let grandCount=0,grandSal=0;
+  groups.forEach(grp=>{
+    const depts=Object.keys(tree[grp]).sort((a,b)=>{
+      if(a===SBL_DIRECT_KEY) return 1;
+      if(b===SBL_DIRECT_KEY) return -1;
+      return a.localeCompare(b,'th');
+    });
+    let grpCount=0,grpSal=0;
+    depts.forEach(dept=>{
+      const deptLabel=dept===SBL_DIRECT_KEY?`ขึ้นตรง ${grp}`:dept;
+      const posEntries=sblSortPos(Object.entries(tree[grp][dept]));
+      let deptCount=0,deptSal=0;
+      posEntries.forEach(([pos,pData])=>{
+        const cnt=pData.rows.length;
+        const sal=pData.rows.reduce((s,r)=>s+(r.salary||0),0);
+        deptCount+=cnt;deptSal+=sal;
+        aoa.push([grp,deptLabel,pos,cnt,sal||'']);
+      });
+      grpCount+=deptCount;grpSal+=deptSal;
+      aoa.push([grp,`รวม ${deptLabel}`,'',deptCount,deptSal||'']);
+    });
+    grandCount+=grpCount;grandSal+=grpSal;
+    aoa.push([`รวมกลุ่มงาน ${grp}`,'','',grpCount,grpSal||'']);
+    aoa.push([]);
+  });
+  aoa.push(['รวมทั้งหมด','','',grandCount,grandSal||'']);
+
+  const ws=XLSX.utils.aoa_to_sheet(aoa);
+
+  // column widths
+  ws['!cols']=[{wch:22},{wch:38},{wch:36},{wch:14},{wch:20}];
+
+  // styles: bold rows (title, header, sum rows)
+  // SheetJS CE doesn't support cell styles directly, but we can merge title cells
+  const merge=[
+    {s:{r:0,c:0},e:{r:0,c:4}},
+    {s:{r:1,c:0},e:{r:1,c:4}},
+  ];
+  ws['!merges']=merge;
+
+  const wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,ws,'ข้อมูล ศบล.');
+  const fname=`ส่งข้อมูล_ศบล_${thDate.replace(/\s/g,'_')}.xlsx`;
+  XLSX.writeFile(wb,fname);
+}
 </script>
 </body>
 </html>
