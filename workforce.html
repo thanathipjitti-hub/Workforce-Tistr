@@ -6,7 +6,7 @@
 <title>ระบบสารสนเทศอัตรากำลัง | วว.</title>
 <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&family=Prompt:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
 <style>
 :root{
   --c1:#1a1a6e;--c2:#2e2ea8;--c3:#4444c4;--c4:#8888cc;
@@ -1879,7 +1879,7 @@ const PARENT_MAP_BASE = {
   'หป.พร.':'ศทร.',
   'กปร.':'สรร.','กจบ.':'สรร.','กปผ.':'สรร.',
   // บห.
-  'หบร.':'ศบล.','หบน.':'ศบล.',
+  'หบร.':'ศอล.','หบน.':'ศอล.',
 };
 // ปี 2568 และก่อนหน้า: สลค. ใต้ ศนก., สสส. ใต้ ศนพ.
 const PARENT_MAP_PRE2569 = {'สลค.':'ศนก.','สสส.':'ศนพ.'};
@@ -3872,7 +3872,7 @@ const DEPT_SORT={
   // ยธ. — l3
   'กนผ.':1,'กตป.':2,'กพร.':3, // ใต้ สยศ.
   'กบน.':1,'กพน.':2,           // ใต้ สจท.
-  'หบร.':1,'หบน.':2,           // ใต้ ศบล.
+  'หบร.':1,'หบน.':2,           // ใต้ ศอล.
   // บอ. — l2
   'ศทม.':1,'ศพว.':2,'ศบท.':3,'ศทร.':4,'สรร.':5,
   // บอ. — l3
@@ -5305,7 +5305,7 @@ const SBL_PARENT_MAP={
   'กพท.':'สทส.','กจค.':'สทส.',
   'กนผ.':'สยศ.','กตป.':'สยศ.','กพร.':'สยศ.',
   'กบน.':'สจท.','กพน.':'สจท.',
-  'หบร.':'ศบล.','หบน.':'ศบล.',
+  'หบร.':'ศอล.','หบน.':'ศอล.',
   'หป.ฟอ.':'ศทม.','หป.สอ.':'ศทม.','หป.วก.':'ศทม.','หป.ทฟ.':'ศทม.','หป.คม.':'ศทม.','หป.ชจ.':'ศทม.',
   'หป.สส.':'ศพว.','หป.สป.':'ศพว.','หป.สช.':'ศพว.',
   'หป.ทบ.':'ศบท.','หป.พบ.':'ศบท.',
@@ -5316,6 +5316,9 @@ const SBL_PARENT_MAP={
   'กสน.':'สสอ.','กปส.':'สสอ.',
   'กกล.':'สบก.','กบร.':'สบก.',
 };
+// หน่วยงานที่ไม่ใช่ศูนย์/สำนัก และไม่อยู่ใน PARENT_MAP แต่ต้องรวมใน Form 3 ของกลุ่มที่ระบุ
+// key = normCode ของหน่วยงาน, value = รหัสกลุ่มที่สังกัด
+const SBL_EXTRA_UNITS={'กกม.':'บห.'};
 let _sblForm=1; // ฟอร์มปัจจุบัน (1/2/3)
 function setSblForm(n){
   _sblForm=n;
@@ -5403,17 +5406,20 @@ const SBL_DIRECT_KEY='__direct__'; // ขึ้นตรงกลุ่มงา
 const SBL_SUB_RE=/^กอง|^ห้อง|^ฝ่าย/; // ระดับย่อยที่ตัดออก
 const SBL_EXCLUDE_RE=/^(หบน|หบร|หป)/; // สังกัดที่ไม่แสดงใน ศบล. (หบน., หบร., หป. ทุกรูปแบบ)
 
-function sblBuildTree(src, parentMap=null, groupFn=null){
+function sblBuildTree(src, parentMap=null, groupFn=null, directCodes=null){
   const tree={};
   src.forEach(r=>{
     const dn=(_sblDeptNameMap&&r.deptCode&&_sblDeptNameMap[r.deptCode])||r.deptName||'';
     const code=normCode(r.deptCode||'');
     let d, subLabel='', g=groupFn?groupFn(r):sblGroupOf(r);
-    if(parentMap && parentMap[code]){
-      // ฟอร์ม 2: หน่วยงานย่อย → จัดเข้าใต้ศูนย์/สำนักแม่
-      // ใช้กลุ่มของ parent center (ไม่ใช่กลุ่มของ sub-unit เอง)
+    if(directCodes && directCodes.has(code)){
+      // ขึ้นตรงกลุ่ม (เช่น ผวว., บอ.) → bucket SBL_DIRECT_KEY
+      d=SBL_DIRECT_KEY; subLabel='';
+    } else if(parentMap && parentMap[code]){
+      // ฟอร์ม 2/3: หน่วยงานย่อย → จัดเข้าใต้ศูนย์/สำนักแม่
       const pCode=parentMap[code];
-      g=_sblDeptGroupMap[pCode]||g;
+      // ถ้าไม่มี groupFn (Form 2) ให้ใช้กลุ่มของ parent; ถ้ามี groupFn (Form 3) คง g จาก groupFn ไว้
+      if(!groupFn) g=_sblDeptGroupMap[pCode]||g;
       const pName=_sblDeptNameMap[pCode]||pCode;
       d=!pName.includes(`(${pCode})`)?`${pName} (${pCode})`:pName;
       subLabel=dn||r.deptCode||code;
@@ -5499,11 +5505,18 @@ function renderSBLReport(){
     return r.group||_sblDeptGroupMap[r.deptCode]||'(ไม่ระบุ)';
   };
   if(_sblForm===3){
-    // ฟอร์ม 3: เฉพาะขึ้นตรงกลุ่มทุกกลุ่ม
-    src=baseSrc.filter(r=>(r.name||r.empId)
-      &&(!grpFilter||(_sblForm3GroupOf(r)===grpFilter||r.group===grpFilter))
-      &&SBL_GRP_DIRECT_CODES.has(normCode(r.deptCode||'')));
-    tree=sblBuildTree(src, null, _sblForm3GroupOf);
+    // ฟอร์ม 3: ทุกคนในกลุ่ม (ขึ้นตรงกลุ่ม + สำนัก/ศูนย์ + หน่วยย่อย + SBL_EXTRA_UNITS)
+    src=baseSrc.filter(r=>{
+      const code=normCode(r.deptCode||'');
+      const inPM=!!SBL_PARENT_MAP[code];
+      const isDirect=SBL_GRP_DIRECT_CODES.has(code);
+      const isExtra=!!SBL_EXTRA_UNITS[code];
+      return (r.name||r.empId)
+        &&(!grpFilter||(_sblForm3GroupOf(r)===grpFilter||r.group===grpFilter))
+        &&(!SBL_EXCLUDE_RE.test(r.deptCode||'')||inPM)
+        &&(isDirect||_sblTypeOk(r)||inPM||isExtra);
+    });
+    tree=sblBuildTree(src, SBL_PARENT_MAP, _sblForm3GroupOf, SBL_GRP_DIRECT_CODES);
   } else if(_sblForm===2){
     // ฟอร์ม 2: สำนัก/ศูนย์ + หน่วยงานย่อย (ไม่มีขึ้นตรงกลุ่ม)
     // SBL_EXCLUDE_RE (หบน/หบร/หป) ยกเว้นถ้าอยู่ใน SBL_PARENT_MAP — เพราะต้องแสดงใต้ศูนย์แม่
@@ -5532,7 +5545,9 @@ function renderSBLReport(){
     const dn=(_sblDeptNameMap&&r.deptCode&&_sblDeptNameMap[r.deptCode])||r.deptName||'';
     const code=normCode(r.deptCode||'');
     let d;
-    if(_sblForm===2&&SBL_PARENT_MAP[code]){
+    if((_sblForm===2||_sblForm===3)&&SBL_GRP_DIRECT_CODES.has(code)){
+      d=SBL_DIRECT_KEY; // ขึ้นตรงกลุ่ม
+    } else if((_sblForm===2||_sblForm===3)&&SBL_PARENT_MAP[code]){
       const pCode=SBL_PARENT_MAP[code];
       const pName=_sblDeptNameMap[pCode]||pCode;
       d=!pName.includes(`(${pCode})`)?`${pName} (${pCode})`:pName;
@@ -5544,9 +5559,9 @@ function renderSBLReport(){
       if(r.deptCode&&!sblDeptKeyToCode[d]) sblDeptKeyToCode[d]=r.deptCode;
     }
   });
-  // build sub-unit breakdown map สำหรับ Form 2 side panel
+  // build sub-unit breakdown map สำหรับ Form 2/3 side panel
   const subBreakdown={};
-  if(_sblForm===2){
+  if(_sblForm===2||_sblForm===3){
     src.forEach(r=>{
       const dn=(_sblDeptNameMap&&r.deptCode&&_sblDeptNameMap[r.deptCode])||r.deptName||'';
       const code=normCode(r.deptCode||'');
@@ -5582,72 +5597,132 @@ function renderSBLReport(){
     const depts=tree[grp][SBL_DIRECT_KEY]?[SBL_DIRECT_KEY,..._otherDepts]:_otherDepts;
     let grpCount=0,grpSal=0;
     let bodyHtml=`<div class="sbl-grp-hdr">กลุ่มงาน: ${grp}</div>`;
-    let centerSeq=0; // เลขลำดับทุก dept ใน กลุ่มนี้ (reset ทุกกลุ่ม)
-    depts.forEach(dept=>{
-      const isCenter=SBL_CENTER_RE.test(dept);
-      const posEntries=sblSortPos(Object.entries(tree[grp][dept]), _sblForm===2||_sblForm===3);
-      let deptCount=0,deptSal=0,rows2='';
+    if(_sblForm===3){
+      // ── ฟอร์ม 3: ตารางรวมทุกคนในกลุ่มเป็นตารางเดียว ไม่แยกศูนย์/สำนัก ──
+      // รวม position จากทุก dept (merge by pos name)
+      const flatPos={};
+      depts.forEach(dept=>{
+        Object.entries(tree[grp][dept]).forEach(([pos,pData])=>{
+          if(!flatPos[pos]) flatPos[pos]={rows:[],band:pData.band,sb:pData.sb,posLabel:pData.posLabel||pos,positioning:pData.positioning,isSubUnit:false,subUnitCode:''};
+          flatPos[pos].rows=flatPos[pos].rows.concat(pData.rows);
+          if(!flatPos[pos].band&&pData.band) flatPos[pos].band=pData.band;
+          if(!flatPos[pos].sb&&pData.sb) flatPos[pos].sb=pData.sb;
+          if(!flatPos[pos].positioning&&pData.positioning) flatPos[pos].positioning=pData.positioning;
+        });
+      });
+      const posEntries=sblSortPos(Object.entries(flatPos),true);
+      let rows2='';
       posEntries.forEach(([pos,pData])=>{
         const cnt=pData.rows.length;
         const sal=pData.rows.reduce((s,r)=>s+(r.salary||0),0);
-        deptCount+=cnt;deptSal+=sal;
+        grpCount+=cnt; grpSal+=sal;
         rows2+=`<tr><td>${pos}</td><td class="r">${cnt}</td><td class="r">${fmtSalary(sal)}</td></tr>`;
       });
-      grpCount+=deptCount;grpSal+=deptSal;
-      const deptHdrClass=isCenter?'sbl-dept-hdr':'sbl-direct-hdr';
-      const deptDisplay=dept===SBL_DIRECT_KEY?`ขึ้นตรง ${grp}`:dept;
-      const seqPrefix=`${++centerSeq}. `;
-      const sumLbl=`รวม ${deptDisplay}`;
-      // side panel แสดงยอดแยกหน่วยย่อย (เฉพาะ Form 2 + มี sub-unit จริง)
+      // side panel: ยอดแยกตาม dept (ดูเองเพื่อตรวจสอบ ไม่พิมพ์)
+      const deptBreaks=depts.map(dept=>{
+        const dLabel=dept===SBL_DIRECT_KEY?`ขึ้นตรง ${grp}`:dept;
+        let cnt=0,sal=0;
+        Object.values(tree[grp][dept]).forEach(p=>{cnt+=p.rows.length;sal+=p.rows.reduce((s,r)=>s+(r.salary||0),0);});
+        return {dLabel,cnt,sal};
+      }).filter(x=>x.cnt>0);
       let sidePanelHtml='';
-      if(_sblForm===2&&dept!==SBL_DIRECT_KEY&&subBreakdown[dept]){
-        const subs=Object.entries(subBreakdown[dept]);
-        const hasSubUnit=subs.some(([c])=>c!=='__direct__');
-        if(hasSubUnit){
-          subs.sort(([ca],[cb])=>{
-            if(ca==='__direct__') return -1;
-            if(cb==='__direct__') return 1;
-            return dSort(normCode(ca))-dSort(normCode(cb));
-          });
-          const centerCode=sblDeptKeyToCode[dept]||'';
-          let subRows=subs.map(([code,d])=>{
-            const lbl=code==='__direct__'?`${centerCode} (ตรง)`:code;
-            return `<tr><td style="padding:2px 6px;border-bottom:1px solid #E8EDF5">${lbl}</td>
-              <td style="padding:2px 6px;text-align:center;font-weight:700;border-bottom:1px solid #E8EDF5">${d.cnt}</td>
-              <td style="padding:2px 6px;text-align:right;border-bottom:1px solid #E8EDF5">${fmtSalary(d.sal)}</td></tr>`;
-          }).join('');
-          sidePanelHtml=`<div class="sbl-sub-panel" style="width:210px;flex-shrink:0;font-family:Sarabun,sans-serif;font-size:7.5pt;border:1px solid #C8A84B;border-radius:4px;overflow:hidden;align-self:flex-start;margin-top:28px">
-            <div style="background:#C8A84B;color:#0F2347;padding:3px 8px;font-weight:700;font-size:7pt;text-align:center;letter-spacing:.04em">▶ รวมจากหน่วยย่อย</div>
-            <table style="width:100%;border-collapse:collapse">
-              <thead><tr style="background:#F5F0E0">
-                <th style="padding:2px 6px;text-align:left;font-weight:600">หน่วยงาน</th>
-                <th style="padding:2px 6px;text-align:center;font-weight:600">คน</th>
-                <th style="padding:2px 6px;text-align:right;font-weight:600">เงินเดือน</th>
-              </tr></thead>
-              <tbody>${subRows}</tbody>
-              <tfoot><tr style="background:#EEF2FB;font-weight:700">
-                <td style="padding:3px 6px">รวม</td>
-                <td style="padding:3px 6px;text-align:center">${deptCount}</td>
-                <td style="padding:3px 6px;text-align:right">${fmtSalary(deptSal)}</td>
-              </tr></tfoot>
-            </table>
-          </div>`;
-        }
+      if(deptBreaks.length>0){
+        const spRows=deptBreaks.map(({dLabel,cnt,sal})=>
+          `<tr><td style="padding:2px 6px;border-bottom:1px solid #E8EDF5;font-size:7.5pt">${dLabel}</td>
+            <td style="padding:2px 6px;text-align:center;font-weight:700;border-bottom:1px solid #E8EDF5">${cnt}</td>
+            <td style="padding:2px 6px;text-align:right;border-bottom:1px solid #E8EDF5">${fmtSalary(sal)}</td></tr>`
+        ).join('');
+        sidePanelHtml=`<div class="sbl-sub-panel" style="width:210px;flex-shrink:0;font-family:Sarabun,sans-serif;font-size:7.5pt;border:1px solid #C8A84B;border-radius:4px;overflow:hidden;align-self:flex-start;margin-top:8px">
+          <div style="background:#C8A84B;color:#0F2347;padding:3px 8px;font-weight:700;font-size:7pt;text-align:center;letter-spacing:.04em">▶ ยอดแยกตาม</div>
+          <table style="width:100%;border-collapse:collapse">
+            <thead><tr style="background:#F5F0E0">
+              <th style="padding:2px 6px;text-align:left;font-weight:600">หน่วยงาน</th>
+              <th style="padding:2px 6px;text-align:center;font-weight:600">คน</th>
+              <th style="padding:2px 6px;text-align:right;font-weight:600">เงินเดือน</th>
+            </tr></thead>
+            <tbody>${spRows}</tbody>
+            <tfoot><tr style="background:#EEF2FB;font-weight:700">
+              <td style="padding:3px 6px">รวม</td>
+              <td style="padding:3px 6px;text-align:center">${grpCount}</td>
+              <td style="padding:3px 6px;text-align:right">${fmtSalary(grpSal)}</td>
+            </tr></tfoot>
+          </table>
+        </div>`;
       }
-      const useWrap=!!sidePanelHtml;
-      bodyHtml+=`${useWrap?'<div style="display:flex;gap:10px;align-items:flex-start">'  :''}
-        ${useWrap?'<div style="flex:1;min-width:0">':''}
-        <div class="${deptHdrClass}">${seqPrefix}${deptDisplay}</div><table class="sbl-tbl"><thead><tr><th>ตำแหน่ง</th><th class="r" style="width:70px">จำนวน (คน)</th><th class="r" style="width:110px">เงินเดือนรวม (บาท)</th></tr></thead>
+      const mainTbl=`<table class="sbl-tbl"><thead><tr><th>ตำแหน่ง</th><th class="r" style="width:70px">จำนวน (คน)</th><th class="r" style="width:110px">เงินเดือนรวม (บาท)</th></tr></thead>
+<tbody>${rows2}<tr class="sbl-grand"><td>รวมกลุ่มงาน ${grp}</td><td class="r">${grpCount}</td><td class="r">${fmtSalary(grpSal)}</td></tr></tbody></table>`;
+      bodyHtml+=sidePanelHtml
+        ?`<div style="display:flex;gap:10px;align-items:flex-start"><div style="flex:1;min-width:0">${mainTbl}</div>${sidePanelHtml}</div>`
+        :mainTbl;
+    } else {
+      // ── Form 1/2: per-dept loop ──
+      let centerSeq=0;
+      depts.forEach(dept=>{
+        const isCenter=SBL_CENTER_RE.test(dept);
+        const posEntries=sblSortPos(Object.entries(tree[grp][dept]),_sblForm===2);
+        let deptCount=0,deptSal=0,rows2='';
+        posEntries.forEach(([pos,pData])=>{
+          const cnt=pData.rows.length;
+          const sal=pData.rows.reduce((s,r)=>s+(r.salary||0),0);
+          deptCount+=cnt;deptSal+=sal;
+          rows2+=`<tr><td>${pos}</td><td class="r">${cnt}</td><td class="r">${fmtSalary(sal)}</td></tr>`;
+        });
+        grpCount+=deptCount;grpSal+=deptSal;
+        const deptHdrClass=isCenter?'sbl-dept-hdr':'sbl-direct-hdr';
+        const deptDisplay=dept===SBL_DIRECT_KEY?`ขึ้นตรง ${grp}`:dept;
+        const seqPrefix=`${++centerSeq}. `;
+        const sumLbl=`รวม ${deptDisplay}`;
+        // side panel แสดงยอดแยกหน่วยย่อย (เฉพาะ Form 2 + มี sub-unit จริง)
+        let sidePanelHtml='';
+        if(_sblForm===2&&dept!==SBL_DIRECT_KEY&&subBreakdown[dept]){
+          const subs=Object.entries(subBreakdown[dept]);
+          const hasSubUnit=subs.some(([c])=>c!=='__direct__');
+          if(hasSubUnit){
+            subs.sort(([ca],[cb])=>{
+              if(ca==='__direct__') return -1;
+              if(cb==='__direct__') return 1;
+              return dSort(normCode(ca))-dSort(normCode(cb));
+            });
+            const centerCode=sblDeptKeyToCode[dept]||'';
+            let subRows=subs.map(([code,d])=>{
+              const lbl=code==='__direct__'?`${centerCode} (ตรง)`:code;
+              return `<tr><td style="padding:2px 6px;border-bottom:1px solid #E8EDF5">${lbl}</td>
+                <td style="padding:2px 6px;text-align:center;font-weight:700;border-bottom:1px solid #E8EDF5">${d.cnt}</td>
+                <td style="padding:2px 6px;text-align:right;border-bottom:1px solid #E8EDF5">${fmtSalary(d.sal)}</td></tr>`;
+            }).join('');
+            sidePanelHtml=`<div class="sbl-sub-panel" style="width:210px;flex-shrink:0;font-family:Sarabun,sans-serif;font-size:7.5pt;border:1px solid #C8A84B;border-radius:4px;overflow:hidden;align-self:flex-start;margin-top:28px">
+              <div style="background:#C8A84B;color:#0F2347;padding:3px 8px;font-weight:700;font-size:7pt;text-align:center;letter-spacing:.04em">▶ รวมจากหน่วยย่อย</div>
+              <table style="width:100%;border-collapse:collapse">
+                <thead><tr style="background:#F5F0E0">
+                  <th style="padding:2px 6px;text-align:left;font-weight:600">หน่วยงาน</th>
+                  <th style="padding:2px 6px;text-align:center;font-weight:600">คน</th>
+                  <th style="padding:2px 6px;text-align:right;font-weight:600">เงินเดือน</th>
+                </tr></thead>
+                <tbody>${subRows}</tbody>
+                <tfoot><tr style="background:#EEF2FB;font-weight:700">
+                  <td style="padding:3px 6px">รวม</td>
+                  <td style="padding:3px 6px;text-align:center">${deptCount}</td>
+                  <td style="padding:3px 6px;text-align:right">${fmtSalary(deptSal)}</td>
+                </tr></tfoot>
+              </table>
+            </div>`;
+          }
+        }
+        const useWrap=!!sidePanelHtml;
+        bodyHtml+=`${useWrap?'<div style="display:flex;gap:10px;align-items:flex-start">'  :''}
+          ${useWrap?'<div style="flex:1;min-width:0">':''}
+          <div class="${deptHdrClass}">${seqPrefix}${deptDisplay}</div><table class="sbl-tbl"><thead><tr><th>ตำแหน่ง</th><th class="r" style="width:70px">จำนวน (คน)</th><th class="r" style="width:110px">เงินเดือนรวม (บาท)</th></tr></thead>
 <tbody>${rows2}<tr class="sbl-sum"><td>${sumLbl}</td><td class="r">${deptCount}</td><td class="r">${fmtSalary(deptSal)}</td></tr></tbody></table>
-        ${useWrap?'</div>':''}${sidePanelHtml}${useWrap?'</div>':''}`.replace(/\n\s+/g,' ');
-    });
-    bodyHtml+=`<table class="sbl-tbl" style="margin-top:10px"><tbody><tr class="sbl-grand"><td>รวมทั้งหมด กลุ่มงาน ${grp}</td><td class="r" style="width:70px">${grpCount}</td><td class="r" style="width:110px">${fmtSalary(grpSal)}</td></tr></tbody></table>`;
+          ${useWrap?'</div>':''}${sidePanelHtml}${useWrap?'</div>':''}`.replace(/\n\s+/g,' ');
+      });
+      bodyHtml+=`<table class="sbl-tbl" style="margin-top:10px"><tbody><tr class="sbl-grand"><td>รวมทั้งหมด กลุ่มงาน ${grp}</td><td class="r" style="width:70px">${grpCount}</td><td class="r" style="width:110px">${fmtSalary(grpSal)}</td></tr></tbody></table>`;
+    }
     html+=`<div class="sbl-page">
   <div class="sbl-page-hdr">
     ${logoSrc?`<img class="sbl-page-logo" src="${logoSrc}" alt="วว.">`:'<div style="width:44px;height:44px;background:#1B3A6B;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:10pt">วว.</div>'}
     <div>
       <div class="sbl-page-ttl">สถาบันวิจัยวิทยาศาสตร์และเทคโนโลยีแห่งประเทศไทย (วว.)</div>
-      <div class="sbl-page-sub">ข้อมูลอัตรากำลัง เพื่อส่ง ศบล. &nbsp;·&nbsp; ณ วันที่ ${thDate} &nbsp;·&nbsp; <strong>ฟอร์ม ${_sblForm}</strong>${_sblForm===2?' (สำนัก/ศูนย์ + หน่วยงานย่อย)':_sblForm===3?' (ขึ้นตรงกลุ่ม)':''}</div>
+      <div class="sbl-page-sub">ข้อมูลอัตรากำลัง เพื่อส่ง ศบล. &nbsp;·&nbsp; ณ วันที่ ${thDate} &nbsp;·&nbsp; <strong>ฟอร์ม ${_sblForm}</strong>${_sblForm===2?' (สำนัก/ศูนย์ + หน่วยงานย่อย)':_sblForm===3?' (ทุกคนในกลุ่ม)':''}</div>
     </div>
   </div>
   ${bodyHtml}
@@ -5689,10 +5764,17 @@ function showSblVerify(){
   const _grpOk=r=>!grpFilter||(sblGroupOf(r)===grpFilter||r.group===grpFilter);
   let src,tree;
   if(_sblForm===3){
-    src=baseSrc.filter(r=>(r.name||r.empId)
-      &&(!grpFilter||(_f3grp(r)===grpFilter||r.group===grpFilter))
-      &&SBL_GRP_DIRECT_CODES.has(normCode(r.deptCode||'')));
-    tree=sblBuildTree(src,null,_f3grp);
+    src=baseSrc.filter(r=>{
+      const code=normCode(r.deptCode||'');
+      const inPM=!!SBL_PARENT_MAP[code];
+      const isDirect=SBL_GRP_DIRECT_CODES.has(code);
+      const isExtra=!!SBL_EXTRA_UNITS[code];
+      return (r.name||r.empId)
+        &&(!grpFilter||(_f3grp(r)===grpFilter||r.group===grpFilter))
+        &&(!SBL_EXCLUDE_RE.test(r.deptCode||'')||inPM)
+        &&(isDirect||_sblTypeOk(r)||inPM||isExtra);
+    });
+    tree=sblBuildTree(src,SBL_PARENT_MAP,_f3grp,SBL_GRP_DIRECT_CODES);
   } else if(_sblForm===2){
     src=baseSrc.filter(r=>{
       const code=normCode(r.deptCode||'');
@@ -5717,7 +5799,9 @@ function showSblVerify(){
     const dn=(_sblDeptNameMap&&r.deptCode&&_sblDeptNameMap[r.deptCode])||r.deptName||'';
     const code=normCode(r.deptCode||'');
     let d;
-    if(_sblForm===2&&SBL_PARENT_MAP[code]){
+    if((_sblForm===2||_sblForm===3)&&SBL_GRP_DIRECT_CODES.has(code)){
+      d=SBL_DIRECT_KEY;
+    } else if((_sblForm===2||_sblForm===3)&&SBL_PARENT_MAP[code]){
       const pCode=SBL_PARENT_MAP[code];
       const pName=_sblDeptNameMap[pCode]||pCode;
       d=!pName.includes(`(${pCode})`)?`${pName} (${pCode})`:pName;
@@ -5763,6 +5847,58 @@ function showSblVerify(){
     <td style="padding:7px 8px;text-align:center">${grandCnt}</td>
     <td style="padding:7px 10px;text-align:right">${fmtSalary(grandSal)}</td></tr>`;
 
+  // ── วิเคราะห์ gap: คนที่อยู่ใน baseSrc แต่ไม่ผ่าน filter ──
+  const srcSet=new Set(src.map(r=>r.empId||r.name));
+  const excluded=baseSrc.filter(r=>(r.name||r.empId)&&!srcSet.has(r.empId||r.name));
+  const gapByReason={};
+  excluded.forEach(r=>{
+    const code=normCode(r.deptCode||'');
+    const inPM=!!SBL_PARENT_MAP[code];
+    const isDirect=SBL_GRP_DIRECT_CODES.has(code);
+    let reason;
+    if(_sblForm===2&&isDirect){
+      reason='ขึ้นตรงกลุ่ม — อยู่ใน Form 3 แทน';
+    } else if(SBL_EXCLUDE_RE.test(r.deptCode||'')&&!inPM){
+      reason=`SBL_EXCLUDE + ไม่อยู่ใน PARENT_MAP`;
+    } else if(!isDirect&&!_sblTypeOk(r)&&!inPM){
+      reason='ไม่ใช่ศูนย์/สำนัก/ขึ้นตรง และไม่อยู่ใน PARENT_MAP';
+    } else if(grpFilter){
+      const g3=_f3grp?_f3grp(r):'';
+      if(g3!==grpFilter&&r.group!==grpFilter&&sblGroupOf(r)!==grpFilter)
+        reason=`กลุ่มไม่ตรง (group="${r.group||'-'}")`;
+      else reason='เหตุผลอื่น';
+    } else {
+      reason='เหตุผลอื่น';
+    }
+    if(!gapByReason[reason]) gapByReason[reason]={cnt:0,codes:{}};
+    gapByReason[reason].cnt++;
+    const dc=r.deptCode||'?';
+    gapByReason[reason].codes[dc]=(gapByReason[reason].codes[dc]||0)+1;
+  });
+  let gapHtml='';
+  if(excluded.length>0){
+    const gapRows=Object.entries(gapByReason).map(([reason,{cnt,codes}])=>{
+      const codeList=Object.entries(codes).sort((a,b)=>b[1]-a[1]).map(([c,n])=>`${c}×${n}`).join(', ');
+      return `<tr><td style="padding:4px 8px">${reason}</td>
+        <td style="padding:4px 8px;text-align:center;font-weight:700;color:#b00">${cnt}</td>
+        <td style="padding:4px 8px;font-size:.78rem;color:#555">${codeList}</td></tr>`;
+    }).join('');
+    gapHtml=`<div style="margin-top:14px;border:1.5px solid #e8a000;border-radius:6px;overflow:hidden">
+      <div style="background:#fff3cd;padding:6px 10px;font-weight:700;font-size:.85rem;color:#7a4f00">
+        ⚠️ ไม่ถูกนับใน ${['','ฟอร์ม 1','ฟอร์ม 2','ฟอร์ม 3'][_sblForm]} — ${excluded.length} คน
+        <span style="font-weight:400;font-size:.78rem">&nbsp;(baseSrc ทั้งหมด ${baseSrc.filter(r=>r.name||r.empId).length} คน → ผ่านฟอร์ม ${grandCnt} คน)</span>
+      </div>
+      <table style="width:100%;border-collapse:collapse;font-size:.82rem">
+        <thead><tr style="background:#FFF8E1">
+          <th style="padding:4px 8px;text-align:left">เหตุผล</th>
+          <th style="padding:4px 8px;text-align:center;width:50px">คน</th>
+          <th style="padding:4px 8px;text-align:left">รหัสสังกัด</th>
+        </tr></thead>
+        <tbody>${gapRows}</tbody>
+      </table>
+    </div>`;
+  }
+
   const mnLabel=mnFilter?`เดือน ${mnFilter}`:'ทุกเดือน';
   const frmLabel=['','ฟอร์ม 1','ฟอร์ม 2','ฟอร์ม 3'][_sblForm]||`ฟอร์ม ${_sblForm}`;
   const html=`<div style="font-family:'Sarabun',sans-serif;font-size:.9rem">
@@ -5774,6 +5910,7 @@ function showSblVerify(){
     <th style="padding:6px 8px;text-align:center;width:70px">คน</th>
     <th style="padding:6px 10px;text-align:right;width:130px">เงินเดือน (บาท)</th>
   </tr></thead><tbody>${bodyRows}</tbody></table>
+  ${gapHtml}
   </div>`;
 
   // modal
@@ -5819,10 +5956,17 @@ function exportSBLToExcel(){
   };
   let src,tree;
   if(_sblForm===3){
-    src=baseSrc.filter(r=>(r.name||r.empId)
-      &&(!grpFilter||(_f3g(r)===grpFilter||r.group===grpFilter))
-      &&SBL_GRP_DIRECT_CODES.has(normCode(r.deptCode||'')));
-    tree=sblBuildTree(src,null,_f3g);
+    src=baseSrc.filter(r=>{
+      const code=normCode(r.deptCode||'');
+      const inPM=!!SBL_PARENT_MAP[code];
+      const isDirect=SBL_GRP_DIRECT_CODES.has(code);
+      const isExtra=!!SBL_EXTRA_UNITS[code];
+      return (r.name||r.empId)
+        &&(!grpFilter||(_f3g(r)===grpFilter||r.group===grpFilter))
+        &&(!SBL_EXCLUDE_RE.test(r.deptCode||'')||inPM)
+        &&(isDirect||_sblTypeOk(r)||inPM||isExtra);
+    });
+    tree=sblBuildTree(src,SBL_PARENT_MAP,_f3g,SBL_GRP_DIRECT_CODES);
   } else if(_sblForm===2){
     src=baseSrc.filter(r=>{
       const code=normCode(r.deptCode||'');
@@ -5842,13 +5986,15 @@ function exportSBLToExcel(){
     tree=sblBuildTree(src);
   }
 
-  // rebuild sblDeptKeyToCode สำหรับ dept sort ให้ตรงกับ PDF
+  // rebuild xKeyToCode ให้ตรงกับ tree (รวม Form 2/3)
   const xKeyToCode={};
   src.forEach(r=>{
     const dn=(_sblDeptNameMap&&r.deptCode&&_sblDeptNameMap[r.deptCode])||r.deptName||'';
     const code=normCode(r.deptCode||'');
     let d;
-    if(_sblForm===2&&SBL_PARENT_MAP[code]){
+    if((_sblForm===2||_sblForm===3)&&SBL_GRP_DIRECT_CODES.has(code)){
+      d=SBL_DIRECT_KEY;
+    } else if((_sblForm===2||_sblForm===3)&&SBL_PARENT_MAP[code]){
       const pCode=SBL_PARENT_MAP[code];
       const pName=_sblDeptNameMap[pCode]||pCode;
       d=!pName.includes(`(${pCode})`)?`${pName} (${pCode})`:pName;
@@ -5859,17 +6005,56 @@ function exportSBLToExcel(){
     }
   });
 
-  const groups=sblSortGroups(tree);
   const today=new Date();
   const thDate=`${today.getDate()} ${['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'][today.getMonth()]} ${today.getFullYear()+543}`;
-  const frmLabel=['','ฟอร์ม 1','ฟอร์ม 2 (สำนัก/ศูนย์+หน่วยย่อย)','ฟอร์ม 3 (ขึ้นตรงกลุ่ม)'][_sblForm]||`ฟอร์ม ${_sblForm}`;
+  const frmLabel=['','ฟอร์ม 1','ฟอร์ม 2 (สำนัก/ศูนย์+หน่วยย่อย)','ฟอร์ม 3 (ทุกคนในกลุ่ม)'][_sblForm]||`ฟอร์ม ${_sblForm}`;
   const mixBand=_sblForm===2||_sblForm===3;
+  const groups=sblSortGroups(tree);
 
-  const aoa=[];
-  aoa.push([`ข้อมูลอัตรากำลัง เพื่อส่ง ศบล. — ${frmLabel}`,'','','','']);
-  aoa.push([`สถาบันวิจัยวิทยาศาสตร์และเทคโนโลยีแห่งประเทศไทย (วว.) ณ วันที่ ${thDate}`,'','','','']);
-  aoa.push([]);
-  aoa.push(['กลุ่มงาน','สำนัก/ศูนย์','ตำแหน่ง','จำนวน (คน)','เงินเดือนรวม (บาท)']);
+  // ── xlsx-js-style: สีและรูปแบบตาราง ──
+  const _f =rgb=>({patternType:'solid',fgColor:{rgb}});
+  const _t =(rgb,bold,sz=9)=>({bold:!!bold,color:{rgb:rgb||'FFFFFF'},name:'Sarabun',sz});
+  const _a =(h,v='center',wrap=false)=>({horizontal:h,vertical:v,wrapText:wrap});
+  const S={
+    title:{fill:_f('0F2347'),font:_t('C8A84B',true,12),alignment:_a('center')},
+    sub:  {fill:_f('0F2347'),font:_t('D4C47A',false,9),alignment:_a('center')},
+    chdr: {fill:_f('1B3A6B'),font:_t('FFFFFF',true,9), alignment:_a('left','center')},
+    chdrC:{fill:_f('1B3A6B'),font:_t('FFFFFF',true,9), alignment:_a('center','center')},
+    chdrR:{fill:_f('1B3A6B'),font:_t('FFFFFF',true,9), alignment:_a('right','center')},
+    grp:  {fill:_f('0F2347'),font:_t('C8A84B',true,10),alignment:_a('left','center')},
+    dept: {fill:_f('EEF2FB'),font:_t('0F2347',true,9), alignment:_a('left','center')},
+    dir:  {fill:_f('F5F0E8'),font:_t('7B5C00',true,9), alignment:_a('left','center')},
+    pos0: {fill:_f('FFFFFF'),font:_t('1A1A1A',false,9),alignment:_a('left','center',true)},
+    posN: {fill:_f('F0F4FD'),font:_t('1A1A1A',false,9),alignment:_a('left','center',true)},
+    num0: {fill:_f('FFFFFF'),font:_t('1A1A1A',false,9),alignment:_a('center','center')},
+    numN: {fill:_f('F0F4FD'),font:_t('1A1A1A',false,9),alignment:_a('center','center')},
+    sal0: {fill:_f('FFFFFF'),font:_t('1A1A1A',false,9),alignment:_a('right','center'),numFmt:'#,##0'},
+    salN: {fill:_f('F0F4FD'),font:_t('1A1A1A',false,9),alignment:_a('right','center'),numFmt:'#,##0'},
+    sum:  {fill:_f('1B3A6B'),font:_t('FFFFFF',true,9), alignment:_a('left','center')},
+    sumC: {fill:_f('1B3A6B'),font:_t('FFFFFF',true,9), alignment:_a('center','center')},
+    sumR: {fill:_f('1B3A6B'),font:_t('FFFFFF',true,9), alignment:_a('right','center'),numFmt:'#,##0'},
+    gtot: {fill:_f('0F2347'),font:_t('C8A84B',true,10),alignment:_a('left','center')},
+    gtotC:{fill:_f('0F2347'),font:_t('C8A84B',true,10),alignment:_a('center','center')},
+    gtotR:{fill:_f('0F2347'),font:_t('C8A84B',true,10),alignment:_a('right','center'),numFmt:'#,##0'},
+    grand:{fill:_f('0A1929'),font:_t('C8A84B',true,11),alignment:_a('left','center')},
+    gndC: {fill:_f('0A1929'),font:_t('C8A84B',true,11),alignment:_a('center','center')},
+    gndR: {fill:_f('0A1929'),font:_t('C8A84B',true,11),alignment:_a('right','center'),numFmt:'#,##0'},
+  };
+
+  const aoa=[], RS=[], merges=[], rowH=[];
+  const addRow=(vals,styles,mergeEnd=null,ht=15)=>{
+    const ri=aoa.length;
+    aoa.push(vals); RS.push(styles); rowH.push(ht);
+    if(mergeEnd!=null) merges.push({s:{r:ri,c:0},e:{r:ri,c:mergeEnd}});
+  };
+
+  addRow([`ข้อมูลอัตรากำลัง เพื่อส่ง ศบล. — ${frmLabel}`,'',''],
+         [S.title,S.title,S.title],2,24);
+  addRow([`สถาบันวิจัยวิทยาศาสตร์และเทคโนโลยีแห่งประเทศไทย (วว.) ณ วันที่ ${thDate}`,'',''],
+         [S.sub,S.sub,S.sub],2,16);
+  addRow([' ','',''],[{},{},{}],null,6);
+  addRow(['ตำแหน่ง','จำนวน (คน)','เงินเดือนรวม (บาท)'],
+         [S.chdr,S.chdrC,S.chdrR],null,16);
 
   let grandCount=0,grandSal=0;
   groups.forEach(grp=>{
@@ -5879,32 +6064,74 @@ function exportSBLToExcel(){
     });
     const depts=tree[grp][SBL_DIRECT_KEY]?[SBL_DIRECT_KEY,..._other]:_other;
     let grpCount=0,grpSal=0;
-    depts.forEach(dept=>{
-      const deptLabel=dept===SBL_DIRECT_KEY?`ขึ้นตรง ${grp}`:dept;
-      const posEntries=sblSortPos(Object.entries(tree[grp][dept]),mixBand);
-      let deptCount=0,deptSal=0;
+    addRow([`กลุ่มงาน: ${grp}`,'',''],[S.grp,S.grp,S.grp],2,18);
+    if(_sblForm===3){
+      // Form 3: flat table — รวมทุกคนเป็นตารางเดียว ไม่มีหัวข้อแยก dept
+      const flatPos={};
+      depts.forEach(dept=>{
+        Object.entries(tree[grp][dept]).forEach(([pos,pData])=>{
+          if(!flatPos[pos]) flatPos[pos]={rows:[],band:pData.band,sb:pData.sb,posLabel:pData.posLabel||pos,positioning:pData.positioning,isSubUnit:false,subUnitCode:''};
+          flatPos[pos].rows=flatPos[pos].rows.concat(pData.rows);
+          if(!flatPos[pos].band&&pData.band) flatPos[pos].band=pData.band;
+          if(!flatPos[pos].sb&&pData.sb) flatPos[pos].sb=pData.sb;
+          if(!flatPos[pos].positioning&&pData.positioning) flatPos[pos].positioning=pData.positioning;
+        });
+      });
+      const posEntries=sblSortPos(Object.entries(flatPos),true);
+      let pi=0;
       posEntries.forEach(([pos,pData])=>{
         const cnt=pData.rows.length;
         const sal=pData.rows.reduce((s,r)=>s+(r.salary||0),0);
-        deptCount+=cnt; deptSal+=sal;
-        aoa.push([grp,deptLabel,pos,cnt,sal||'']);
+        grpCount+=cnt; grpSal+=sal;
+        const ev=pi%2===0;
+        addRow([pos,cnt,sal],[ev?S.pos0:S.posN,ev?S.num0:S.numN,ev?S.sal0:S.salN],null,14);
+        pi++;
       });
-      grpCount+=deptCount; grpSal+=deptSal;
-      aoa.push([grp,`รวม ${deptLabel}`,'',deptCount,deptSal||'']);
-    });
+    } else {
+      // Form 1/2: per-dept loop พร้อม dept headers
+      let centerSeq=0;
+      depts.forEach(dept=>{
+        const isDirect=dept===SBL_DIRECT_KEY;
+        const deptDisplay=isDirect?`ขึ้นตรง ${grp}`:dept;
+        const dS=isDirect?S.dir:S.dept;
+        addRow([`${++centerSeq}. ${deptDisplay}`,'',''],[dS,dS,dS],2,16);
+        const posEntries=sblSortPos(Object.entries(tree[grp][dept]),_sblForm===2);
+        let deptCount=0,deptSal=0,pi=0;
+        posEntries.forEach(([pos,pData])=>{
+          const cnt=pData.rows.length;
+          const sal=pData.rows.reduce((s,r)=>s+(r.salary||0),0);
+          deptCount+=cnt; deptSal+=sal;
+          const ev=pi%2===0;
+          addRow([pos,cnt,sal],[ev?S.pos0:S.posN,ev?S.num0:S.numN,ev?S.sal0:S.salN],null,14);
+          pi++;
+        });
+        grpCount+=deptCount; grpSal+=deptSal;
+        addRow([`รวม ${deptDisplay}`,deptCount,deptSal],[S.sum,S.sumC,S.sumR],null,15);
+      });
+    }
     grandCount+=grpCount; grandSal+=grpSal;
-    aoa.push([`รวมกลุ่มงาน ${grp}`,'','',grpCount,grpSal||'']);
-    aoa.push([]);
+    addRow([`รวมกลุ่มงาน ${grp}`,grpCount,grpSal],[S.gtot,S.gtotC,S.gtotR],null,16);
+    addRow([' ','',''],[{},{},{}],null,6);
   });
-  aoa.push(['รวมทั้งหมด','','',grandCount,grandSal||'']);
+  addRow(['รวมทั้งหมด',grandCount,grandSal],[S.grand,S.gndC,S.gndR],null,18);
 
+  // สร้าง worksheet แล้ว apply styles
   const ws=XLSX.utils.aoa_to_sheet(aoa);
-  ws['!cols']=[{wch:24},{wch:40},{wch:36},{wch:14},{wch:22}];
-  ws['!merges']=[{s:{r:0,c:0},e:{r:0,c:4}},{s:{r:1,c:0},e:{r:1,c:4}}];
+  ws['!cols']=[{wch:52},{wch:14},{wch:22}];
+  ws['!rows']=rowH.map(h=>({hpt:h}));
+  ws['!merges']=merges;
+  RS.forEach((styles,ri)=>{
+    styles.forEach((s,ci)=>{
+      if(!s||!Object.keys(s).length) return;
+      const ref=XLSX.utils.encode_cell({r:ri,c:ci});
+      if(!ws[ref]) ws[ref]={t:'s',v:''};
+      ws[ref].s=s;
+      if(typeof aoa[ri][ci]==='number'){ws[ref].t='n'; ws[ref].v=aoa[ri][ci];}
+    });
+  });
 
   const wb=XLSX.utils.book_new();
-  const sheetName=`ฟอร์ม ${_sblForm}`;
-  XLSX.utils.book_append_sheet(wb,ws,sheetName);
+  XLSX.utils.book_append_sheet(wb,ws,`ฟอร์ม ${_sblForm}`);
   const fname=`ส่งข้อมูล_ศบล_F${_sblForm}_${thDate.replace(/\s/g,'_')}.xlsx`;
   XLSX.writeFile(wb,fname);
 }
