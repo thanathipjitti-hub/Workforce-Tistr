@@ -5518,17 +5518,16 @@ function renderSBLReport(){
     });
     tree=sblBuildTree(src, SBL_PARENT_MAP, _sblForm3GroupOf, SBL_GRP_DIRECT_CODES);
   } else if(_sblForm===2){
-    // ฟอร์ม 2: สำนัก/ศูนย์ + หน่วยงานย่อย (ไม่มีขึ้นตรงกลุ่ม)
-    // SBL_EXCLUDE_RE (หบน/หบร/หป) ยกเว้นถ้าอยู่ใน SBL_PARENT_MAP — เพราะต้องแสดงใต้ศูนย์แม่
+    // ฟอร์ม 2: ทุกคน (ขึ้นตรงกลุ่ม + สำนัก/ศูนย์ + หน่วยย่อย + SBL_EXTRA_UNITS)
     src=baseSrc.filter(r=>{
       const code=normCode(r.deptCode||'');
       const inParentMap=!!SBL_PARENT_MAP[code];
+      const isExtra=!!SBL_EXTRA_UNITS[code];
       return (r.name||r.empId)&&_grpOk(r)
-        &&!SBL_GRP_DIRECT_CODES.has(code)
         &&(!SBL_EXCLUDE_RE.test(r.deptCode||'')||inParentMap)
-        &&(_sblTypeOk(r)||inParentMap);
+        &&(_sblTypeOk(r)||inParentMap||isExtra);
     });
-    tree=sblBuildTree(src, SBL_PARENT_MAP);
+    tree=sblBuildTree(src, SBL_PARENT_MAP, null, SBL_GRP_DIRECT_CODES);
   } else {
     // ฟอร์ม 1: ทุกประเภท (เดิม)
     src=baseSrc.filter(r=>(r.name||r.empId)&&_grpOk(r)
@@ -5779,12 +5778,12 @@ function showSblVerify(){
     src=baseSrc.filter(r=>{
       const code=normCode(r.deptCode||'');
       const inPM=!!SBL_PARENT_MAP[code];
+      const isExtra=!!SBL_EXTRA_UNITS[code];
       return (r.name||r.empId)&&_grpOk(r)
-        &&!SBL_GRP_DIRECT_CODES.has(code)
         &&(!SBL_EXCLUDE_RE.test(r.deptCode||'')||inPM)
-        &&(_sblTypeOk(r)||inPM);
+        &&(_sblTypeOk(r)||inPM||isExtra);
     });
-    tree=sblBuildTree(src,SBL_PARENT_MAP);
+    tree=sblBuildTree(src,SBL_PARENT_MAP,null,SBL_GRP_DIRECT_CODES);
   } else {
     src=baseSrc.filter(r=>(r.name||r.empId)&&_grpOk(r)
       &&!SBL_SUB_RE.test(r.deptName||'')
@@ -5971,12 +5970,12 @@ function exportSBLToExcel(){
     src=baseSrc.filter(r=>{
       const code=normCode(r.deptCode||'');
       const inPM=!!SBL_PARENT_MAP[code];
+      const isExtra=!!SBL_EXTRA_UNITS[code];
       return (r.name||r.empId)&&_grpOk(r)
-        &&!SBL_GRP_DIRECT_CODES.has(code)
         &&(!SBL_EXCLUDE_RE.test(r.deptCode||'')||inPM)
-        &&(_sblTypeOk(r)||inPM);
+        &&(_sblTypeOk(r)||inPM||isExtra);
     });
-    tree=sblBuildTree(src,SBL_PARENT_MAP);
+    tree=sblBuildTree(src,SBL_PARENT_MAP,null,SBL_GRP_DIRECT_CODES);
   } else {
     src=baseSrc.filter(r=>(r.name||r.empId)&&_grpOk(r)
       &&(!deptFilter||r.deptCode===deptFilter)
