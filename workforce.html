@@ -19,14 +19,16 @@ body{font-family:'Sarabun',sans-serif;background:var(--bg);color:#1a1a3e;font-si
 
 /* HEADER */
 .hdr{
-  background:var(--c1);border-bottom:3px solid var(--gold);
+  background:linear-gradient(-45deg,#1a1a6e,#312e81,#1e3a8a,#0f172a,#4338ca,#1a1a6e);
+  background-size:300% 300%;animation:aurora 10s ease infinite;
+  border-bottom:3px solid var(--gold);
   color:#fff;padding:0 32px;display:flex;align-items:center;justify-content:space-between;
-  height:72px;box-shadow:0 2px 16px rgba(26,26,110,.28);position:sticky;top:0;z-index:100;
+  height:72px;box-shadow:0 4px 24px rgba(26,26,110,.38);position:sticky;top:0;z-index:100;
   position:relative;overflow:visible
 }
 .hdr::before{content:'';position:absolute;inset:0;
-  background:radial-gradient(ellipse at 110% 50%,rgba(100,100,200,.18) 0%,transparent 60%),
-             radial-gradient(ellipse at -10% 50%,rgba(200,168,75,.06) 0%,transparent 50%);pointer-events:none}
+  background:radial-gradient(ellipse at 90% 50%,rgba(200,168,75,.12) 0%,transparent 50%),
+             radial-gradient(ellipse at 10% 50%,rgba(100,120,255,.15) 0%,transparent 50%);pointer-events:none}
 .hdr-brand{display:flex;align-items:center;gap:13px;position:relative}
 .hdr-logo{
   height:58px;width:58px;object-fit:contain;flex-shrink:0;
@@ -208,6 +210,7 @@ td{font-size:.84rem;font-weight:500;padding:8px 13px;border-bottom:1px solid var
 #loading{text-align:center;padding:80px 20px;color:var(--muted)}
 .spin{width:34px;height:34px;border:3px solid var(--light);border-top-color:var(--c1);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 14px}
 @keyframes spin{to{transform:rotate(360deg)}}
+@keyframes aurora{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
 #content{display:none}
 
 /* PRINT VIEW */
