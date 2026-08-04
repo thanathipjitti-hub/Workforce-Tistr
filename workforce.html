@@ -994,6 +994,7 @@ body{background:linear-gradient(160deg,#eaecf5 0%,#f0f2f8 60%,#e8edf6 100%);min-
   color:rgba(255,255,255,.5);font-size:1.1rem;cursor:pointer;padding:4px 8px;
   border-radius:6px;transition:color .15s}
 .sum-close:hover{color:#fff;background:rgba(255,255,255,.1)}
+
 </style>
 </head>
 <body>
@@ -5047,11 +5048,13 @@ function renderForecastTable(yrs){
   const tbody=document.getElementById('fc-tbody'); if(!tbody) return;
   const gf=MS.get('fc-group');
   const pf=MS.get('fc-pos');
+  const bf=MS.get('fc-band');
   const search=(document.getElementById('fc-search')?.value||'').toLowerCase();
   const tblYrs=document.getElementById('fc-tbl-yrs'); if(tblYrs) tblYrs.textContent=yrs;
   const fcFiltered=allData.filter(r=>
     msMatch(gf,r.group)&&
     msMatch(pf,r.positioning||'พนักงาน')&&
+    msMatch(bf,normBand(r))&&
     r.retireCountdown!==null&&r.retireCountdown>=0&&r.retireCountdown<=yrs
   ).filter(r=>!search||
     (r.name||'').toLowerCase().includes(search)||
