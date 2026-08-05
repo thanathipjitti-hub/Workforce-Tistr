@@ -3523,7 +3523,16 @@ function showPrintView2(){
   document.body.classList.add('printing-v2');
   initPv2YearSelector();
   populatePv2Month();
+  populateR2Group();
+  populateR2Dept('');
   renderFormalReport();
+}
+function populateR2Group(){
+  const sel=document.getElementById('r2-group'); if(!sel) return;
+  const cur=sel.value;
+  const grps=[...new Set((fullData.length?fullData:allData).map(r=>r.group).filter(Boolean))]
+    .sort((a,b)=>{const ai=R2_GROUPS.indexOf(a),bi=R2_GROUPS.indexOf(b);return(ai<0&&bi<0)?a.localeCompare(b,'th'):(ai<0?1:bi<0?-1:ai-bi);});
+  sel.innerHTML='<option value="">ทั้งหมด</option>'+grps.map(g=>`<option value="${g}"${g===cur?' selected':''}>${g}</option>`).join('');
 }
 function hidePrintView2(){
   document.getElementById('pview2').style.display='none';
@@ -4302,7 +4311,20 @@ function exportToExcel(){
   const _fGrp=MS.get('f-group');
   const grpF=_pvGrp||(Array.isArray(_fGrp)&&_fGrp.length===1?_fGrp[0]:'');
   const dptF=document.getElementById('pv-dept')?.value||document.getElementById('f-dept')?.value||'';
-  const src=allData.filter(r=>(!grpF||r.group===grpF)&&(!dptF||r.deptCode===dptF));
+  // dedup เดียวกับ renderPrintTable (ใช้ fullData + month)
+  const pvMon=parseInt(document.getElementById('pv-month')?.value)||null;
+  const pool=fullData.length?fullData:allData;
+  const baseSrc=pvMon?(()=>{
+    const withMon=pool.filter(r=>r.monthNum===pvMon);
+    const seenIds=new Set(withMon.map(r=>r.empId||r.name));
+    const nullDedup=[...new Map(pool.filter(r=>r.monthNum===null&&!seenIds.has(r.empId||r.name)).map(r=>[r.empId||r.name,r])).values()];
+    return [...withMon,...nullDedup];
+  })():(()=>{
+    const byId=new Map();
+    pool.forEach(r=>{const id=r.empId||r.name;if(!id)return;const prev=byId.get(id);if(!prev){byId.set(id,r);return;}if((r.monthNum??-1)>(prev.monthNum??-1))byId.set(id,r);});
+    return [...byId.values()];
+  })();
+  const src=baseSrc.filter(r=>(!grpF||r.group===grpF)&&(!dptF||r.deptCode===dptF));
 
   // Build same hierarchy as renderPrintTable
   const grpMap={};
@@ -4322,21 +4344,67 @@ function exportToExcel(){
       nv(agg.gen.r),nv(agg.gen.s),nv(agg.spec.r),nv(agg.spec.s),agg.total];
   };
 
-  const aoa=[];
+  // ── Style helpers (xlsx-js-style) ──
+  const _fx=rgb=>({patternType:'solid',fgColor:{rgb}});
+  const _tx=(rgb,bold,sz=9)=>({bold:!!bold,color:{rgb},name:'Sarabun',sz});
+  const _ax=(h,v='center')=>({horizontal:h,vertical:v});
+  const XS1={
+    title:{fill:_fx('0F2347'),font:_tx('C8A84B',true,12),alignment:_ax('center')},
+    date: {fill:_fx('0F2347'),font:_tx('D0C070',false,10),alignment:_ax('center')},
+    hdr1: {fill:_fx('1B3A6B'),font:_tx('FFFFFF',true,10),alignment:_ax('center')},
+    hdr2: {fill:_fx('2D5FA8'),font:_tx('FFFFFF',true,9), alignment:_ax('center')},
+    grpL: {fill:_fx('0F2347'),font:_tx('C8A84B',true,10),alignment:_ax('left')},
+    grpC: {fill:_fx('0F2347'),font:_tx('C8A84B',true,10),alignment:_ax('center')},
+    l2L:  {fill:_fx('D5E8F5'),font:_tx('0F2347',true,9), alignment:_ax('left')},
+    l2C:  {fill:_fx('D5E8F5'),font:_tx('0F2347',true,9), alignment:_ax('center')},
+    r0L:  {fill:_fx('F0F5FF'),font:_tx('1a2a4a',false,9),alignment:_ax('left')},
+    r0C:  {fill:_fx('F0F5FF'),font:_tx('1a2a4a',false,9),alignment:_ax('center')},
+    r1L:  {fill:_fx('FFFFFF'),font:_tx('374151',false,9),alignment:_ax('left')},
+    r1C:  {fill:_fx('FFFFFF'),font:_tx('374151',false,9),alignment:_ax('center')},
+    totL: {fill:_fx('0F2347'),font:_tx('C8A84B',true,11),alignment:_ax('left')},
+    totC: {fill:_fx('0F2347'),font:_tx('C8A84B',true,11),alignment:_ax('center')},
+  };
+  const NC1=11;
+  const applyXS=(ws,aoa,rowTypes)=>{
+    const sMap={
+      title:ri=>Array(NC1).fill(XS1.title),
+      date: ri=>Array(NC1).fill(XS1.date),
+      hdr1: ri=>Array(NC1).fill(XS1.hdr1),
+      hdr2: ri=>Array(NC1).fill(XS1.hdr2),
+      grp:  ri=>[XS1.grpC,...Array(NC1-1).fill(XS1.grpC)].map((_,i)=>i===1?XS1.grpL:XS1.grpC),
+      l2:   ri=>Array(NC1).fill(XS1.l2C).map((_,i)=>i===1?XS1.l2L:XS1.l2C),
+      r0:   ri=>Array(NC1).fill(XS1.r0C).map((_,i)=>i===1?XS1.r0L:XS1.r0C),
+      r1:   ri=>Array(NC1).fill(XS1.r1C).map((_,i)=>i===1?XS1.r1L:XS1.r1C),
+      total:ri=>Array(NC1).fill(XS1.totC).map((_,i)=>i===1?XS1.totL:XS1.totC),
+    };
+    rowTypes.forEach((type,ri)=>{
+      const fn=sMap[type]; if(!fn) return;
+      fn(ri).forEach((s,ci)=>{
+        const ref=XLSX.utils.encode_cell({r:ri,c:ci});
+        if(!ws[ref]) ws[ref]={t:'s',v:''};
+        ws[ref].s=s;
+        if(typeof aoa[ri][ci]==='number'){ws[ref].t='n';ws[ref].v=aoa[ri][ci];}
+      });
+    });
+  };
+
+  const aoa=[], rowTypes=[], rowH=[];
+  const addR1=(vals,type,ht=13)=>{aoa.push(vals);rowTypes.push(type);rowH.push(ht);};
+
   // Title
   const dateStr=document.getElementById('phdr-date')?.textContent||new Date().toLocaleDateString('th-TH');
-  aoa.push(['ตารางสรุปข้อมูลอัตรากำลัง สถาบันวิจัยวิทยาศาสตร์และเทคโนโลยีแห่งประเทศไทย (วว.)']);
-  aoa.push([`ข้อมูล ณ วันที่ ${dateStr}`]);
-  aoa.push([]);
-  // Headers row 1
-  aoa.push(['ลำดับ','หน่วยงาน','พนักงาน','','ลูกจ้างประจำ','','ลูกจ้างทั่วไป','','ลูกจ้างเฉพาะกิจ','','รวม']);
-  // Headers row 2
-  aoa.push(['','','วิจัย/วิชาการ','สนับสนุน','วิจัย/วิชาการ','สนับสนุน','วิจัย/วิชาการ','สนับสนุน','วิจัย/วิชาการ','สนับสนุน','']);
+  addR1(['ตารางสรุปข้อมูลอัตรากำลัง สถาบันวิจัยวิทยาศาสตร์และเทคโนโลยีแห่งประเทศไทย (วว.)'],'title',24);
+  addR1([`ข้อมูล ณ วันที่ ${dateStr}`],'date',18);
+  addR1([],'_',6);
+  // Headers
+  addR1(['ลำดับ','หน่วยงาน','พนักงาน','','ลูกจ้างประจำ','','ลูกจ้างทั่วไป','','ลูกจ้างเฉพาะกิจ','','รวม'],'hdr1',18);
+  addR1(['','','วิจัย/วิชาการ','สนับสนุน','วิจัย/วิชาการ','สนับสนุน','วิจัย/วิชาการ','สนับสนุน','วิจัย/วิชาการ','สนับสนุน',''],'hdr2',16);
 
   const TITLE_ROW=0, HDR1_ROW=3, HDR2_ROW=4;
   const totAll=EMPTY_AGG();
   let rowNo=0;
   const grpRowIdxs=[], l2RowIdxs=[], totRowIdxs=[];
+  let altIdx=0;
 
   const groups=GROUP_ORDER.filter(g=>grpMap[g]);
   Object.keys(grpMap).forEach(g=>{ if(!groups.includes(g)) groups.push(g); });
@@ -4366,13 +4434,13 @@ function exportToExcel(){
     addAgg(totAll,gSub);
 
     grpRowIdxs.push(aoa.length);
-    aoa.push([null, GROUP_FULL[grp]||grp,
+    addR1([null, GROUP_FULL[grp]||grp,
       nv(gSub.emp.r),nv(gSub.emp.s),nv(gSub.perm.r),nv(gSub.perm.s),
-      nv(gSub.gen.r),nv(gSub.gen.s),nv(gSub.spec.r),nv(gSub.spec.s),gSub.total]);
+      nv(gSub.gen.r),nv(gSub.gen.s),nv(gSub.spec.r),nv(gSub.spec.s),gSub.total],'grp',18);
 
     if(rootAgg&&rootAgg.total>0){
       rowNo++;
-      aoa.push(rowArr(rowNo,'ขึ้นตรง '+grpCode,rootAgg,1));
+      addR1(rowArr(rowNo,'ขึ้นตรง '+grpCode,rootAgg,1),altIdx++%2===0?'r0':'r1',13);
     }
 
     const l2s=Object.entries(l2u).sort((a,b)=>dSort(a[0])-dSort(b[0]));
@@ -4381,47 +4449,42 @@ function exportToExcel(){
       Object.values(l2d.children).forEach(c=>addAgg(l2T,c.agg));
       rowNo++;
       l2RowIdxs.push(aoa.length);
-      aoa.push(rowArr(rowNo,l2d.name,l2T,1));
+      addR1(rowArr(rowNo,l2d.name,l2T,1),'l2',15);
       Object.entries(l2d.children).sort((a,b)=>b[1].agg.total-a[1].agg.total).forEach(([,child])=>{
         rowNo++;
-        aoa.push(rowArr(rowNo,'↳ '+child.name,child.agg,2));
+        addR1(rowArr(rowNo,'↳ '+child.name,child.agg,2),altIdx++%2===0?'r0':'r1',13);
       });
     });
 
     dirU.sort((a,b)=>b.agg.total-a.agg.total).forEach(u=>{
       rowNo++;
-      aoa.push(rowArr(rowNo,u.name,u.agg,1));
+      addR1(rowArr(rowNo,u.name,u.agg,1),altIdx++%2===0?'r0':'r1',13);
     });
   });
 
   totRowIdxs.push(aoa.length);
-  aoa.push([null,'รวมทั้งหมด',
+  addR1([null,'รวมทั้งหมด',
     totAll.emp.r,totAll.emp.s,totAll.perm.r,totAll.perm.s,
-    totAll.gen.r,totAll.gen.s,totAll.spec.r,totAll.spec.s,totAll.total]);
+    totAll.gen.r,totAll.gen.s,totAll.spec.r,totAll.spec.s,totAll.total],'total',20);
 
-  // Build worksheet
+  // Build worksheet + apply styles
   const ws=XLSX.utils.aoa_to_sheet(aoa);
-
-  // Column widths
-  ws['!cols']=[{wch:8},{wch:40},{wch:10},{wch:10},{wch:10},{wch:10},{wch:10},{wch:10},{wch:10},{wch:10},{wch:8}];
-
-  // Merges
+  ws['!cols']=[{wch:8},{wch:40},{wch:11},{wch:11},{wch:11},{wch:11},{wch:11},{wch:11},{wch:11},{wch:11},{wch:8}];
+  ws['!rows']=rowH.map(h=>({hpt:h}));
   ws['!merges']=[
     {s:{r:TITLE_ROW,c:0},e:{r:TITLE_ROW,c:10}},
     {s:{r:TITLE_ROW+1,c:0},e:{r:TITLE_ROW+1,c:10}},
-    {s:{r:HDR1_ROW,c:0},e:{r:HDR2_ROW,c:0}},   // ลำดับ rowspan2
-    {s:{r:HDR1_ROW,c:1},e:{r:HDR2_ROW,c:1}},   // หน่วยงาน rowspan2
-    {s:{r:HDR1_ROW,c:2},e:{r:HDR1_ROW,c:3}},   // พนักงาน colspan2
-    {s:{r:HDR1_ROW,c:4},e:{r:HDR1_ROW,c:5}},   // ลจ.ประจำ
-    {s:{r:HDR1_ROW,c:6},e:{r:HDR1_ROW,c:7}},   // ลจ.ทั่วไป
-    {s:{r:HDR1_ROW,c:8},e:{r:HDR1_ROW,c:9}},   // ลจ.เฉพาะกิจ
-    {s:{r:HDR1_ROW,c:10},e:{r:HDR2_ROW,c:10}}, // รวม rowspan2
+    {s:{r:HDR1_ROW,c:0},e:{r:HDR2_ROW,c:0}},
+    {s:{r:HDR1_ROW,c:1},e:{r:HDR2_ROW,c:1}},
+    {s:{r:HDR1_ROW,c:2},e:{r:HDR1_ROW,c:3}},
+    {s:{r:HDR1_ROW,c:4},e:{r:HDR1_ROW,c:5}},
+    {s:{r:HDR1_ROW,c:6},e:{r:HDR1_ROW,c:7}},
+    {s:{r:HDR1_ROW,c:8},e:{r:HDR1_ROW,c:9}},
+    {s:{r:HDR1_ROW,c:10},e:{r:HDR2_ROW,c:10}},
+    ...grpRowIdxs.map(ri=>({s:{r:ri,c:0},e:{r:ri,c:1}})),
+    ...totRowIdxs.map(ri=>({s:{r:ri,c:0},e:{r:ri,c:1}})),
   ];
-
-  // Row heights
-  ws['!rows']=[];
-  ws['!rows'][TITLE_ROW]={hpt:22};
-  ws['!rows'][TITLE_ROW+1]={hpt:18};
+  applyXS(ws,aoa,rowTypes);
 
   const wb=XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb,ws,'อัตรากำลัง วว.');
@@ -4437,101 +4500,241 @@ function exportFormalReportToExcel(){
 
   const grpF=document.getElementById('r2-group')?.value||'';
   const dptF=document.getElementById('r2-dept')?.value||'';
-  const data=allData.filter(r=>(!grpF||r.group===grpF)&&(!dptF||r.deptCode===dptF));
+  // dedup เดียวกับ renderFormalReport (ใช้ fullData + month)
+  const pv2MonX=parseInt(document.getElementById('pv2-month')?.value)||null;
+  const poolX=fullData.length?fullData:allData;
+  const baseSrcX=pv2MonX?(()=>{
+    const withMon=poolX.filter(r=>r.monthNum===pv2MonX);
+    const seenIds=new Set(withMon.map(r=>r.empId||r.name));
+    const nullDedup=[...new Map(poolX.filter(r=>r.monthNum===null&&!seenIds.has(r.empId||r.name)).map(r=>[r.empId||r.name,r])).values()];
+    return [...withMon,...nullDedup];
+  })():(()=>{
+    const byId=new Map();
+    poolX.forEach(r=>{const id=r.empId||r.name;if(!id)return;const prev=byId.get(id);if(!prev){byId.set(id,r);return;}if((r.monthNum??-1)>(prev.monthNum??-1))byId.set(id,r);});
+    return [...byId.values()];
+  })();
+  const data=baseSrcX.filter(r=>(!grpF||r.group===grpF)&&(!dptF||r.deptCode===dptF));
   const activeGroups=grpF?[grpF]:R2_GROUPS;
 
-  const asOf=getPeriodStr()||(()=>{
+  const asOf=getPv2PeriodStr()||(()=>{
     try{ return new Intl.DateTimeFormat('th-TH',{day:'numeric',month:'long',year:'numeric',calendar:'buddhist'}).format(new Date()); }
     catch(e){ return new Date().toLocaleDateString('th-TH'); }
   })();
 
+  // ── Style helpers (xlsx-js-style) ──
+  const _f2=rgb=>({patternType:'solid',fgColor:{rgb}});
+  const _t2=(rgb,bold,sz=9)=>({bold:!!bold,color:{rgb},name:'Sarabun',sz});
+  const _a2=(h,v='center')=>({horizontal:h,vertical:v});
+  const XS2={
+    title:{fill:_f2('0F2347'),font:_t2('C8A84B',true,12),alignment:_a2('center')},
+    date: {fill:_f2('0F2347'),font:_t2('D0C070',false,10),alignment:_a2('center')},
+    hdr1: {fill:_f2('1B3A6B'),font:_t2('FFFFFF',true,10),alignment:_a2('center')},
+    hdr2: {fill:_f2('2D5FA8'),font:_t2('FFFFFF',true,9), alignment:_a2('center')},
+    secL: {fill:_f2('263a5e'),font:_t2('C8A84B',true,10),alignment:_a2('left')},
+    secC: {fill:_f2('263a5e'),font:_t2('C8A84B',true,10),alignment:_a2('center')},
+    grpL: {fill:_f2('D5E8F5'),font:_t2('0F2347',true,9), alignment:_a2('left')},
+    grpC: {fill:_f2('D5E8F5'),font:_t2('0F2347',true,9), alignment:_a2('center')},
+    r0L:  {fill:_f2('F0F5FF'),font:_t2('1a2a4a',false,9),alignment:_a2('left')},
+    r0C:  {fill:_f2('F0F5FF'),font:_t2('1a2a4a',false,9),alignment:_a2('center')},
+    r1L:  {fill:_f2('FFFFFF'),font:_t2('374151',false,9),alignment:_a2('left')},
+    r1C:  {fill:_f2('FFFFFF'),font:_t2('374151',false,9),alignment:_a2('center')},
+    totL: {fill:_f2('0F2347'),font:_t2('C8A84B',true,11),alignment:_a2('left')},
+    totC: {fill:_f2('0F2347'),font:_t2('C8A84B',true,11),alignment:_a2('center')},
+    bandL:{fill:_f2('1B3A6B'),font:_t2('FFFFFF',true,10),alignment:_a2('left')},
+    bandC:{fill:_f2('1B3A6B'),font:_t2('FFFFFF',true,10),alignment:_a2('center')},
+  };
+  const applyS2=(ws,aoa,rowTypes,sfn)=>{
+    rowTypes.forEach((type,ri)=>{
+      const styles=sfn(type); if(!styles) return;
+      styles.forEach((s,ci)=>{
+        const ref=XLSX.utils.encode_cell({r:ri,c:ci});
+        if(!ws[ref]) ws[ref]={t:'s',v:''};
+        ws[ref].s=s;
+        if(typeof aoa[ri][ci]==='number'){ws[ref].t='n';ws[ref].v=aoa[ri][ci];}
+      });
+    });
+  };
+
+  const N=activeGroups.length;
+  const ncMain=1+2*N+(N>1?2:0)+1;
+  const ncS1=Math.max(ncMain, 1+2*N+3);
+  const nc3=3+N+1;
   const wb=XLSX.utils.book_new();
 
   // ===== SHEET 1: สรุปประเภทบุคลากร + เพศ =====
-  const s1=[];
-  s1.push(['สรุปจำนวนพนักงานและลูกจ้าง — สถาบันวิจัยวิทยาศาสตร์และเทคโนโลยีแห่งประเทศไทย (วว.)']);
-  s1.push([`ข้อมูล ณ วันที่ ${asOf}`]);
-  s1.push([]);
-  const s1h1=['ประเภทบุคลากร'];
-  const s1h2=[''];
+  const s1=[], s1T=[], s1H=[];
+  const addS1=(vals,type,ht=13)=>{s1.push(vals);s1T.push(type);s1H.push(ht);};
+  addS1(['สรุปจำนวนพนักงานและลูกจ้าง — สถาบันวิจัยวิทยาศาสตร์และเทคโนโลยีแห่งประเทศไทย (วว.)'],'title',24);
+  addS1([`ข้อมูล ณ วันที่ ${asOf}`],'date',18);
+  addS1([],'_',6);
+  const s1h1=['ประเภทบุคลากร'],s1h2=[''];
   activeGroups.forEach(g=>{s1h1.push(R2_GRP_SHORT[g]||g,'');s1h2.push('ช.','ญ.');});
-  if(activeGroups.length>1){s1h1.push('รวม','');s1h2.push('ช.','ญ.');}
+  if(N>1){s1h1.push('รวม','');s1h2.push('ช.','ญ.');}
   s1h1.push('รวมทั้งสิ้น');s1h2.push('');
-  s1.push(s1h1);s1.push(s1h2);
-  let gM=0,gF=0;
-  R2_POS_ROWS.forEach(({label,types})=>{
-    const rows=data.filter(d=>types.includes(d.positioning));
-    const row=[label];
-    let rM=0,rF=0;
-    activeGroups.forEach(g=>{const c=r2cnt(rows,d=>d.group===g);row.push(c.M||0,c.F||0);rM+=c.M;rF+=c.F;});
-    if(activeGroups.length>1) row.push(rM,rF);
-    row.push(rM+rF);gM+=rM;gF+=rF;s1.push(row);
-  });
-  const st1=['รวมทั้งสิ้น'];
-  activeGroups.forEach(g=>{const c=r2cnt(data,d=>d.group===g);st1.push(c.M,c.F);});
-  if(activeGroups.length>1) st1.push(gM,gF);
-  st1.push(gM+gF);s1.push(st1);
-  // Gender section
-  s1.push([]);s1.push(['แยกตามเพศ']);
-  const sg1=['ประเภท'];const sg2=[''];
-  activeGroups.forEach(g=>{sg1.push(R2_GRP_SHORT[g]||g,'');sg2.push('ช.','ญ.');});
-  sg1.push('รวม','','');sg2.push('ช.','ญ.','รวม');
-  s1.push(sg1);s1.push(sg2);
-  let tM=0,tF=0;
+  addS1(s1h1,'hdr1',18); addS1(s1h2,'hdr2',16);
+  let gM=0,gF=0,altS1=0;
   R2_POS_ROWS.forEach(({label,types})=>{
     const rows=data.filter(d=>types.includes(d.positioning));
     const row=[label];let rM=0,rF=0;
     activeGroups.forEach(g=>{const c=r2cnt(rows,d=>d.group===g);row.push(c.M||0,c.F||0);rM+=c.M;rF+=c.F;});
-    row.push(rM,rF,rM+rF);tM+=rM;tF+=rF;s1.push(row);
+    if(N>1) row.push(rM,rF);
+    row.push(rM+rF);gM+=rM;gF+=rF;
+    addS1(row,altS1++%2===0?'r0':'r1',13);
+  });
+  const st1=['รวมทั้งสิ้น'];
+  activeGroups.forEach(g=>{const c=r2cnt(data,d=>d.group===g);st1.push(c.M,c.F);});
+  if(N>1) st1.push(gM,gF);
+  st1.push(gM+gF);
+  addS1(st1,'total',18);
+  // Gender section
+  addS1([],'_',6); addS1(['แยกตามเพศ'],'sec',18);
+  const sg1=['ประเภท'],sg2=[''];
+  activeGroups.forEach(g=>{sg1.push(R2_GRP_SHORT[g]||g,'');sg2.push('ช.','ญ.');});
+  sg1.push('รวม','','');sg2.push('ช.','ญ.','รวม');
+  addS1(sg1,'hdr1',18); addS1(sg2,'hdr2',16);
+  let tM=0,tF=0,altSg=0;
+  R2_POS_ROWS.forEach(({label,types})=>{
+    const rows=data.filter(d=>types.includes(d.positioning));
+    const row=[label];let rM=0,rF=0;
+    activeGroups.forEach(g=>{const c=r2cnt(rows,d=>d.group===g);row.push(c.M||0,c.F||0);rM+=c.M;rF+=c.F;});
+    row.push(rM,rF,rM+rF);tM+=rM;tF+=rF;
+    addS1(row,altSg++%2===0?'r0':'r1',13);
   });
   const gt=['รวมทั้งสิ้น'];
   activeGroups.forEach(g=>{const c=r2cnt(data,d=>d.group===g);gt.push(c.M,c.F);});
-  gt.push(tM,tF,tM+tF);s1.push(gt);
+  gt.push(tM,tF,tM+tF);
+  addS1(gt,'total',18);
   const ws1=XLSX.utils.aoa_to_sheet(s1);
-  ws1['!cols']=[{wch:18},...Array(activeGroups.length*2+(activeGroups.length>1?2:0)+1).fill({wch:7})];
+  ws1['!cols']=[{wch:20},...Array(ncS1-1).fill({wch:7})];
+  ws1['!rows']=s1H.map(h=>({hpt:h}));
+  ws1['!merges']=[{s:{r:0,c:0},e:{r:0,c:ncS1-1}},{s:{r:1,c:0},e:{r:1,c:ncS1-1}}];
+  applyS2(ws1,s1,s1T,type=>{
+    const nc=ncS1,R=(L,C)=>Array(nc).fill(C).map((_,i)=>i===0?L:C);
+    switch(type){
+      case 'title': return Array(nc).fill(XS2.title);
+      case 'date':  return Array(nc).fill(XS2.date);
+      case 'hdr1':  return Array(nc).fill(XS2.hdr1);
+      case 'hdr2':  return Array(nc).fill(XS2.hdr2);
+      case 'sec':   return R(XS2.secL,XS2.secC);
+      case 'r0':    return R(XS2.r0L,XS2.r0C);
+      case 'r1':    return R(XS2.r1L,XS2.r1C);
+      case 'total': return R(XS2.totL,XS2.totC);
+      default: return null;
+    }
+  });
   XLSX.utils.book_append_sheet(wb,ws1,'สรุปประเภท-เพศ');
 
   // ===== SHEET 2: การศึกษา =====
-  const s2=[];
-  s2.push(['แยกตามระดับการศึกษา — สถาบันวิจัยวิทยาศาสตร์และเทคโนโลยีแห่งประเทศไทย (วว.)']);
-  s2.push([`ข้อมูล ณ วันที่ ${asOf}`]);s2.push([]);
-  const s2h1=['ระดับการศึกษา'];const s2h2=[''];
+  const s2=[], s2T=[], s2H=[];
+  const addS2=(vals,type,ht=13)=>{s2.push(vals);s2T.push(type);s2H.push(ht);};
+  addS2(['แยกตามระดับการศึกษา — สถาบันวิจัยวิทยาศาสตร์และเทคโนโลยีแห่งประเทศไทย (วว.)'],'title',24);
+  addS2([`ข้อมูล ณ วันที่ ${asOf}`],'date',18); addS2([],'_',6);
+  const s2h1=['ระดับการศึกษา'],s2h2=[''];
   activeGroups.forEach(g=>{s2h1.push(R2_GRP_SHORT[g]||g,'');s2h2.push('ช.','ญ.');});
-  if(activeGroups.length>1){s2h1.push('รวม','');s2h2.push('ช.','ญ.');}
+  if(N>1){s2h1.push('รวม','');s2h2.push('ช.','ญ.');}
   s2h1.push('รวมทั้งสิ้น');s2h2.push('');
-  s2.push(s2h1);s2.push(s2h2);
-  let e_gM=0,e_gF=0;
+  addS2(s2h1,'hdr1',18); addS2(s2h2,'hdr2',16);
+  let e_gM=0,e_gF=0,altS2=0;
   R2_EDU_ORDER.forEach(edu=>{
     const rows=data.filter(d=>r2EduGroup(d.edu||'')===edu);
     if(!rows.length) return;
     const row=[edu];let rM=0,rF=0;
     activeGroups.forEach(g=>{const c=r2cnt(rows,d=>d.group===g);row.push(c.M||0,c.F||0);rM+=c.M;rF+=c.F;});
-    if(activeGroups.length>1) row.push(rM,rF);
-    row.push(rM+rF);e_gM+=rM;e_gF+=rF;s2.push(row);
+    if(N>1) row.push(rM,rF);
+    row.push(rM+rF);e_gM+=rM;e_gF+=rF;
+    addS2(row,'grp',15);
     R2_POS.forEach(pos=>{
       const pRows=rows.filter(d=>d.positioning===pos);
       if(!pRows.length) return;
       const pr=['  ↳ '+(R2_POS_SHORT[pos]||pos)];let pM=0,pF=0;
       activeGroups.forEach(g=>{const c=r2cnt(pRows,d=>d.group===g);pr.push(c.M||0,c.F||0);pM+=c.M;pF+=c.F;});
-      if(activeGroups.length>1) pr.push(pM,pF);
-      pr.push(pM+pF);s2.push(pr);
+      if(N>1) pr.push(pM,pF);
+      pr.push(pM+pF);
+      addS2(pr,altS2++%2===0?'r0':'r1',13);
     });
   });
   const et=['รวมทั้งสิ้น'];
   activeGroups.forEach(g=>{const c=r2cnt(data,d=>d.group===g);et.push(c.M,c.F);});
-  if(activeGroups.length>1) et.push(e_gM,e_gF);
-  et.push(e_gM+e_gF);s2.push(et);
+  if(N>1) et.push(e_gM,e_gF);
+  et.push(e_gM+e_gF);
+  addS2(et,'total',18);
   const ws2=XLSX.utils.aoa_to_sheet(s2);
-  ws2['!cols']=[{wch:22},...Array(activeGroups.length*2+(activeGroups.length>1?2:0)+1).fill({wch:7})];
+  ws2['!cols']=[{wch:24},...Array(ncMain-1).fill({wch:7})];
+  ws2['!rows']=s2H.map(h=>({hpt:h}));
+  ws2['!merges']=[{s:{r:0,c:0},e:{r:0,c:ncMain-1}},{s:{r:1,c:0},e:{r:1,c:ncMain-1}}];
+  applyS2(ws2,s2,s2T,type=>{
+    const nc=ncMain,R=(L,C)=>Array(nc).fill(C).map((_,i)=>i===0?L:C);
+    switch(type){
+      case 'title': return Array(nc).fill(XS2.title);
+      case 'date':  return Array(nc).fill(XS2.date);
+      case 'hdr1':  return Array(nc).fill(XS2.hdr1);
+      case 'hdr2':  return Array(nc).fill(XS2.hdr2);
+      case 'grp':   return R(XS2.grpL,XS2.grpC);
+      case 'r0':    return R(XS2.r0L,XS2.r0C);
+      case 'r1':    return R(XS2.r1L,XS2.r1C);
+      case 'total': return R(XS2.totL,XS2.totC);
+      default: return null;
+    }
+  });
   XLSX.utils.book_append_sheet(wb,ws2,'การศึกษา');
 
   // ===== SHEET 3: Band/SB =====
-  const s3=[];
-  s3.push(['พนักงาน แยกตามตำแหน่ง (Band / Sub band) — สถาบันวิจัยวิ�ทยาศาสตร์และเทคโนโลยีแห่งประเทศไทย (วว.)']);
-  const {table:bandTbl}=r2BandTable(data);
-  bandTbl.forEach(row=>s3.push(row));
+  const s3=[], s3T=[], s3H=[], s3M=[];
+  const addS3=(vals,type,ht=13)=>{s3.push(vals);s3T.push(type);s3H.push(ht);};
+  addS3(['พนักงาน แยกตามตำแหน่ง (Band / Sub band) — สถาบันวิจัยวิทยาศาสตร์และเทคโนโลยีแห่งประเทศไทย (วว.)'],'title',24);
+  addS3([`ข้อมูล ณ วันที่ ${asOf}`],'date',18);
+  addS3([],'_',6);
+  addS3(['Band','SB','ตำแหน่ง',...activeGroups.map(g=>R2_GRP_SHORT[g]||g),'รวม'],'hdr',16);
+  s3M.push({s:{r:0,c:0},e:{r:0,c:nc3-1}},{s:{r:1,c:0},e:{r:1,c:nc3-1}});
+  const emp3=data.filter(d=>d.positioning==='พนักงาน'||d.positioning==='ผู้บริหาร');
+  let altS3=0;
+  ['1','2','3','4'].forEach(band=>{
+    const bRows=emp3.filter(d=>String(d.band)===band);
+    if(!bRows.length) return;
+    const bRi=s3.length;
+    addS3([R2_BAND_LBL[band]||`Band ${band}`,'','',
+      ...activeGroups.map(g=>bRows.filter(d=>d.group===g).length),bRows.length],'band',18);
+    s3M.push({s:{r:bRi,c:0},e:{r:bRi,c:2}});
+    (R2_SB_ORDER[band]||[]).forEach(sbKey=>{
+      const sbNum=sbKey.split('-')[1];
+      const sbRows=bRows.filter(d=>String(d.sb)===sbNum);
+      if(!sbRows.length) return;
+      if(R2_SB_SPLIT[sbKey]){
+        R2_SB_SPLIT[sbKey].forEach(sp=>{
+          const spRows=sbRows.filter(sp.filter);
+          if(!spRows.length) return;
+          addS3([band,sbKey,sp.label,
+            ...activeGroups.map(g=>spRows.filter(d=>d.group===g).length),spRows.length],
+            altS3++%2===0?'sb0':'sb1',13);
+        });
+      } else {
+        addS3([band,sbKey,R2_SB_LBL[sbKey]||sbKey,
+          ...activeGroups.map(g=>sbRows.filter(d=>d.group===g).length),sbRows.length],
+          altS3++%2===0?'sb0':'sb1',13);
+      }
+    });
+  });
+  const totRi=s3.length;
+  addS3(['รวม','','',
+    ...activeGroups.map(g=>emp3.filter(d=>d.group===g).length),emp3.length],'total',18);
+  s3M.push({s:{r:totRi,c:0},e:{r:totRi,c:2}});
   const ws3=XLSX.utils.aoa_to_sheet(s3);
-  ws3['!cols']=[{wch:22},{wch:9},{wch:9},{wch:9},{wch:9},{wch:9},{wch:9},{wch:9},{wch:9},{wch:9}];
+  ws3['!cols']=[{wch:18},{wch:8},{wch:35},...activeGroups.map(()=>({wch:8})),{wch:8}];
+  ws3['!rows']=s3H.map(h=>({hpt:h}));
+  ws3['!merges']=s3M;
+  applyS2(ws3,s3,s3T,type=>{
+    const nc=nc3,R=(L,C,lc)=>Array(nc).fill(C).map((_,i)=>i===lc?L:C);
+    switch(type){
+      case 'title': return Array(nc).fill(XS2.title);
+      case 'date':  return Array(nc).fill(XS2.date);
+      case 'hdr':   return Array(nc).fill(XS2.hdr1);
+      case 'band':  return R(XS2.bandL,XS2.bandC,2);
+      case 'sb0':   return R(XS2.r0L,XS2.r0C,2);
+      case 'sb1':   return R(XS2.r1L,XS2.r1C,2);
+      case 'total': return R(XS2.totL,XS2.totC,2);
+      default: return null;
+    }
+  });
   XLSX.utils.book_append_sheet(wb,ws3,'Band-SB');
 
   XLSX.writeFile(wb,`TISTR_FormalReport_${new Date().toLocaleDateString('th-TH',{year:'numeric',month:'2-digit',day:'2-digit'}).replace(/\//g,'-')}.xlsx`);
