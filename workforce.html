@@ -1132,6 +1132,7 @@ body{background:linear-gradient(160deg,#eaecf5 0%,#f0f2f8 60%,#e8edf6 100%);min-
   <button class="tab on" id="tab-dash" onclick="switchTab('dash')">📊 ภาพรวมอัตรากำลัง</button>
   <button class="tab" id="tab-forecast" onclick="switchTab('forecast')">👴 คนเกษียณ</button>
   <button class="tab" id="tab-people" onclick="switchTab('people')">👤 รายชื่อบุคลากร</button>
+  <button class="tab" id="tab-sumtable" onclick="showPrintView()">📋 ตารางสรุป</button>
   <button class="tab-summary-btn" id="sum-btn" onclick="toggleSummary()">📝 สรุปผล</button>
 </div>
 <div id="summary-panel">
@@ -1723,6 +1724,224 @@ body{background:linear-gradient(160deg,#eaecf5 0%,#f0f2f8 60%,#e8edf6 100%);min-
   <div id="dm-alert" style="display:none;margin-bottom:14px;padding:12px 16px;background:#fef3c7;border-left:4px solid #f59e0b;border-radius:8px;font-size:.78rem;color:#92400e"></div>
 
 </div><!-- /view-demand -->
+
+<div id="view-sumtable" class="main" style="display:none">
+  <div class="dm-hero" style="margin-bottom:18px">
+    <div class="dm-hero-left">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:6px">
+        <span style="font-size:1.9rem">📋</span>
+        <div>
+          <div style="font-size:1.15rem;font-weight:700;color:#fff">ตารางสรุปอัตรากำลัง วว.</div>
+          <div style="font-size:.78rem;color:#c7d7f5;margin-top:2px">ข้อมูล ณ วันที่ 18 สิงหาคม 2569 · รวม 823 คน</div>
+        </div>
+      </div>
+    </div>
+    <div class="dm-hero-right" style="display:flex;gap:12px;flex-wrap:wrap">
+      <div class="dm-kpi"><div class="dm-kpi-val">652</div><div class="dm-kpi-lab">พนักงาน</div></div>
+      <div class="dm-kpi"><div class="dm-kpi-val">171</div><div class="dm-kpi-lab">ลูกจ้างประจำ</div></div>
+      <div class="dm-kpi"><div class="dm-kpi-val" style="color:#fbbf24">823</div><div class="dm-kpi-lab">รวมทั้งหมด</div></div>
+    </div>
+  </div>
+
+  <div style="overflow-x:auto;border-radius:10px;box-shadow:0 2px 12px rgba(0,0,0,.13)">
+    <table id="st-table" style="width:100%;border-collapse:collapse;font-size:.78rem;font-family:inherit">
+      <thead>
+        <tr style="background:#0F2347;color:#fff;text-align:center">
+          <th rowspan="2" style="padding:8px 6px;white-space:nowrap;border-right:1px solid #1e3a6e;min-width:36px">ลำดับ</th>
+          <th rowspan="2" style="padding:8px 10px;text-align:left;border-right:1px solid #1e3a6e;min-width:240px">หน่วยงาน</th>
+          <th colspan="2" style="padding:6px 4px;border-right:1px solid #1e3a6e;border-bottom:1px solid #1e3a6e">พนักงาน</th>
+          <th colspan="2" style="padding:6px 4px;border-right:1px solid #1e3a6e;border-bottom:1px solid #1e3a6e">ลูกจ้างประจำ</th>
+          <th colspan="2" style="padding:6px 4px;border-right:1px solid #1e3a6e;border-bottom:1px solid #1e3a6e">ลูกจ้างทั่วไป</th>
+          <th colspan="2" style="padding:6px 4px;border-right:1px solid #1e3a6e;border-bottom:1px solid #1e3a6e">ลูกจ้างเฉพาะกิจ</th>
+          <th rowspan="2" style="padding:8px 6px;min-width:46px">รวม</th>
+        </tr>
+        <tr style="background:#142d5a;color:#c7d7f5;text-align:center;font-size:.72rem">
+          <th style="padding:5px 4px;min-width:46px;border-right:1px solid #1e3a6e">วิจัย/<br>วิชาการ</th>
+          <th style="padding:5px 4px;min-width:46px;border-right:1px solid #1e3a6e">สนับ-<br>สนุน</th>
+          <th style="padding:5px 4px;min-width:46px;border-right:1px solid #1e3a6e">วิจัย/<br>วิชาการ</th>
+          <th style="padding:5px 4px;min-width:46px;border-right:1px solid #1e3a6e">สนับ-<br>สนุน</th>
+          <th style="padding:5px 4px;min-width:46px;border-right:1px solid #1e3a6e">วิจัย/<br>วิชาการ</th>
+          <th style="padding:5px 4px;min-width:46px;border-right:1px solid #1e3a6e">สนับ-<br>สนุน</th>
+          <th style="padding:5px 4px;min-width:46px;border-right:1px solid #1e3a6e">วิจัย/<br>วิชาการ</th>
+          <th style="padding:5px 4px;min-width:46px;border-right:1px solid #1e3a6e">สนับ-<br>สนุน</th>
+        </tr>
+      </thead>
+      <tbody id="st-tbody"></tbody>
+    </table>
+  </div>
+
+  <div style="margin-top:10px;font-size:.72rem;color:#64748b;text-align:right">
+    ที่มา: ระบบสารสนเทศอัตรากำลัง วว. ณ 18 สิงหาคม 2569
+  </div>
+</div><!-- /view-sumtable -->
+
+<script>
+(function(){
+// ======= SUMMARY TABLE DATA (from PDF) =======
+// t: 'g'=กลุ่ม header, 's'=subtotal, 'u'=unit, 'T'=grand total
+// cols: 9 values [พนง.วิจัย, พนง.สนับ, ลจ.ประจำ.วิจัย, ลจ.ประจำ.สนับ, ลจ.ทั่วไป.วิจัย, ลจ.ทั่วไป.สนับ, ลจ.เฉพาะ.วิจัย, ลจ.เฉพาะ.สนับ, รวม]
+// For g/s/T rows: odd indices (1,3,5,7) are '' (collapsed to colspan=2 on even)
+const D=[
+// ===== กลุ่มผวว. =====
+{t:'g',name:'กลุ่มภายใต้สังกัดผู้ว่าการ',c:['51','','1','','13','','1','','66']},
+{t:'u',no:1,name:'นักบริหารพิเศษ',c:['1','—','—','—','—','—','—','—','1']},
+{t:'u',no:2,name:'ผู้เชี่ยวชาญพิเศษ',c:['1','—','—','—','—','—','—','—','1']},
+{t:'s',name:'รวม ตำแหน่งพิเศษ',c:['2','','—','','—','','—','','2']},
+{t:'u',no:3,name:'สำนักผู้ว่าการ (สผวว.)',c:['—','4','—','—','1','1','—','—','6']},
+{t:'u',no:4,name:'กองงานเลขานุการ (กลข.)',c:['—','6','—','—','—','4','—','—','10']},
+{t:'u',no:5,name:'กองวิเทศสัมพันธ์ (กวส.)',c:['—','6','—','—','—','—','—','—','6']},
+{t:'s',name:'รวม สำนักผู้ว่าการ (สผวว.)',c:['16','','—','','6','','—','','22']},
+{t:'u',no:6,name:'สำนักยุทธศาสตร์วิสาหกิจ (สยศ.)',c:['—','8','—','—','—','—','—','1','9']},
+{t:'u',no:7,name:'กองนโยบายและแผน (กนผ.)',c:['—','7','—','—','—','2','—','—','9']},
+{t:'u',no:8,name:'กองติดตามและประเมินผล (กตป.)',c:['—','7','—','—','—','2','—','—','9']},
+{t:'u',no:9,name:'กองพัฒนาระบบงาน (กพร.)',c:['—','4','—','—','—','1','—','—','5']},
+{t:'s',name:'รวม สำนักยุทธศาสตร์วิสาหกิจ (สยศ.)',c:['26','','—','','5','','1','','32']},
+{t:'u',no:10,name:'สำนักดิจิทัลและสารสนเทศ (สทส.)',c:['—','2','—','—','—','—','—','—','2']},
+{t:'u',no:11,name:'สำนักตรวจสอบภายใน (สตส.)',c:['—','4','—','1','—','—','—','—','5']},
+{t:'u',no:12,name:'สถานีวิจัยสิ่งแวดล้อมสะแกราช (สสส.)',c:['1','—','—','—','2','—','—','—','3']},
+// ===== กลุ่มอช. =====
+{t:'g',name:'กลุ่มวิจัยและพัฒนา ด้านอุตสาหกรรมชีวภาพ (อช.)',c:['135','','11','','60','','—','','206']},
+{t:'u',no:13,name:'รองผู้ว่าการและขึ้นตรง',c:['3','3','—','—','—','—','—','—','6']},
+{t:'s',name:'รวม รองผู้ว่าการและขึ้นตรง',c:['6','','—','','—','','—','','6']},
+{t:'u',no:14,name:'ศูนย์เชี่ยวชาญนวัตกรรมเกษตรสร้างสรรค์ (ศนก.)',c:['20','1','2','—','10','8','—','—','41']},
+{t:'u',no:15,name:'ศูนย์เชี่ยวชาญนวัตกรรมอาหารสุขภาพ (ศนอ.)',c:['27','2','2','1','5','—','—','—','37']},
+{t:'u',no:16,name:'ศูนย์เชี่ยวชาญนวัตกรรมผลิตภัณฑ์สมุนไพร (ศนส.)',c:['29','1','1','1','9','3','—','—','44']},
+{t:'u',no:17,name:'ศูนย์ความหลากหลายทางชีวภาพ (ศคช.)',c:['34','5','1','1','17','3','—','—','61']},
+{t:'u',no:18,name:'สถานีวิจัยลำตะคอง (สลค.)',c:['7','2','2','—','2','3','—','—','16']},
+{t:'u',no:19,name:'ผู้ว่าการ (ผวว.)',c:['1','—','—','—','—','—','—','—','1']},
+// ===== กลุ่มพย. =====
+{t:'g',name:'กลุ่มวิจัยและพัฒนา ด้านพัฒนาอย่างยั่งยืน (พย.)',c:['109','','21','','30','','—','','160']},
+{t:'u',no:20,name:'รองผู้ว่าการและขึ้นตรง',c:['1','—','—','1','1','—','—','—','3']},
+{t:'s',name:'รวม รองผู้ว่าการและขึ้นตรง',c:['1','','1','','1','','—','','3']},
+{t:'u',no:21,name:'ศูนย์เชี่ยวชาญนวัตกรรมพลังงานสะอาดและสิ่งแวดล้อม (ศนพ.)',c:['44','3','—','1','10','2','—','—','60']},
+{t:'u',no:22,name:'ศูนย์เชี่ยวชาญนวัตกรรมวัสดุ (ศนว.)',c:['31','—','—','—','8','1','—','—','40']},
+{t:'u',no:23,name:'ศูนย์เชี่ยวชาญนวัตกรรมหุ่นยนต์และเครื่องจักรกลอัตโนมัติ (ศนย.)',c:['20','5','—','—','1','1','—','—','27']},
+{t:'u',no:24,name:'สถานีวิจัยสิ่งแวดล้อมสะแกราช (สสส.)',c:['2','2','7','12','—','6','—','—','29']},
+{t:'u',no:25,name:'ผู้ว่าการ (ผวว.)',c:['1','—','—','—','—','—','—','—','1']},
+// ===== กลุ่มยธ. =====
+{t:'g',name:'กลุ่มยุทธศาสตร์และจัดการนวัตกรรม (ยธ.)',c:['37','','5','','1','','—','','43']},
+{t:'u',no:26,name:'รองผู้ว่าการและขึ้นตรง',c:['—','1','—','—','—','—','—','—','1']},
+{t:'s',name:'รวม รองผู้ว่าการและขึ้นตรง',c:['1','','—','','—','','—','','1']},
+{t:'u',no:27,name:'สำนักดิจิทัลและสารสนเทศ (สทส.)',c:['1','2','—','—','—','—','—','—','3']},
+{t:'u',no:28,name:'กองพัฒนาระบบดิจิทัล (กพท.)',c:['—','11','—','—','—','—','—','—','11']},
+{t:'u',no:29,name:'กองพัฒนาและจัดการความรู้องค์กร (กจค.)',c:['—','8','—','—','—','—','—','—','8']},
+{t:'s',name:'รวม สำนักดิจิทัลและสารสนเทศ (สทส.)',c:['22','','—','','—','','—','','22']},
+{t:'u',no:30,name:'สำนักจัดการเทคโนโลยีและนวัตกรรม (สจท.)',c:['—','3','—','—','—','—','—','—','3']},
+{t:'u',no:31,name:'กองบริการธุรกิจนวัตกรรม (กบน.)',c:['—','5','—','5','—','—','—','—','10']},
+{t:'u',no:32,name:'กองพัฒนาธุรกิจนวัตกรรม (กพน.)',c:['—','5','—','—','—','—','—','—','5']},
+{t:'s',name:'รวม สำนักจัดการเทคโนโลยีและนวัตกรรม (สจท.)',c:['13','','5','','—','','—','','18']},
+{t:'u',no:33,name:'ศูนย์บริหารการลงทุน (ศบล.)',c:['—','—','—','—','1','—','—','—','1']},
+{t:'u',no:34,name:'ผู้ว่าการ (ผวว.)',c:['—','1','—','—','—','—','—','—','1']},
+// ===== กลุ่มบอ. =====
+{t:'g',name:'กลุ่มบริการอุตสาหกรรม (บอ.)',c:['177','','9','','42','','3','','231']},
+{t:'u',no:35,name:'รองผู้ว่าการและขึ้นตรง',c:['1','2','—','2','—','—','—','—','5']},
+{t:'s',name:'รวม รองผู้ว่าการและขึ้นตรง',c:['3','','2','','—','','—','','5']},
+{t:'u',no:36,name:'ศูนย์ทดสอบและมาตรวิทยา (ศทม.)',c:['4','9','—','1','—','5','—','—','19']},
+{t:'u',no:37,name:'หป.มาตรฐานทางไฟฟ้าและอิเล็กทรอนิกส์ (หป.ฟอ.)',c:['5','1','—','—','—','1','—','—','7']},
+{t:'u',no:38,name:'หป.มาตรฐานทางแสงและอุณหภูมิ (หป.สอ.)',c:['8','—','—','—','2','1','—','—','11']},
+{t:'u',no:39,name:'หป.มาตรฐานวิศวกรรมทางกล (หป.วก.)',c:['9','—','—','—','3','1','—','—','13']},
+{t:'u',no:40,name:'หป.ทดสอบทางฟิสิกส์ (หป.ทฟ.)',c:['9','2','—','—','1','—','—','—','12']},
+{t:'u',no:41,name:'หป.เคมีวิเคราะห์ (หป.คม.)',c:['15','2','—','1','4','2','1','—','25']},
+{t:'u',no:42,name:'หป.ชีวเคมีและจุลชีววิทยา (หป.ชจ.)',c:['14','1','—','—','6','3','—','—','24']},
+{t:'s',name:'รวม ศูนย์ทดสอบและมาตรวิทยา (ศทม.)',c:['79','','2','','29','','1','','111']},
+{t:'u',no:43,name:'ศูนย์พัฒนาและวิเคราะห์สมบัติของวัสดุ (ศพว.)',c:['1','2','—','1','—','—','—','—','4']},
+{t:'u',no:44,name:'หป.ตรวจสอบคุณสมบัติวัสดุและวิเคราะห์ความเสียหาย (หป.สส.)',c:['14','—','—','—','—','—','—','—','14']},
+{t:'u',no:45,name:'หป.ตรวจสอบสมรรถนะและความปลอดภัย (หป.สป.)',c:['15','—','—','—','—','—','—','—','15']},
+{t:'u',no:46,name:'หป.ทดสอบการสลายตัวทางชีวภาพของวัสดุ (หป.สช.)',c:['9','—','1','—','2','—','—','—','12']},
+{t:'s',name:'รวม ศูนย์พัฒนาและวิเคราะห์สมบัติของวัสดุ (ศพว.)',c:['41','','2','','2','','—','','45']},
+{t:'u',no:47,name:'ศูนย์การบรรจุหีบห่อไทย (ศบท.)',c:['1','1','—','1','—','—','—','—','3']},
+{t:'u',no:48,name:'หป.ทดสอบบรรจุภัณฑ์ (หป.ทบ.)',c:['10','—','—','—','2','2','—','—','14']},
+{t:'u',no:49,name:'หป.พัฒนาบรรจุภัณฑ์ (หป.พบ.)',c:['10','—','—','—','3','—','2','—','15']},
+{t:'s',name:'รวม ศูนย์การบรรจุหีบห่อไทย (ศบท.)',c:['22','','1','','7','','2','','32']},
+{t:'u',no:50,name:'ศูนย์ทดสอบมาตรฐานระบบขนส่งทางราง (ศทร.)',c:['4','1','1','—','—','—','—','—','6']},
+{t:'u',no:51,name:'หป.ทดสอบและพัฒนาเทคโนโลยีขนส่งทางรางและยานยนต์ขนส่ง (หป.พร.)',c:['10','—','—','—','—','—','—','—','10']},
+{t:'s',name:'รวม ศูนย์ทดสอบมาตรฐานระบบขนส่งทางราง (ศทร.)',c:['15','','1','','—','','—','','16']},
+{t:'u',no:52,name:'สำนักรับรองระบบคุณภาพ (สรร.)',c:['3','—','—','1','—','—','—','—','4']},
+{t:'u',no:53,name:'กองประเมินและรับรองระบบคุณภาพ (กปร.)',c:['7','—','—','—','—','2','—','—','9']},
+{t:'u',no:54,name:'กองจัดการและบริหารงาน (กจบ.)',c:['3','—','—','—','—','1','—','—','4']},
+{t:'u',no:55,name:'กองประเมินและรับรองผลิตภัณฑ์ (กปผ.)',c:['3','—','—','—','—','1','—','—','4']},
+{t:'s',name:'รวม สำนักรับรองระบบคุณภาพ (สรร.)',c:['16','','1','','4','','—','','21']},
+{t:'u',no:56,name:'ผู้ว่าการ (ผวว.)',c:['1','—','—','—','—','—','—','—','1']},
+// ===== กลุ่มบห. =====
+{t:'g',name:'กลุ่มบริหาร (บห.)',c:['82','','14','','21','','—','','117']},
+{t:'u',no:57,name:'รองผู้ว่าการและขึ้นตรง',c:['—','1','—','—','—','—','—','—','1']},
+{t:'s',name:'รวม รองผู้ว่าการและขึ้นตรง',c:['1','','—','','—','','—','','1']},
+{t:'u',no:58,name:'สำนักบริหารทรัพยากรบุคคล (สทบ.)',c:['—','2','—','1','—','—','—','—','3']},
+{t:'u',no:59,name:'กองบริหารบุคคล (กบค.)',c:['—','9','—','1','—','2','—','—','12']},
+{t:'u',no:60,name:'กองพัฒนาบุคคล (กพค.)',c:['—','4','—','1','—','3','—','—','8']},
+{t:'s',name:'รวม สำนักบริหารทรัพยากรบุคคล (สทบ.)',c:['15','','3','','5','','—','','23']},
+{t:'u',no:61,name:'สำนักบริหารการคลัง (สกค.)',c:['—','1','—','—','—','—','—','—','1']},
+{t:'u',no:62,name:'กองการเงินและบัญชี (กงบ.)',c:['—','11','—','2','—','4','—','—','17']},
+{t:'u',no:63,name:'กองพัสดุและคลังพัสดุ (กพด.)',c:['—','14','—','3','—','4','—','—','21']},
+{t:'s',name:'รวม สำนักบริหารการคลัง (สกค.)',c:['26','','5','','8','','—','','39']},
+{t:'u',no:64,name:'สำนักสื่อสารองค์กร (สสอ.)',c:['—','2','—','1','—','—','—','—','3']},
+{t:'u',no:65,name:'กองสื่อสารภายใน (กสน.)',c:['—','4','—','1','—','1','—','—','6']},
+{t:'u',no:66,name:'กองประชาสัมพันธ์ (กปส.)',c:['—','8','—','1','—','2','—','—','11']},
+{t:'s',name:'รวม สำนักสื่อสารองค์กร (สสอ.)',c:['14','','3','','3','','—','','20']},
+{t:'u',no:67,name:'สำนักบริการกลาง (สบก.)',c:['—','7','—','1','—','—','—','—','8']},
+{t:'u',no:68,name:'กองกลาง (กกล.)',c:['—','5','—','1','—','1','—','—','7']},
+{t:'u',no:69,name:'กองซ่อมบำรุง (กบร.)',c:['—','6','—','1','—','3','—','—','10']},
+{t:'s',name:'รวม สำนักบริการกลาง (สบก.)',c:['18','','3','','4','','—','','25']},
+{t:'u',no:70,name:'กองกฎหมาย (กกม.)',c:['—','7','—','—','—','1','—','—','8']},
+{t:'u',no:71,name:'ผู้ว่าการ (ผวว.)',c:['—','1','—','—','—','—','—','—','1']},
+// ===== Grand Total =====
+{t:'T',name:'รวมทั้งหมด',c:['591','','61','','167','','4','','823']}
+];
+
+function buildSummaryTable(){
+  const tbody=document.getElementById('st-tbody');
+  if(!tbody)return;
+  const BR='1px solid #e2e8f0';
+  const BR2='1px solid #2a4a8a';
+  let html='';
+  let ri=0;
+  D.forEach(function(row){
+    const isG=row.t==='g', isS=row.t==='s', isU=row.t==='u', isT=row.t==='T';
+    let rowStyle='';
+    if(isG) rowStyle='background:#0F2347;color:#fff;font-weight:700;';
+    else if(isS) rowStyle='background:#1e3a6e;color:#d4e0f8;font-style:italic;';
+    else if(isT) rowStyle='background:#0F2347;color:#fbbf24;font-weight:700;font-size:.82rem;';
+    else rowStyle=(ri%2===0)?'background:#fff;':'background:#f0f5ff;';
+    if(isU) ri++;
+
+    const bdr=(isG||isT)?BR2:BR;
+    const numStyle='text-align:center;padding:6px 4px;border-right:'+bdr+';';
+    const nameStyle=(isG?'font-size:.76rem;':isT?'font-size:.8rem;':'')+'padding:6px 10px;border-right:'+bdr+';';
+
+    if(isU){
+      // Full 11-column row
+      html+='<tr style="'+rowStyle+'">';
+      html+='<td style="text-align:center;padding:6px 4px;border-right:'+bdr+';">'+row.no+'</td>';
+      html+='<td style="'+nameStyle+'">'+row.name+'</td>';
+      for(let i=0;i<8;i++){
+        html+='<td style="'+numStyle+'">'+row.c[i]+'</td>';
+      }
+      html+='<td style="text-align:center;padding:6px 6px;font-weight:700;">'+row.c[8]+'</td>';
+      html+='</tr>';
+    } else {
+      // Collapsed row: colspan=2 for each type pair
+      html+='<tr style="'+rowStyle+'">';
+      html+='<td style="text-align:center;padding:6px 4px;border-right:'+bdr+';"></td>';
+      html+='<td style="'+nameStyle+'">'+row.name+'</td>';
+      for(let i=0;i<8;i+=2){
+        const v=row.c[i];
+        html+='<td colspan="2" style="'+numStyle+'font-weight:600;">'+v+'</td>';
+      }
+      html+='<td style="text-align:center;padding:6px 6px;font-weight:700;">'+row.c[8]+'</td>';
+      html+='</tr>';
+    }
+  });
+  tbody.innerHTML=html;
+}
+
+// Build when tab is first opened
+document.addEventListener('DOMContentLoaded',function(){
+  buildSummaryTable();
+});
+// Also call now in case DOM is ready
+if(document.readyState!=='loading') buildSummaryTable();
+})();
+</script>
 
 </div><!-- /content -->
 
@@ -4336,12 +4555,21 @@ function exportToExcel(){
     a.total++; a[k][isResearch(r.posNew,r.band,r.positioning,r.group,r.deptCode)?'r':'s']++;
   });
 
-  const nv=v=>v>0?v:0;
+  const nv=v=>v>0?v:'—';
+  // Unit row: all 9 individual values
   const rowArr=(no,name,agg,indent)=>{
     const prefix=indent?'  '.repeat(indent):'';
     return [no===null?'':no, prefix+name,
       nv(agg.emp.r),nv(agg.emp.s),nv(agg.perm.r),nv(agg.perm.s),
       nv(agg.gen.r),nv(agg.gen.s),nv(agg.spec.r),nv(agg.spec.s),agg.total];
+  };
+  // Merged row (group header / subtotal): combined totals, empty partner cells
+  // Name goes in col A (index 0) because cols A+B are merged — Excel shows top-left cell only
+  const rowArrMerged=(no,name,agg)=>{
+    const eT=agg.emp.r+agg.emp.s,pT=agg.perm.r+agg.perm.s;
+    const gT=agg.gen.r+agg.gen.s,sT=agg.spec.r+agg.spec.s;
+    return [name,'',
+      eT>0?eT:'—','',pT>0?pT:'—','',gT>0?gT:'—','',sT>0?sT:'—','',agg.total];
   };
 
   // ── Style helpers (xlsx-js-style) ──
@@ -4352,15 +4580,17 @@ function exportToExcel(){
     title:{fill:_fx('0F2347'),font:_tx('C8A84B',true,12),alignment:_ax('center')},
     date: {fill:_fx('0F2347'),font:_tx('D0C070',false,10),alignment:_ax('center')},
     hdr1: {fill:_fx('1B3A6B'),font:_tx('FFFFFF',true,10),alignment:_ax('center')},
-    hdr2: {fill:_fx('2D5FA8'),font:_tx('FFFFFF',true,9), alignment:_ax('center')},
-    grpL: {fill:_fx('0F2347'),font:_tx('C8A84B',true,10),alignment:_ax('left')},
-    grpC: {fill:_fx('0F2347'),font:_tx('C8A84B',true,10),alignment:_ax('center')},
-    l2L:  {fill:_fx('D5E8F5'),font:_tx('0F2347',true,9), alignment:_ax('left')},
-    l2C:  {fill:_fx('D5E8F5'),font:_tx('0F2347',true,9), alignment:_ax('center')},
-    r0L:  {fill:_fx('F0F5FF'),font:_tx('1a2a4a',false,9),alignment:_ax('left')},
-    r0C:  {fill:_fx('F0F5FF'),font:_tx('1a2a4a',false,9),alignment:_ax('center')},
-    r1L:  {fill:_fx('FFFFFF'),font:_tx('374151',false,9),alignment:_ax('left')},
-    r1C:  {fill:_fx('FFFFFF'),font:_tx('374151',false,9),alignment:_ax('center')},
+    hdr2: {fill:_fx('2B4F8A'),font:_tx('FFFFFF',true,9), alignment:_ax('center')},
+    grpL: {fill:_fx('1B3A6B'),font:_tx('FFFFFF',true,10),alignment:_ax('left')},
+    grpC: {fill:_fx('1B3A6B'),font:_tx('FFFFFF',true,10),alignment:_ax('center')},
+    l2L:  {fill:_fx('EEF4FB'),font:_tx('1a2a4a',true,9), alignment:_ax('left')},
+    l2C:  {fill:_fx('EEF4FB'),font:_tx('1a2a4a',true,9), alignment:_ax('center')},
+    r0L:  {fill:_fx('F5F8FF'),font:_tx('000000',false,9),alignment:_ax('left')},
+    r0C:  {fill:_fx('F5F8FF'),font:_tx('000000',false,9),alignment:_ax('center')},
+    r1L:  {fill:_fx('FFFFFF'),font:_tx('000000',false,9),alignment:_ax('left')},
+    r1C:  {fill:_fx('FFFFFF'),font:_tx('000000',false,9),alignment:_ax('center')},
+    subL: {fill:_fx('DDE6F5'),font:{..._tx('1e3a8a',true,9),italic:true},alignment:_ax('left')},
+    subC: {fill:_fx('DDE6F5'),font:{..._tx('1e3a8a',true,9),italic:true},alignment:_ax('center')},
     totL: {fill:_fx('0F2347'),font:_tx('C8A84B',true,11),alignment:_ax('left')},
     totC: {fill:_fx('0F2347'),font:_tx('C8A84B',true,11),alignment:_ax('center')},
   };
@@ -4371,11 +4601,12 @@ function exportToExcel(){
       date: ri=>Array(NC1).fill(XS1.date),
       hdr1: ri=>Array(NC1).fill(XS1.hdr1),
       hdr2: ri=>Array(NC1).fill(XS1.hdr2),
-      grp:  ri=>[XS1.grpC,...Array(NC1-1).fill(XS1.grpC)].map((_,i)=>i===1?XS1.grpL:XS1.grpC),
+      grp:  ri=>Array(NC1).fill(XS1.grpC).map((_,i)=>i===0?XS1.grpL:XS1.grpC),
       l2:   ri=>Array(NC1).fill(XS1.l2C).map((_,i)=>i===1?XS1.l2L:XS1.l2C),
+      sub:  ri=>Array(NC1).fill(XS1.subC).map((_,i)=>i===0?XS1.subL:XS1.subC),
       r0:   ri=>Array(NC1).fill(XS1.r0C).map((_,i)=>i===1?XS1.r0L:XS1.r0C),
       r1:   ri=>Array(NC1).fill(XS1.r1C).map((_,i)=>i===1?XS1.r1L:XS1.r1C),
-      total:ri=>Array(NC1).fill(XS1.totC).map((_,i)=>i===1?XS1.totL:XS1.totC),
+      total:ri=>Array(NC1).fill(XS1.totC).map((_,i)=>i===0?XS1.totL:XS1.totC),
     };
     rowTypes.forEach((type,ri)=>{
       const fn=sMap[type]; if(!fn) return;
@@ -4388,8 +4619,10 @@ function exportToExcel(){
     });
   };
 
-  const aoa=[], rowTypes=[], rowH=[];
+  const aoa=[], rowTypes=[], rowH=[], mergedRowIdxs=[];
   const addR1=(vals,type,ht=13)=>{aoa.push(vals);rowTypes.push(type);rowH.push(ht);};
+  // addMR: merged row (group/subtotal) — records idx for merge later
+  const addMR=(vals,type,ht=13)=>{mergedRowIdxs.push(aoa.length);addR1(vals,type,ht);};
 
   // Title
   const dateStr=document.getElementById('phdr-date')?.textContent||new Date().toLocaleDateString('th-TH');
@@ -4412,11 +4645,87 @@ function exportToExcel(){
   groups.forEach(grp=>{
     if(!grpMap[grp]) return;
     const depts=grpMap[grp],grpCode=GROUP_CODES[grp]||'';
-    const l2u={},dirU=[]; let rootAgg=null;
+
+    // ── พิเศษ: ขึ้นตรง ผวว. → นักบริหารพิเศษ/ผู้เชี่ยวชาญพิเศษ ขึ้นก่อน แล้วตามด้วยหน่วยงาน ──
+    if(grp==='ขึ้นตรง ผวว.'){
+      const SPECIAL_POS=['นักบริหารพิเศษ','ผู้เชี่ยวชาญพิเศษ'];
+      const SPECIAL_RE=/นักบริหารพิเศษ|ผู้เชี่ยวชาญพิเศษ/;
+      const OTHER_GRP_CODES=new Set(Object.values(GROUP_CODES).filter(c=>c!=='ผวว.'));
+      const pvvSrc=src.filter(r=>r.group===grp);
+      const pvvPos=r=>(r.posNew||r.position||'').trim();
+      const isSpecial=r=>SPECIAL_RE.test(pvvPos(r));
+      const isCrossGrp=r=>OTHER_GRP_CODES.has(normCode(r.deptCode||''));
+      const specialPVV=pvvSrc.filter(r=>isSpecial(r));
+      const crossGrpPVV=pvvSrc.filter(r=>!isSpecial(r)&&isCrossGrp(r));
+      const regularPVV=pvvSrc.filter(r=>!isSpecial(r)&&!isCrossGrp(r));
+      // posCnt per special position name
+      const posCnt={};
+      specialPVV.forEach(r=>{
+        const raw=pvvPos(r);
+        const pos=SPECIAL_POS.find(sp=>raw.includes(sp))||raw||'(ไม่ระบุ)';
+        if(!posCnt[pos]) posCnt[pos]=EMPTY_AGG();
+        const k=POS_KEYS[r.positioning]||'emp';
+        posCnt[pos].total++; posCnt[pos][k][isResearch(r.posNew,r.band,r.positioning,r.group,r.deptCode)?'r':'s']++;
+      });
+      // crossAgg: รองผู้ว่าการและขึ้นตรง
+      const crossAgg=EMPTY_AGG();
+      crossGrpPVV.forEach(r=>{ const k=POS_KEYS[r.positioning]||'emp'; crossAgg.total++; crossAgg[k][isResearch(r.posNew,r.band,r.positioning,r.group,r.deptCode)?'r':'s']++; });
+      // pvvDeptMap: regular dept-based units
+      const pvvDeptMap={};
+      regularPVV.forEach(r=>{
+        const d=r.deptCode||'?';
+        if(!pvvDeptMap[d]) pvvDeptMap[d]={name:r.deptName||d,agg:EMPTY_AGG()};
+        const k=POS_KEYS[r.positioning]||'emp';
+        pvvDeptMap[d].agg.total++; pvvDeptMap[d].agg[k][isResearch(r.posNew,r.band,r.positioning,r.group,r.deptCode)?'r':'s']++;
+      });
+      // gSub = total of all pvvSrc
+      const gSub=EMPTY_AGG();
+      pvvSrc.forEach(r=>{ const k=POS_KEYS[r.positioning]||'emp'; gSub.total++; gSub[k][isResearch(r.posNew,r.band,r.positioning,r.group,r.deptCode)?'r':'s']++; });
+      addAgg(totAll,gSub);
+      // Group header (merged)
+      grpRowIdxs.push(aoa.length);
+      addMR(rowArrMerged(null,GROUP_FULL[grp]||grp,gSub),'grp',18);
+      // Special position rows (นักบริหารพิเศษ, ผู้เชี่ยวชาญพิเศษ)
+      const spTot=EMPTY_AGG();
+      SPECIAL_POS.forEach(sp=>{ if(posCnt[sp]) addAgg(spTot,posCnt[sp]); });
+      SPECIAL_POS.forEach(sp=>{
+        if(!posCnt[sp]||!posCnt[sp].total) return;
+        rowNo++; addR1(rowArr(rowNo,sp,posCnt[sp]),altIdx++%2===0?'r0':'r1',13);
+      });
+      if(spTot.total>0) addMR(rowArrMerged(null,'รวม ตำแหน่งพิเศษ',spTot),'sub',13);
+      // รองผู้ว่าการและขึ้นตรง
+      if(crossAgg.total>0){
+        rowNo++; addR1(rowArr(rowNo,'รองผู้ว่าการและขึ้นตรง',crossAgg),altIdx++%2===0?'r0':'r1',13);
+        addMR(rowArrMerged(null,'รวม รองผู้ว่าการและขึ้นตรง',crossAgg),'sub',13);
+      }
+      // Regular depts (L2/L3/dirU)
+      const grpCodePVV=GROUP_CODES[grp]||'ผวว.';
+      const l2uPVV={},dirUPVV=[];
+      Object.entries(pvvDeptMap).forEach(([code,data])=>{
+        const lv=deptLevel(code,data.name,grpCodePVV);
+        if(lv==='root'){/*นับในยอดกลุ่มแล้ว ไม่แสดง row แยก*/}
+        else if(lv==='l3'){ const pc=PARENT_MAP[normCode(code)]; if(!l2uPVV[pc]) l2uPVV[pc]={name:pc,ownAgg:EMPTY_AGG(),children:{}}; l2uPVV[pc].children[code]={name:data.name,agg:data.agg}; }
+        else if(lv==='l2'){ if(!l2uPVV[code]) l2uPVV[code]={name:data.name,ownAgg:EMPTY_AGG(),children:{}}; l2uPVV[code].name=data.name; addAgg(l2uPVV[code].ownAgg,data.agg); }
+        else { dirUPVV.push({name:data.name,agg:data.agg}); }
+      });
+      Object.entries(l2uPVV).sort((a,b)=>dSort(a[0])-dSort(b[0])).forEach(([,l2d])=>{
+        const l2T=EMPTY_AGG(); addAgg(l2T,l2d.ownAgg); Object.values(l2d.children).forEach(c=>addAgg(l2T,c.agg));
+        const hasCh=Object.keys(l2d.children).length>0;
+        rowNo++; l2RowIdxs.push(aoa.length);
+        addR1(rowArr(rowNo,l2d.name,l2d.ownAgg),'l2',15);
+        Object.entries(l2d.children).sort((a,b)=>dSort(a[0])-dSort(b[0])).forEach(([,child])=>{ rowNo++; addR1(rowArr(rowNo,child.name,child.agg),altIdx++%2===0?'r0':'r1',13); });
+        if(hasCh) addMR(rowArrMerged(null,'รวม '+l2d.name,l2T),'sub',13);
+      });
+      dirUPVV.sort((a,b)=>b.agg.total-a.agg.total).forEach(u=>{ rowNo++; addR1(rowArr(rowNo,u.name,u.agg),altIdx++%2===0?'r0':'r1',13); });
+      return; // end special handling
+    }
+
+    // ── กลุ่มปกติ ──
+    const l2u={},dirU=[]; let rootAgg=EMPTY_AGG();
 
     Object.entries(depts).forEach(([code,data])=>{
       const lv=deptLevel(code,data.name,grpCode);
-      if(lv==='root'){rootAgg=data.agg;}
+      if(lv==='root'){addAgg(rootAgg,data.agg);}
       else if(lv==='l3'){
         const pc=PARENT_MAP[normCode(code)];
         if(!l2u[pc]) l2u[pc]={name:pc,ownAgg:EMPTY_AGG(),children:{}};
@@ -4428,49 +4737,55 @@ function exportToExcel(){
     });
 
     const gSub=EMPTY_AGG();
-    if(rootAgg) addAgg(gSub,rootAgg);
+    addAgg(gSub,rootAgg);
     Object.values(l2u).forEach(u=>{ addAgg(gSub,u.ownAgg); Object.values(u.children).forEach(c=>addAgg(gSub,c.agg)); });
     dirU.forEach(u=>addAgg(gSub,u.agg));
     addAgg(totAll,gSub);
 
     grpRowIdxs.push(aoa.length);
-    addR1([null, GROUP_FULL[grp]||grp,
-      nv(gSub.emp.r),nv(gSub.emp.s),nv(gSub.perm.r),nv(gSub.perm.s),
-      nv(gSub.gen.r),nv(gSub.gen.s),nv(gSub.spec.r),nv(gSub.spec.s),gSub.total],'grp',18);
+    addMR(rowArrMerged(null, GROUP_FULL[grp]||grp, gSub),'grp',18);
 
-    if(rootAgg&&rootAgg.total>0){
+    if(rootAgg.total>0){
       rowNo++;
-      addR1(rowArr(rowNo,'ขึ้นตรง '+grpCode,rootAgg,1),altIdx++%2===0?'r0':'r1',13);
+      addR1(rowArr(rowNo,'รองผู้ว่าการและขึ้นตรง '+grpCode,rootAgg),altIdx++%2===0?'r0':'r1',13);
+      addMR(rowArrMerged(null,'รวม รองผู้ว่าการและขึ้นตรง '+grpCode,rootAgg),'sub',13);
     }
 
     const l2s=Object.entries(l2u).sort((a,b)=>dSort(a[0])-dSort(b[0]));
     l2s.forEach(([,l2d])=>{
       const l2T=EMPTY_AGG(); addAgg(l2T,l2d.ownAgg);
       Object.values(l2d.children).forEach(c=>addAgg(l2T,c.agg));
+      const hasCh=Object.keys(l2d.children).length>0;
       rowNo++;
       l2RowIdxs.push(aoa.length);
-      addR1(rowArr(rowNo,l2d.name,l2T,1),'l2',15);
-      Object.entries(l2d.children).sort((a,b)=>b[1].agg.total-a[1].agg.total).forEach(([,child])=>{
+      addR1(rowArr(rowNo,l2d.name,l2d.ownAgg),'l2',15);
+      Object.entries(l2d.children).sort((a,b)=>dSort(a[0])-dSort(b[0])).forEach(([,child])=>{
         rowNo++;
-        addR1(rowArr(rowNo,'↳ '+child.name,child.agg,2),altIdx++%2===0?'r0':'r1',13);
+        addR1(rowArr(rowNo,child.name,child.agg),altIdx++%2===0?'r0':'r1',13);
       });
+      if(hasCh) addMR(rowArrMerged(null,'รวม '+l2d.name,l2T),'sub',13);
     });
 
     dirU.sort((a,b)=>b.agg.total-a.agg.total).forEach(u=>{
       rowNo++;
-      addR1(rowArr(rowNo,u.name,u.agg,1),altIdx++%2===0?'r0':'r1',13);
+      addR1(rowArr(rowNo,u.name,u.agg),altIdx++%2===0?'r0':'r1',13);
     });
   });
 
   totRowIdxs.push(aoa.length);
-  addR1([null,'รวมทั้งหมด',
-    totAll.emp.r,totAll.emp.s,totAll.perm.r,totAll.perm.s,
-    totAll.gen.r,totAll.gen.s,totAll.spec.r,totAll.spec.s,totAll.total],'total',20);
+  addMR(rowArrMerged(null,'รวมทั้งหมด',totAll),'total',20);
 
   // Build worksheet + apply styles
   const ws=XLSX.utils.aoa_to_sheet(aoa);
   ws['!cols']=[{wch:8},{wch:40},{wch:11},{wch:11},{wch:11},{wch:11},{wch:11},{wch:11},{wch:11},{wch:11},{wch:8}];
   ws['!rows']=rowH.map(h=>({hpt:h}));
+  // Pair merges for group/subtotal/total rows: merge วิจัย+สนับ columns (2-3,4-5,6-7,8-9)
+  const pairMerges=mergedRowIdxs.flatMap(ri=>[
+    {s:{r:ri,c:2},e:{r:ri,c:3}},
+    {s:{r:ri,c:4},e:{r:ri,c:5}},
+    {s:{r:ri,c:6},e:{r:ri,c:7}},
+    {s:{r:ri,c:8},e:{r:ri,c:9}},
+  ]);
   ws['!merges']=[
     {s:{r:TITLE_ROW,c:0},e:{r:TITLE_ROW,c:10}},
     {s:{r:TITLE_ROW+1,c:0},e:{r:TITLE_ROW+1,c:10}},
@@ -4481,8 +4796,8 @@ function exportToExcel(){
     {s:{r:HDR1_ROW,c:6},e:{r:HDR1_ROW,c:7}},
     {s:{r:HDR1_ROW,c:8},e:{r:HDR1_ROW,c:9}},
     {s:{r:HDR1_ROW,c:10},e:{r:HDR2_ROW,c:10}},
-    ...grpRowIdxs.map(ri=>({s:{r:ri,c:0},e:{r:ri,c:1}})),
-    ...totRowIdxs.map(ri=>({s:{r:ri,c:0},e:{r:ri,c:1}})),
+    ...mergedRowIdxs.map(ri=>({s:{r:ri,c:0},e:{r:ri,c:1}})),
+    ...pairMerges,
   ];
   applyXS(ws,aoa,rowTypes);
 
