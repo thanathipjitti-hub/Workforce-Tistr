@@ -1823,18 +1823,87 @@ body{background:linear-gradient(160deg,#eaecf5 0%,#f0f2f8 60%,#e8edf6 100%);min-
       </div>
     </div>
     <div class="cc" style="border-top:4px solid #3B82F6">
-      <div class="cc-hdr"><span class="cc-hdr-title">4.2.5 ระดับการศึกษา (778 คน)</span><button class="cc-copy-btn" onclick="copyChart('an-edu-chart',this)">📋 คัดลอก</button></div>
+      <div class="cc-hdr">
+        <span class="cc-hdr-title" id="edu-hdr-title">4.2.5 ระดับการศึกษา (778 คน)</span>
+        <div style="display:flex;gap:6px;align-items:center">
+          <div style="display:flex;border:1px solid var(--bdr);border-radius:7px;overflow:hidden">
+            <button id="edu-btn-all" onclick="switchEduData('all')" style="padding:3px 10px;border:none;background:var(--c1);color:#fff;cursor:pointer;font-family:'Sarabun',sans-serif;font-size:.73rem">ทั้งหมด 778</button>
+            <button id="edu-btn-emp" onclick="switchEduData('emp')" style="padding:3px 10px;border:none;background:#fff;color:var(--muted);cursor:pointer;font-family:'Sarabun',sans-serif;font-size:.73rem">พนักงาน 574</button>
+          </div>
+          <button class="cc-copy-btn" onclick="copyChart('an-edu-chart',this)">📋 คัดลอก</button>
+        </div>
+      </div>
       <div style="position:relative;height:220px"><canvas id="an-edu-chart"></canvas></div>
       <div style="margin-top:12px">
-        <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center">
+        <div id="edu-badges" style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center">
           <span style="background:#dbeafe;color:#1d4ed8;font-size:.73rem;padding:4px 10px;border-radius:20px;font-weight:600">ป.เอก 132 (17%)</span>
           <span style="background:#ede9fe;color:#6d28d9;font-size:.73rem;padding:4px 10px;border-radius:20px;font-weight:600">ป.โท 291 (37.4%)</span>
           <span style="background:#dcfce7;color:#166534;font-size:.73rem;padding:4px 10px;border-radius:20px;font-weight:600">ป.ตรี 304 (39.1%)</span>
           <span style="background:#fef3c7;color:#92400e;font-size:.73rem;padding:4px 10px;border-radius:20px;font-weight:600">ต่ำกว่า ป.ตรี 51 (6.6%)</span>
         </div>
-        <div style="margin-top:10px;background:#f8fafc;border-radius:8px;padding:10px 14px;font-size:.75rem;color:#475569;line-height:1.7">
+        <div id="edu-note" style="margin-top:10px;background:#f8fafc;border-radius:8px;padding:10px 14px;font-size:.75rem;color:#475569;line-height:1.7">
           <strong style="color:var(--c1)">ข้อมูลตาม Band:</strong> Band 1: ป.โท 28 | ป.เอก 19  ·  Band 2: ป.โท 156 | ป.เอก 103  ·  Band 3: ป.โท 35 | ป.เอก 8  ·  Band 4: ป.ตรี 79
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Row 2.5: Sub-band table + เกษียณตามกลุ่มงาน -->
+  <div class="cgrid">
+    <div class="cc" style="border-top:4px solid #7C3AED">
+      <div class="cc-hdr"><span class="cc-hdr-title">4.2.3 การกระจายพนักงานตาม Sub-band</span></div>
+      <div style="overflow-x:auto;margin-top:4px">
+        <table style="width:100%;border-collapse:collapse;font-size:.78rem">
+          <thead>
+            <tr style="background:var(--c1);color:#fff;font-size:.75rem">
+              <th style="padding:8px 10px;text-align:left;white-space:nowrap">สายงาน</th>
+              <th style="padding:8px 8px;text-align:center;white-space:nowrap">จำนวน<br>Sub-band</th>
+              <th style="padding:8px 10px;text-align:left;white-space:nowrap">Sub-band ที่มีบุคลากรมากที่สุด</th>
+              <th style="padding:8px 8px;text-align:right;white-space:nowrap">สัดส่วน</th>
+              <th style="padding:8px 10px;text-align:left">ข้อสังเกต</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style="background:#fff">
+              <td style="padding:9px 10px;border-bottom:1px solid #f1f5f9;font-weight:700;color:#b45309">Band 1</td>
+              <td style="padding:9px 8px;border-bottom:1px solid #f1f5f9;text-align:center">3</td>
+              <td style="padding:9px 10px;border-bottom:1px solid #f1f5f9">SB1 จำนวน 28 คน</td>
+              <td style="padding:9px 8px;border-bottom:1px solid #f1f5f9;text-align:right;font-weight:700;color:#b45309">56.0%</td>
+              <td style="padding:9px 10px;border-bottom:1px solid #f1f5f9;color:#64748b;font-size:.72rem">ผู้บริหารส่วนใหญ่อยู่ในระดับต้นของสายบริหาร</td>
+            </tr>
+            <tr style="background:#fafbff">
+              <td style="padding:9px 10px;border-bottom:1px solid #f1f5f9;font-weight:700;color:#7c3aed">Band 2</td>
+              <td style="padding:9px 8px;border-bottom:1px solid #f1f5f9;text-align:center">5</td>
+              <td style="padding:9px 10px;border-bottom:1px solid #f1f5f9">SB2 จำนวน 203 คน</td>
+              <td style="padding:9px 8px;border-bottom:1px solid #f1f5f9;text-align:right;font-weight:700;color:#7c3aed">59.7%</td>
+              <td style="padding:9px 10px;border-bottom:1px solid #f1f5f9;color:#64748b;font-size:.72rem">เป็นกำลังคนหลักและกระจุกตัวอยู่ในระดับกลาง</td>
+            </tr>
+            <tr style="background:#fff">
+              <td style="padding:9px 10px;border-bottom:1px solid #f1f5f9;font-weight:700;color:#166534">Band 3</td>
+              <td style="padding:9px 8px;border-bottom:1px solid #f1f5f9;text-align:center">4</td>
+              <td style="padding:9px 10px;border-bottom:1px solid #f1f5f9">SB2 จำนวน 39 คน</td>
+              <td style="padding:9px 8px;border-bottom:1px solid #f1f5f9;text-align:right;font-weight:700;color:#166534">68.4%</td>
+              <td style="padding:9px 10px;border-bottom:1px solid #f1f5f9;color:#64748b;font-size:.72rem">บุคลากรส่วนใหญ่อยู่ในระดับกลางของสายงาน</td>
+            </tr>
+            <tr style="background:#fafbff">
+              <td style="padding:9px 10px;font-weight:700;color:#0369a1">Band 4</td>
+              <td style="padding:9px 8px;text-align:center">5</td>
+              <td style="padding:9px 10px">SB3 จำนวน 78 คน</td>
+              <td style="padding:9px 8px;text-align:right;font-weight:700;color:#0369a1">61.4%</td>
+              <td style="padding:9px 10px;color:#64748b;font-size:.72rem">กระจุกตัวในระดับกลางถึงระดับค่อนข้างสูง</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div style="margin-top:10px;background:#f5f3ff;border-radius:8px;padding:8px 12px;font-size:.73rem;color:#4c1d95">
+        พนักงาน 574 คน กระจายใน 4 Band รวม 17 Sub-band · Band 2 มีสัดส่วนกำลังคนมากที่สุด (59.2%)
+      </div>
+    </div>
+    <div class="cc" style="border-top:4px solid #EF4444">
+      <div class="cc-hdr"><span class="cc-hdr-title">4.2.4 บุคลากรเสี่ยงเกษียณตามกลุ่มงาน (206 คน ใน 7 ปี)</span><button class="cc-copy-btn" onclick="copyChart('an-retire-grp-chart',this)">📋 คัดลอก</button></div>
+      <div style="position:relative;height:240px"><canvas id="an-retire-grp-chart"></canvas></div>
+      <div style="margin-top:10px;font-size:.73rem;color:#64748b;background:#fef2f2;border-radius:8px;padding:8px 12px">
+        รวม <strong>206 คน</strong> · กลุ่มบริการอุตสาหกรรมมีความเสี่ยงสูงสุด <strong>75 คน</strong> (36.4%)
       </div>
     </div>
   </div>
