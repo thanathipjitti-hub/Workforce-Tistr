@@ -1851,9 +1851,9 @@ body{background:linear-gradient(160deg,#eaecf5 0%,#f0f2f8 60%,#e8edf6 100%);min-
   <!-- Row 2.5: Sub-band table + เกษียณตามกลุ่มงาน -->
   <div class="cgrid">
     <div class="cc" style="border-top:4px solid #7C3AED">
-      <div class="cc-hdr"><span class="cc-hdr-title">4.2.3 การกระจายพนักงานตาม Sub-band</span></div>
+      <div class="cc-hdr"><span class="cc-hdr-title">4.2.3 การกระจายพนักงานตาม Sub-band</span><button class="cc-copy-btn" onclick="copyTable('an-subband-table',this)">📋 คัดลอก</button></div>
       <div style="overflow-x:auto;margin-top:4px">
-        <table style="width:100%;border-collapse:collapse;font-size:.78rem">
+        <table id="an-subband-table" style="width:100%;border-collapse:collapse;font-size:.78rem">
           <thead>
             <tr style="background:var(--c1);color:#fff;font-size:.75rem">
               <th style="padding:8px 10px;text-align:left;white-space:nowrap">สายงาน</th>
@@ -6876,6 +6876,38 @@ function exportSBLToExcel(){
   XLSX.utils.book_append_sheet(wb,ws,`ฟอร์ม ${_sblForm}`);
   const fname=`ส่งข้อมูล_ศบล_F${_sblForm}_${thDate.replace(/\s/g,'_')}.xlsx`;
   XLSX.writeFile(wb,fname);
+}
+
+// ===== COPY TABLE TO CLIPBOARD (HTML → Word) =====
+function copyTable(tableId, btn){
+  const table = document.getElementById(tableId);
+  if(!table){ alert('ไม่พบตาราง'); return; }
+  // Build clean HTML with inline styles for Word
+  const rows = [...table.querySelectorAll('tr')];
+  let html = '<table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse;font-family:Sarabun,Arial,sans-serif;font-size:11pt">';
+  rows.forEach(row=>{
+    html += '<tr>';
+    [...row.querySelectorAll('th,td')].forEach(cell=>{
+      const tag = cell.tagName.toLowerCase();
+      const bg  = tag==='th' ? 'background:#1a1a6e;color:#ffffff;font-weight:bold' : '';
+      const align = cell.style.textAlign || 'left';
+      html += `<${tag} style="${bg};text-align:${align};padding:6px 10px">${cell.textContent.trim()}</${tag}>`;
+    });
+    html += '</tr>';
+  });
+  html += '</table>';
+
+  let txt = rows.map(r=>[...r.querySelectorAll('th,td')].map(c=>c.textContent.trim()).join('\t')).join('\n');
+
+  const wrap = `<html><head><meta charset="utf-8"></head><body>${html}</body></html>`;
+  navigator.clipboard.write([new ClipboardItem({
+    'text/html': new Blob([wrap],{type:'text/html'}),
+    'text/plain': new Blob([txt],{type:'text/plain'})
+  })]).then(()=>{
+    const orig=btn.innerHTML;
+    btn.innerHTML='✓ คัดลอกแล้ว'; btn.classList.add('copied');
+    setTimeout(()=>{ btn.innerHTML=orig; btn.classList.remove('copied'); },2200);
+  }).catch(e=>alert('คัดลอกไม่สำเร็จ: '+e.message));
 }
 
 // ===== EDUCATION CHART TOGGLE =====
