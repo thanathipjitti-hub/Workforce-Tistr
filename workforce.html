@@ -7086,8 +7086,39 @@ function initAnalysisCharts(){
 
   // 4.2.6 แนวโน้มบุคลากรรายปี stacked bar
   const years=['2563','2564','2565','2566','2567','2568','2569'];
+  const _stackLabelPlugin = {
+    id:'stackLabels',
+    afterDraw(chart){
+      const {ctx,data}=chart;
+      ctx.save();
+      // ตัวเลขในแต่ละ segment
+      data.datasets.forEach((ds,di)=>{
+        const meta=chart.getDatasetMeta(di);
+        meta.data.forEach((bar,i)=>{
+          const v=ds.data[i]; if(!v) return;
+          const h=Math.abs((bar.base||0)-bar.y);
+          if(h<16) return;
+          ctx.font='600 9px "Sarabun",sans-serif';
+          ctx.fillStyle='rgba(255,255,255,.92)';
+          ctx.textAlign='center'; ctx.textBaseline='middle';
+          ctx.fillText(v, bar.x, (bar.y+(bar.base||bar.y+h))/2);
+        });
+      });
+      // ยอดรวมเหนือแท่ง
+      ctx.font='700 11px "Sarabun",sans-serif';
+      ctx.fillStyle='#1e3a8a';
+      ctx.textAlign='center'; ctx.textBaseline='bottom';
+      data.labels.forEach((_,i)=>{
+        const total=data.datasets.reduce((s,d)=>s+(d.data[i]||0),0);
+        const lastMeta=chart.getDatasetMeta(data.datasets.length-1);
+        if(lastMeta.data[i]) ctx.fillText(total, lastMeta.data[i].x, lastMeta.data[i].y-4);
+      });
+      ctx.restore();
+    }
+  };
   new Chart(document.getElementById('an-trend-chart'), {
     type:'bar',
+    plugins:[_stackLabelPlugin],
     data:{
       labels: years,
       datasets:[
@@ -7104,27 +7135,40 @@ function initAnalysisCharts(){
         tooltip:{mode:'index',intersect:false, callbacks:{
           footer: items=>`รวม: ${items.reduce((s,i)=>s+i.raw,0)} คน`
         }},
-        datalabels: dlOn ? {display:(ctx)=>ctx.datasetIndex===3, anchor:'end', align:'top', color:'#1a1a6e', font:{size:11,weight:'700'}, formatter:(_,ctx)=>{
-          const ds=ctx.chart.data.datasets; const i=ctx.dataIndex;
-          return ds.reduce((s,d)=>s+(d.data[i]||0),0);
-        }} : {display:false}
+        datalabels:{display:false}
       },
       scales:{
         x:{stacked:true, grid:{display:false}, ticks:{font:{size:11}}},
-        y:{stacked:true, grid:{color:'rgba(0,0,0,.06)'}, ticks:{font:{size:11}}, min:0, max:950}
+        y:{stacked:true, grid:{color:'rgba(0,0,0,.06)'}, ticks:{font:{size:11}}, min:0, max:970}
       }
     }
   });
 
   // 4.2.6 การลาออก bar
+  const _barTopPlugin = {
+    id:'barTop',
+    afterDraw(chart){
+      const {ctx,data}=chart;
+      ctx.save();
+      ctx.font='700 12px "Sarabun",sans-serif';
+      ctx.textAlign='center'; ctx.textBaseline='bottom';
+      data.datasets[0].data.forEach((v,i)=>{
+        const meta=chart.getDatasetMeta(0);
+        const bar=meta.data[i];
+        ctx.fillStyle='#374151';
+        ctx.fillText(v, bar.x, bar.y-4);
+      });
+      ctx.restore();
+    }
+  };
   new Chart(document.getElementById('an-resign-chart'), {
-    type:'bar', plugins: dlPlugin,
+    type:'bar', plugins: [_barTopPlugin],
     data:{
       labels:['2563','2564','2565','2566','2567','2568'],
       datasets:[{
         label:'จำนวนผู้ลาออก (คน)',
         data:[16,20,26,17,25,15],
-        backgroundColor:['#fca5a5','#fca5a5','#ef4444','#fca5a5','#ef4444','#86efac'],
+        backgroundColor:'#ef4444',
         borderRadius:6, borderWidth:0
       }]
     },
@@ -7133,7 +7177,7 @@ function initAnalysisCharts(){
       plugins:{
         legend:{display:false},
         tooltip:{callbacks:{label:c=>`ลาออก ${c.raw} คน`}},
-        datalabels: dlOn ? {anchor:'end',align:'top',color:'#374151',font:{size:12,weight:'700'},formatter:v=>v} : {display:false}
+        datalabels:{display:false}
       },
       scales:{
         x:{grid:{display:false},ticks:{font:{size:12}}},
@@ -7143,8 +7187,24 @@ function initAnalysisCharts(){
   });
 
   // 4.2.7 ค่าใช้จ่ายต่อบุคลากร line
+  const _lineTopPlugin = {
+    id:'lineTop',
+    afterDraw(chart){
+      const {ctx,data}=chart;
+      ctx.save();
+      ctx.font='700 10px "Sarabun",sans-serif';
+      ctx.fillStyle='#92400e';
+      ctx.textAlign='center'; ctx.textBaseline='bottom';
+      const meta=chart.getDatasetMeta(0);
+      data.datasets[0].data.forEach((v,i)=>{
+        const pt=meta.data[i];
+        ctx.fillText((v/1000).toFixed(0)+'K', pt.x, pt.y-8);
+      });
+      ctx.restore();
+    }
+  };
   new Chart(document.getElementById('an-cost-chart'), {
-    type:'line', plugins: dlPlugin,
+    type:'line', plugins: [_lineTopPlugin],
     data:{
       labels:['2563','2564','2565','2566','2567','2568'],
       datasets:[{
@@ -7159,7 +7219,7 @@ function initAnalysisCharts(){
       plugins:{
         legend:{display:false},
         tooltip:{callbacks:{label:c=>`${c.raw.toLocaleString('th-TH')} บาท`}},
-        datalabels: dlOn ? {anchor:'top',align:'top',color:'#92400e',font:{size:10,weight:'700'},formatter:v=>(v/1000).toFixed(0)+'K'} : {display:false}
+        datalabels:{display:false}
       },
       scales:{
         x:{grid:{display:false},ticks:{font:{size:11}}},
