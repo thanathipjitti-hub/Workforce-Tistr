@@ -999,6 +999,13 @@ body{background:linear-gradient(160deg,#eaecf5 0%,#f0f2f8 60%,#e8edf6 100%);min-
   border-radius:6px;transition:color .15s}
 .sum-close:hover{color:#fff;background:rgba(255,255,255,.1)}
 
+/* ===== COPY CHART BUTTON ===== */
+.cc-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.cc-hdr-title{font-weight:700;color:var(--c1);font-size:.88rem}
+.cc-copy-btn{background:#f1f5f9;border:1px solid #e2e8f0;border-radius:6px;padding:3px 9px;font-size:.74rem;cursor:pointer;color:#64748b;transition:.15s;flex-shrink:0;font-family:'Sarabun',sans-serif}
+.cc-copy-btn:hover{background:var(--c1);color:#fff;border-color:var(--c1)}
+.cc-copy-btn.copied{background:#dcfce7;border-color:#86efac;color:#166534;pointer-events:none}
+
 </style>
 </head>
 <body>
@@ -1755,7 +1762,7 @@ body{background:linear-gradient(160deg,#eaecf5 0%,#f0f2f8 60%,#e8edf6 100%);min-
   <!-- Row 1: ประเภทบุคลากร + กลุ่มงาน -->
   <div class="cgrid" style="grid-template-columns:1fr 1.6fr">
     <div class="cc" style="border-top:4px solid #6366F1">
-      <div style="font-weight:700;color:var(--c1);font-size:.88rem;margin-bottom:12px">4.2.1 ประเภทบุคลากร</div>
+      <div class="cc-hdr"><span class="cc-hdr-title">4.2.1 ประเภทบุคลากร</span><button class="cc-copy-btn" onclick="copyChart('an-type-chart',this)">📋 คัดลอก</button></div>
       <div style="position:relative;height:220px"><canvas id="an-type-chart"></canvas></div>
       <div style="margin-top:12px;display:grid;grid-template-columns:1fr 1fr;gap:6px">
         <div style="background:#f0f2f8;border-radius:8px;padding:8px 10px;text-align:center">
@@ -1777,7 +1784,7 @@ body{background:linear-gradient(160deg,#eaecf5 0%,#f0f2f8 60%,#e8edf6 100%);min-
       </div>
     </div>
     <div class="cc" style="border-top:4px solid #10B981">
-      <div style="font-weight:700;color:var(--c1);font-size:.88rem;margin-bottom:12px">4.2.2 กำลังคนตามกลุ่มงาน (778 คน)</div>
+      <div class="cc-hdr"><span class="cc-hdr-title">4.2.2 กำลังคนตามกลุ่มงาน (778 คน)</span><button class="cc-copy-btn" onclick="copyChart('an-group-chart',this)">📋 คัดลอก</button></div>
       <div style="position:relative;height:280px"><canvas id="an-group-chart"></canvas></div>
     </div>
   </div>
@@ -1785,7 +1792,7 @@ body{background:linear-gradient(160deg,#eaecf5 0%,#f0f2f8 60%,#e8edf6 100%);min-
   <!-- Row 2: Band + การศึกษา -->
   <div class="cgrid">
     <div class="cc" style="border-top:4px solid #F59E0B">
-      <div style="font-weight:700;color:var(--c1);font-size:.88rem;margin-bottom:12px">4.2.3 สายงาน Band (พนักงาน 574 คน)</div>
+      <div class="cc-hdr"><span class="cc-hdr-title">4.2.3 สายงาน Band (พนักงาน 574 คน)</span><button class="cc-copy-btn" onclick="copyChart('an-band-chart',this)">📋 คัดลอก</button></div>
       <div style="position:relative;height:220px"><canvas id="an-band-chart"></canvas></div>
       <div style="margin-top:12px;display:grid;grid-template-columns:1fr 1fr;gap:6px">
         <div style="background:#fef3c7;border-radius:8px;padding:8px 10px;text-align:center">
@@ -1807,7 +1814,7 @@ body{background:linear-gradient(160deg,#eaecf5 0%,#f0f2f8 60%,#e8edf6 100%);min-
       </div>
     </div>
     <div class="cc" style="border-top:4px solid #3B82F6">
-      <div style="font-weight:700;color:var(--c1);font-size:.88rem;margin-bottom:12px">4.2.5 ระดับการศึกษา (778 คน)</div>
+      <div class="cc-hdr"><span class="cc-hdr-title">4.2.5 ระดับการศึกษา (778 คน)</span><button class="cc-copy-btn" onclick="copyChart('an-edu-chart',this)">📋 คัดลอก</button></div>
       <div style="position:relative;height:220px"><canvas id="an-edu-chart"></canvas></div>
       <div style="margin-top:12px">
         <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center">
@@ -1826,14 +1833,14 @@ body{background:linear-gradient(160deg,#eaecf5 0%,#f0f2f8 60%,#e8edf6 100%);min-
   <!-- Row 3: แนวโน้มรายปี + การลาออก -->
   <div class="cgrid">
     <div class="cc" style="border-top:4px solid #0EA5E9">
-      <div style="font-weight:700;color:var(--c1);font-size:.88rem;margin-bottom:12px">4.2.6 แนวโน้มจำนวนบุคลากรรายปี (2563–2569)</div>
+      <div class="cc-hdr"><span class="cc-hdr-title">4.2.6 แนวโน้มจำนวนบุคลากรรายปี (2563–2569)</span><button class="cc-copy-btn" onclick="copyChart('an-trend-chart',this)">📋 คัดลอก</button></div>
       <div style="position:relative;height:240px"><canvas id="an-trend-chart"></canvas></div>
       <div style="margin-top:10px;font-size:.73rem;color:#64748b;background:#f8fafc;border-radius:8px;padding:8px 12px">
         จำนวนลดจาก <strong>839</strong> คน (ปี 2563) เหลือ <strong>765</strong> คน (ปี 2568) ก่อนฟื้นตัวเป็น <strong>778</strong> คน (ปี 2569)
       </div>
     </div>
     <div class="cc" style="border-top:4px solid #EF4444">
-      <div style="font-weight:700;color:var(--c1);font-size:.88rem;margin-bottom:12px">4.2.6 การลาออก 2563–2568 (รวม 119 คน)</div>
+      <div class="cc-hdr"><span class="cc-hdr-title">4.2.6 การลาออก 2563–2568 (รวม 119 คน)</span><button class="cc-copy-btn" onclick="copyChart('an-resign-chart',this)">📋 คัดลอก</button></div>
       <div style="position:relative;height:240px"><canvas id="an-resign-chart"></canvas></div>
       <div style="margin-top:10px;font-size:.73rem;color:#64748b;background:#fef2f2;border-radius:8px;padding:8px 12px">
         เฉลี่ย <strong>~20 คน/ปี</strong> · ปี 2565 และ 2567 มีการลาออกสูงสุด (26 และ 25 คน) · ปี 2568 ลดลงเหลือ <strong>15 คน</strong>
@@ -1844,7 +1851,7 @@ body{background:linear-gradient(160deg,#eaecf5 0%,#f0f2f8 60%,#e8edf6 100%);min-
   <!-- Row 4: ค่าใช้จ่าย + ความเสี่ยงเกษียณ -->
   <div class="cgrid">
     <div class="cc" style="border-top:4px solid #C8A84B">
-      <div style="font-weight:700;color:var(--c1);font-size:.88rem;margin-bottom:12px">4.2.7 ค่าใช้จ่ายต่อบุคลากร (บาท/คน/ปี)</div>
+      <div class="cc-hdr"><span class="cc-hdr-title">4.2.7 ค่าใช้จ่ายต่อบุคลากร (บาท/คน/ปี)</span><button class="cc-copy-btn" onclick="copyChart('an-cost-chart',this)">📋 คัดลอก</button></div>
       <div style="position:relative;height:220px"><canvas id="an-cost-chart"></canvas></div>
       <div style="margin-top:10px;font-size:.73rem;color:#64748b;background:#fefce8;border-radius:8px;padding:8px 12px">
         เพิ่มขึ้นจาก <strong>503,713</strong> บาท (2563) → <strong>580,507</strong> บาท (2568) เพิ่มขึ้น ~15.3% ใน 5 ปี
@@ -6791,6 +6798,30 @@ function exportSBLToExcel(){
   XLSX.utils.book_append_sheet(wb,ws,`ฟอร์ม ${_sblForm}`);
   const fname=`ส่งข้อมูล_ศบล_F${_sblForm}_${thDate.replace(/\s/g,'_')}.xlsx`;
   XLSX.writeFile(wb,fname);
+}
+
+// ===== COPY CHART TO CLIPBOARD =====
+function copyChart(canvasId, btn){
+  const canvas = document.getElementById(canvasId);
+  if(!canvas){ alert('ไม่พบกราฟ'); return; }
+  // White background (canvas may be transparent)
+  const offscreen = document.createElement('canvas');
+  offscreen.width = canvas.width; offscreen.height = canvas.height;
+  const ctx = offscreen.getContext('2d');
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0,0,offscreen.width,offscreen.height);
+  ctx.drawImage(canvas,0,0);
+  offscreen.toBlob(blob=>{
+    if(!blob){ alert('ไม่สามารถสร้างรูปได้'); return; }
+    navigator.clipboard.write([new ClipboardItem({'image/png': blob})])
+      .then(()=>{
+        const orig = btn.innerHTML;
+        btn.innerHTML = '✓ คัดลอกแล้ว';
+        btn.classList.add('copied');
+        setTimeout(()=>{ btn.innerHTML=orig; btn.classList.remove('copied'); }, 2200);
+      })
+      .catch(e=>{ alert('คัดลอกไม่สำเร็จ: '+e.message+'\n(ต้องเปิดไฟล์ผ่าน https หรือ localhost)'); });
+  }, 'image/png');
 }
 
 // ===== HR ANALYSIS CHARTS (Static data from ส่วนที่ 4.2) =====
