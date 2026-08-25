@@ -1784,7 +1784,16 @@ body{background:linear-gradient(160deg,#eaecf5 0%,#f0f2f8 60%,#e8edf6 100%);min-
       </div>
     </div>
     <div class="cc" style="border-top:4px solid #10B981">
-      <div class="cc-hdr"><span class="cc-hdr-title">4.2.2 กำลังคนตามกลุ่มงาน (778 คน)</span><button class="cc-copy-btn" onclick="copyChart('an-group-chart',this)">📋 คัดลอก</button></div>
+      <div class="cc-hdr">
+        <span class="cc-hdr-title">4.2.2 กำลังคนตามกลุ่มงาน</span>
+        <div style="display:flex;gap:6px;align-items:center">
+          <div style="display:flex;border:1px solid var(--bdr);border-radius:7px;overflow:hidden;font-size:.73rem">
+            <button id="grp-btn-all" onclick="switchGroupData('all')" style="padding:3px 10px;border:none;background:var(--c1);color:#fff;cursor:pointer;font-family:'Sarabun',sans-serif;font-size:.73rem">ทั้งหมด 778</button>
+            <button id="grp-btn-emp" onclick="switchGroupData('emp')" style="padding:3px 10px;border:none;background:#fff;color:var(--muted);cursor:pointer;font-family:'Sarabun',sans-serif;font-size:.73rem">พนักงาน 574</button>
+          </div>
+          <button class="cc-copy-btn" onclick="copyChart('an-group-chart',this)">📋 คัดลอก</button>
+        </div>
+      </div>
       <div style="position:relative;height:280px"><canvas id="an-group-chart"></canvas></div>
     </div>
   </div>
@@ -6800,6 +6809,26 @@ function exportSBLToExcel(){
   XLSX.writeFile(wb,fname);
 }
 
+// ===== GROUP CHART TOGGLE =====
+function switchGroupData(mode){
+  const chart = window._anGroupChart;
+  if(!chart) return;
+  const isAll = mode === 'all';
+  chart.data.datasets[0].data = isAll ? [...window._GRP_ALL] : [...window._GRP_EMP];
+  chart.options.scales.x.max = isAll ? 250 : 200;
+  window._grpTotal = isAll ? 778 : 574;
+  chart.update();
+  // toggle button styles
+  const btnAll = document.getElementById('grp-btn-all');
+  const btnEmp = document.getElementById('grp-btn-emp');
+  if(btnAll && btnEmp){
+    btnAll.style.background = isAll ? 'var(--c1)' : '#fff';
+    btnAll.style.color      = isAll ? '#fff' : 'var(--muted)';
+    btnEmp.style.background = isAll ? '#fff' : 'var(--c1)';
+    btnEmp.style.color      = isAll ? 'var(--muted)' : '#fff';
+  }
+}
+
 // ===== COPY CHART TO CLIPBOARD =====
 function copyChart(canvasId, btn){
   const canvas = document.getElementById(canvasId);
@@ -6852,22 +6881,21 @@ function initAnalysisCharts(){
   });
 
   // 4.2.2 กลุ่มงาน horizontal bar
-  new Chart(document.getElementById('an-group-chart'), {
+  const _GRP_LABELS = ['กลุ่มบริการอุตสาหกรรม','กลุ่มวิจัยชีวภาพ','กลุ่มวิจัยยั่งยืน','กลุ่มบริหาร','ขึ้นตรง ผวว.','กลุ่มยุทธศาสตร์'];
+  const _GRP_ALL  = [221,185,154,116,55,47];  // 778 คน ทุกประเภท
+  const _GRP_EMP  = [175,124,107,84,48,36];   // 574 คน เฉพาะพนักงาน
+  const _GRP_COLORS = ['#6366F1','#818cf8','#a5b4fc','#c7d2fe','#4f46e5','#4338ca'];
+  window._anGroupChart = new Chart(document.getElementById('an-group-chart'), {
     type:'bar',
     data:{
-      labels:['กลุ่มบริการอุตสาหกรรม','กลุ่มวิจัยชีวภาพ','กลุ่มวิจัยยั่งยืน','กลุ่มบริหาร','ขึ้นตรง ผวว.','กลุ่มยุทธศาสตร์'],
-      datasets:[{
-        label:'จำนวนบุคลากร (คน)',
-        data:[221,185,154,116,55,47],
-        backgroundColor:['#6366F1','#818cf8','#a5b4fc','#c7d2fe','#4f46e5','#4338ca'],
-        borderRadius:6, borderWidth:0
-      }]
+      labels: _GRP_LABELS,
+      datasets:[{label:'จำนวนบุคลากร (คน)', data:[..._GRP_ALL], backgroundColor:_GRP_COLORS, borderRadius:6, borderWidth:0}]
     },
     options:{
       indexAxis:'y', responsive:true, maintainAspectRatio:false,
       plugins:{
         legend:{display:false},
-        tooltip:{callbacks:{label:c=>`${c.raw} คน (${(c.raw/778*100).toFixed(1)}%)`}},
+        tooltip:{callbacks:{label:c=>{const tot=window._grpTotal||778; return `${c.raw} คน (${(c.raw/tot*100).toFixed(1)}%)`}}},
         datalabels: dlOn ? {anchor:'end',align:'end',color:'#374151',font:{size:11,weight:'700'},formatter:v=>v} : {display:false}
       },
       scales:{
@@ -6876,6 +6904,8 @@ function initAnalysisCharts(){
       }
     }
   });
+  window._grpTotal = 778;
+  window._GRP_ALL = _GRP_ALL; window._GRP_EMP = _GRP_EMP;
 
   // 4.2.3 Band donut
   new Chart(document.getElementById('an-band-chart'), {
