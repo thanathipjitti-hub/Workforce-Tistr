@@ -1132,6 +1132,7 @@ body{background:linear-gradient(160deg,#eaecf5 0%,#f0f2f8 60%,#e8edf6 100%);min-
   <button class="tab on" id="tab-dash" onclick="switchTab('dash')">📊 ภาพรวมอัตรากำลัง</button>
   <button class="tab" id="tab-forecast" onclick="switchTab('forecast')">👴 คนเกษียณ</button>
   <button class="tab" id="tab-people" onclick="switchTab('people')">👤 รายชื่อบุคลากร</button>
+  <button class="tab" id="tab-analysis" onclick="switchTab('analysis')">📑 วิเคราะห์ HR</button>
   <button class="tab" id="tab-sumtable" onclick="showPrintView()">📋 ตารางสรุป</button>
   <button class="tab-summary-btn" id="sum-btn" onclick="toggleSummary()">📝 สรุปผล</button>
 </div>
@@ -1724,6 +1725,165 @@ body{background:linear-gradient(160deg,#eaecf5 0%,#f0f2f8 60%,#e8edf6 100%);min-
   <div id="dm-alert" style="display:none;margin-bottom:14px;padding:12px 16px;background:#fef3c7;border-left:4px solid #f59e0b;border-radius:8px;font-size:.78rem;color:#92400e"></div>
 
 </div><!-- /view-demand -->
+
+<!-- ===== HR ANALYSIS TAB (Static data from ส่วนที่ 4.2) ===== -->
+<div id="view-analysis" class="main" style="display:none">
+
+  <!-- Hero -->
+  <div class="dm-hero" style="margin-bottom:18px">
+    <div class="dm-hero-left">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:6px">
+        <span style="font-size:1.9rem">📑</span>
+        <div>
+          <div style="font-size:1.15rem;font-weight:700;color:#fff">วิเคราะห์โครงสร้างบุคลากร วว.</div>
+          <div style="font-size:.78rem;color:#c7d7f5;margin-top:2px">ข้อมูล ณ มีนาคม 2569 · รายงาน HR Transformation Deliverable 2</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px">
+        <span style="background:rgba(200,168,75,.2);border:1px solid rgba(200,168,75,.45);color:#f5dfa0;font-size:.7rem;padding:3px 10px;border-radius:20px">📋 4.2.1–4.2.7</span>
+        <span style="background:rgba(99,102,241,.2);border:1px solid rgba(99,102,241,.4);color:#c7d7ff;font-size:.7rem;padding:3px 10px;border-radius:20px">Static Data</span>
+      </div>
+    </div>
+    <div class="dm-hero-right" style="display:flex;gap:12px;flex-wrap:wrap">
+      <div class="dm-kpi"><div class="dm-kpi-val">778</div><div class="dm-kpi-lab">บุคลากรทั้งหมด</div></div>
+      <div class="dm-kpi"><div class="dm-kpi-val">574</div><div class="dm-kpi-lab">พนักงาน</div></div>
+      <div class="dm-kpi"><div class="dm-kpi-val" style="color:#fbbf24">206</div><div class="dm-kpi-lab">เสี่ยงเกษียณ 7 ปี</div></div>
+    </div>
+  </div>
+
+  <!-- Row 1: ประเภทบุคลากร + กลุ่มงาน -->
+  <div class="cgrid" style="grid-template-columns:1fr 1.6fr">
+    <div class="cc" style="border-top:4px solid #6366F1">
+      <div style="font-weight:700;color:var(--c1);font-size:.88rem;margin-bottom:12px">4.2.1 ประเภทบุคลากร</div>
+      <div style="position:relative;height:220px"><canvas id="an-type-chart"></canvas></div>
+      <div style="margin-top:12px;display:grid;grid-template-columns:1fr 1fr;gap:6px">
+        <div style="background:#f0f2f8;border-radius:8px;padding:8px 10px;text-align:center">
+          <div style="font-size:1.1rem;font-weight:700;color:#6366F1">574</div>
+          <div style="font-size:.72rem;color:#64748b">พนักงาน 73.8%</div>
+        </div>
+        <div style="background:#f0f2f8;border-radius:8px;padding:8px 10px;text-align:center">
+          <div style="font-size:1.1rem;font-weight:700;color:#10b981">59</div>
+          <div style="font-size:.72rem;color:#64748b">ลจ.ประจำ 7.6%</div>
+        </div>
+        <div style="background:#f0f2f8;border-radius:8px;padding:8px 10px;text-align:center">
+          <div style="font-size:1.1rem;font-weight:700;color:#f59e0b">142</div>
+          <div style="font-size:.72rem;color:#64748b">ลจ.ทั่วไป 18.3%</div>
+        </div>
+        <div style="background:#f0f2f8;border-radius:8px;padding:8px 10px;text-align:center">
+          <div style="font-size:1.1rem;font-weight:700;color:#ef4444">3</div>
+          <div style="font-size:.72rem;color:#64748b">ลจ.เฉพาะกิจ 0.4%</div>
+        </div>
+      </div>
+    </div>
+    <div class="cc" style="border-top:4px solid #10B981">
+      <div style="font-weight:700;color:var(--c1);font-size:.88rem;margin-bottom:12px">4.2.2 กำลังคนตามกลุ่มงาน (778 คน)</div>
+      <div style="position:relative;height:280px"><canvas id="an-group-chart"></canvas></div>
+    </div>
+  </div>
+
+  <!-- Row 2: Band + การศึกษา -->
+  <div class="cgrid">
+    <div class="cc" style="border-top:4px solid #F59E0B">
+      <div style="font-weight:700;color:var(--c1);font-size:.88rem;margin-bottom:12px">4.2.3 สายงาน Band (พนักงาน 574 คน)</div>
+      <div style="position:relative;height:220px"><canvas id="an-band-chart"></canvas></div>
+      <div style="margin-top:12px;display:grid;grid-template-columns:1fr 1fr;gap:6px">
+        <div style="background:#fef3c7;border-radius:8px;padding:8px 10px;text-align:center">
+          <div style="font-size:1rem;font-weight:700;color:#b45309">50</div>
+          <div style="font-size:.7rem;color:#64748b">Band 1 บริหาร (8.7%)</div>
+        </div>
+        <div style="background:#ede9fe;border-radius:8px;padding:8px 10px;text-align:center">
+          <div style="font-size:1rem;font-weight:700;color:#7c3aed">340</div>
+          <div style="font-size:.7rem;color:#64748b">Band 2 วิจัย/บริการ (59.2%)</div>
+        </div>
+        <div style="background:#dcfce7;border-radius:8px;padding:8px 10px;text-align:center">
+          <div style="font-size:1rem;font-weight:700;color:#166534">57</div>
+          <div style="font-size:.7rem;color:#64748b">Band 3 วิชาการสนับสนุน (9.9%)</div>
+        </div>
+        <div style="background:#f0f9ff;border-radius:8px;padding:8px 10px;text-align:center">
+          <div style="font-size:1rem;font-weight:700;color:#0369a1">127</div>
+          <div style="font-size:.7rem;color:#64748b">Band 4 สนับสนุน (22.1%)</div>
+        </div>
+      </div>
+    </div>
+    <div class="cc" style="border-top:4px solid #3B82F6">
+      <div style="font-weight:700;color:var(--c1);font-size:.88rem;margin-bottom:12px">4.2.5 ระดับการศึกษา (778 คน)</div>
+      <div style="position:relative;height:220px"><canvas id="an-edu-chart"></canvas></div>
+      <div style="margin-top:12px">
+        <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center">
+          <span style="background:#dbeafe;color:#1d4ed8;font-size:.73rem;padding:4px 10px;border-radius:20px;font-weight:600">ป.เอก 132 (17%)</span>
+          <span style="background:#ede9fe;color:#6d28d9;font-size:.73rem;padding:4px 10px;border-radius:20px;font-weight:600">ป.โท 291 (37.4%)</span>
+          <span style="background:#dcfce7;color:#166534;font-size:.73rem;padding:4px 10px;border-radius:20px;font-weight:600">ป.ตรี 304 (39.1%)</span>
+          <span style="background:#fef3c7;color:#92400e;font-size:.73rem;padding:4px 10px;border-radius:20px;font-weight:600">ต่ำกว่า ป.ตรี 51 (6.6%)</span>
+        </div>
+        <div style="margin-top:10px;background:#f8fafc;border-radius:8px;padding:10px 14px;font-size:.75rem;color:#475569;line-height:1.7">
+          <strong style="color:var(--c1)">ข้อมูลตาม Band:</strong> Band 1: ป.โท 28 | ป.เอก 19  ·  Band 2: ป.โท 156 | ป.เอก 103  ·  Band 3: ป.โท 35 | ป.เอก 8  ·  Band 4: ป.ตรี 79
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Row 3: แนวโน้มรายปี + การลาออก -->
+  <div class="cgrid">
+    <div class="cc" style="border-top:4px solid #0EA5E9">
+      <div style="font-weight:700;color:var(--c1);font-size:.88rem;margin-bottom:12px">4.2.6 แนวโน้มจำนวนบุคลากรรายปี (2563–2569)</div>
+      <div style="position:relative;height:240px"><canvas id="an-trend-chart"></canvas></div>
+      <div style="margin-top:10px;font-size:.73rem;color:#64748b;background:#f8fafc;border-radius:8px;padding:8px 12px">
+        จำนวนลดจาก <strong>839</strong> คน (ปี 2563) เหลือ <strong>765</strong> คน (ปี 2568) ก่อนฟื้นตัวเป็น <strong>778</strong> คน (ปี 2569)
+      </div>
+    </div>
+    <div class="cc" style="border-top:4px solid #EF4444">
+      <div style="font-weight:700;color:var(--c1);font-size:.88rem;margin-bottom:12px">4.2.6 การลาออก 2563–2568 (รวม 119 คน)</div>
+      <div style="position:relative;height:240px"><canvas id="an-resign-chart"></canvas></div>
+      <div style="margin-top:10px;font-size:.73rem;color:#64748b;background:#fef2f2;border-radius:8px;padding:8px 12px">
+        เฉลี่ย <strong>~20 คน/ปี</strong> · ปี 2565 และ 2567 มีการลาออกสูงสุด (26 และ 25 คน) · ปี 2568 ลดลงเหลือ <strong>15 คน</strong>
+      </div>
+    </div>
+  </div>
+
+  <!-- Row 4: ค่าใช้จ่าย + ความเสี่ยงเกษียณ -->
+  <div class="cgrid">
+    <div class="cc" style="border-top:4px solid #C8A84B">
+      <div style="font-weight:700;color:var(--c1);font-size:.88rem;margin-bottom:12px">4.2.7 ค่าใช้จ่ายต่อบุคลากร (บาท/คน/ปี)</div>
+      <div style="position:relative;height:220px"><canvas id="an-cost-chart"></canvas></div>
+      <div style="margin-top:10px;font-size:.73rem;color:#64748b;background:#fefce8;border-radius:8px;padding:8px 12px">
+        เพิ่มขึ้นจาก <strong>503,713</strong> บาท (2563) → <strong>580,507</strong> บาท (2568) เพิ่มขึ้น ~15.3% ใน 5 ปี
+      </div>
+    </div>
+    <div class="cc" style="border-top:4px solid #EF4444">
+      <div style="font-weight:700;color:var(--c1);font-size:.88rem;margin-bottom:14px">4.2.4 ความเสี่ยงด้านการเกษียณอายุ</div>
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <div style="background:linear-gradient(135deg,#fef2f2,#fff5f5);border:1px solid #fecaca;border-radius:10px;padding:14px 16px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+            <span style="font-size:.8rem;font-weight:700;color:#dc2626">ผู้บริหารระดับสูง</span>
+            <span style="background:#dc2626;color:#fff;font-size:.75rem;padding:2px 8px;border-radius:12px;font-weight:700">HIGH RISK</span>
+          </div>
+          <div style="font-size:2rem;font-weight:800;color:#dc2626;line-height:1">66.67%</div>
+          <div style="font-size:.72rem;color:#64748b;margin-top:4px">มีแนวโน้มเกษียณภายใน 7 ปี</div>
+          <div style="margin-top:8px;background:#fecaca;border-radius:6px;height:6px;overflow:hidden">
+            <div style="background:#dc2626;height:100%;width:66.67%;border-radius:6px"></div>
+          </div>
+        </div>
+        <div style="background:linear-gradient(135deg,#fff7ed,#fffbeb);border:1px solid #fed7aa;border-radius:10px;padding:14px 16px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+            <span style="font-size:.8rem;font-weight:700;color:#c2410c">ผู้บริหารระดับกลาง</span>
+            <span style="background:#ea580c;color:#fff;font-size:.75rem;padding:2px 8px;border-radius:12px;font-weight:700">HIGH RISK</span>
+          </div>
+          <div style="font-size:2rem;font-weight:800;color:#ea580c;line-height:1">81.25%</div>
+          <div style="font-size:.72rem;color:#64748b;margin-top:4px">13 คน มีแนวโน้มเกษียณภายใน 7 ปี</div>
+          <div style="margin-top:8px;background:#fed7aa;border-radius:6px;height:6px;overflow:hidden">
+            <div style="background:#ea580c;height:100%;width:81.25%;border-radius:6px"></div>
+          </div>
+        </div>
+        <div style="background:#f8fafc;border:1px solid var(--bdr);border-radius:10px;padding:14px 16px">
+          <div style="font-size:.8rem;font-weight:700;color:var(--c1);margin-bottom:4px">บุคลากรทั้งองค์กร</div>
+          <div style="font-size:1.5rem;font-weight:800;color:var(--c1)">206 คน</div>
+          <div style="font-size:.72rem;color:#64748b">อายุเฉลี่ย 44.65 ปี · อายุงานเฉลี่ย 13.74 ปี</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /view-analysis -->
 
 <div id="view-sumtable" class="main" style="display:none">
   <div class="dm-hero" style="margin-bottom:18px">
@@ -3275,7 +3435,7 @@ function searchTable(q){
 // PEOPLE TAB
 // ============================================================
 function switchTab(tab){
-  ['dash','people','forecast','demand'].forEach(t=>{
+  ['dash','people','forecast','demand','analysis'].forEach(t=>{
     const v=document.getElementById('view-'+t); if(v) v.style.display=t===tab?'':'none';
     const b=document.getElementById('tab-'+t); if(b) b.classList.toggle('on',t===tab);
   });
@@ -3283,6 +3443,7 @@ function switchTab(tab){
   if(tab==='people') renderPeopleTable(filtered);
   if(tab==='forecast'){ applyForecastFilters(); }
   if(tab==='demand'){ renderDemandForecast(); }
+  if(tab==='analysis'){ initAnalysisCharts(); }
   if(_sumOpen) updateSummary(tab);
 }
 function applyPeopleFilters(){
@@ -6629,6 +6790,174 @@ function exportSBLToExcel(){
   XLSX.utils.book_append_sheet(wb,ws,`ฟอร์ม ${_sblForm}`);
   const fname=`ส่งข้อมูล_ศบล_F${_sblForm}_${thDate.replace(/\s/g,'_')}.xlsx`;
   XLSX.writeFile(wb,fname);
+}
+
+// ===== HR ANALYSIS CHARTS (Static data from ส่วนที่ 4.2) =====
+let _analysisInited = false;
+function initAnalysisCharts(){
+  if(_analysisInited) return;
+  _analysisInited = true;
+
+  const DL = window.ChartDataLabels;
+  const dlPlugin = DL ? [DL] : [];
+
+  // 4.2.1 ประเภทบุคลากร donut
+  new Chart(document.getElementById('an-type-chart'), {
+    type:'doughnut', plugins: dlPlugin,
+    data:{
+      labels:['พนักงาน','ลูกจ้างประจำ','ลูกจ้างทั่วไป','ลูกจ้างเฉพาะกิจ'],
+      datasets:[{data:[574,59,142,3], backgroundColor:['#6366F1','#10b981','#f59e0b','#ef4444'], borderWidth:2, borderColor:'#fff', hoverOffset:6}]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false, cutout:'62%',
+      plugins:{
+        legend:{position:'bottom', labels:{font:{size:11,family:'Sarabun'},padding:10}},
+        tooltip:{callbacks:{label:c=>`${c.label}: ${c.raw} คน (${(c.raw/778*100).toFixed(1)}%)`}},
+        datalabels: DL ? {color:'#fff',font:{size:11,weight:'700'},formatter:(v)=>v>=10?v:''} : {display:false}
+      }
+    }
+  });
+
+  // 4.2.2 กลุ่มงาน horizontal bar
+  new Chart(document.getElementById('an-group-chart'), {
+    type:'bar',
+    data:{
+      labels:['กลุ่มบริการอุตสาหกรรม','กลุ่มวิจัยชีวภาพ','กลุ่มวิจัยยั่งยืน','กลุ่มบริหาร','ขึ้นตรง ผวว.','กลุ่มยุทธศาสตร์'],
+      datasets:[{
+        label:'จำนวนบุคลากร (คน)',
+        data:[221,185,154,116,55,47],
+        backgroundColor:['#6366F1','#818cf8','#a5b4fc','#c7d2fe','#4f46e5','#4338ca'],
+        borderRadius:6, borderWidth:0
+      }]
+    },
+    options:{
+      indexAxis:'y', responsive:true, maintainAspectRatio:false,
+      plugins:{
+        legend:{display:false},
+        tooltip:{callbacks:{label:c=>`${c.raw} คน (${(c.raw/778*100).toFixed(1)}%)`}},
+        datalabels: DL ? {anchor:'end',align:'end',color:'#374151',font:{size:11,weight:'700'},formatter:v=>v} : {display:false}
+      },
+      scales:{
+        x:{grid:{color:'rgba(0,0,0,.06)'},ticks:{font:{size:11}},max:250},
+        y:{grid:{display:false},ticks:{font:{size:11,family:'Sarabun'}}}
+      }
+    }
+  });
+
+  // 4.2.3 Band donut
+  new Chart(document.getElementById('an-band-chart'), {
+    type:'doughnut', plugins: dlPlugin,
+    data:{
+      labels:['Band 1 บริหาร','Band 2 วิจัย/บริการ','Band 3 วิชาการสนับสนุน','Band 4 สนับสนุน'],
+      datasets:[{data:[50,340,57,127], backgroundColor:['#f59e0b','#7c3aed','#10b981','#0ea5e9'], borderWidth:2, borderColor:'#fff', hoverOffset:6}]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false, cutout:'62%',
+      plugins:{
+        legend:{position:'bottom', labels:{font:{size:11,family:'Sarabun'},padding:8}},
+        tooltip:{callbacks:{label:c=>`${c.label}: ${c.raw} คน (${(c.raw/574*100).toFixed(1)}%)`}},
+        datalabels: DL ? {color:'#fff',font:{size:11,weight:'700'},formatter:(v)=>v>=20?v:''} : {display:false}
+      }
+    }
+  });
+
+  // 4.2.5 ระดับการศึกษา donut
+  new Chart(document.getElementById('an-edu-chart'), {
+    type:'doughnut', plugins: dlPlugin,
+    data:{
+      labels:['ปริญญาเอก','ปริญญาโท','ปริญญาตรี','ต่ำกว่า ป.ตรี'],
+      datasets:[{data:[132,291,304,51], backgroundColor:['#1d4ed8','#7c3aed','#059669','#d97706'], borderWidth:2, borderColor:'#fff', hoverOffset:6}]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false, cutout:'62%',
+      plugins:{
+        legend:{position:'bottom', labels:{font:{size:11,family:'Sarabun'},padding:8}},
+        tooltip:{callbacks:{label:c=>`${c.label}: ${c.raw} คน (${(c.raw/778*100).toFixed(1)}%)`}},
+        datalabels: DL ? {color:'#fff',font:{size:11,weight:'700'},formatter:(v)=>v>=30?v:''} : {display:false}
+      }
+    }
+  });
+
+  // 4.2.6 แนวโน้มบุคลากรรายปี stacked bar
+  const years=['2563','2564','2565','2566','2567','2568','2569'];
+  new Chart(document.getElementById('an-trend-chart'), {
+    type:'bar',
+    data:{
+      labels: years,
+      datasets:[
+        {label:'พนักงาน',      data:[600,604,605,594,566,569,574], backgroundColor:'#6366F1', borderRadius:2, stack:'s'},
+        {label:'ลจ.ประจำ',    data:[62,62,61,60,55,58,59],       backgroundColor:'#10b981', borderRadius:2, stack:'s'},
+        {label:'ลจ.ทั่วไป',   data:[168,171,159,153,146,136,142], backgroundColor:'#f59e0b', borderRadius:2, stack:'s'},
+        {label:'ลจ.เฉพาะกิจ',data:[9,6,7,6,5,2,3],              backgroundColor:'#ef4444', borderRadius:2, stack:'s'},
+      ]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{
+        legend:{position:'bottom', labels:{font:{size:11,family:'Sarabun'},padding:8, boxWidth:12}},
+        tooltip:{mode:'index',intersect:false, callbacks:{
+          footer: items=>`รวม: ${items.reduce((s,i)=>s+i.raw,0)} คน`
+        }},
+        datalabels:{display:false}
+      },
+      scales:{
+        x:{stacked:true, grid:{display:false}, ticks:{font:{size:11}}},
+        y:{stacked:true, grid:{color:'rgba(0,0,0,.06)'}, ticks:{font:{size:11}}, min:0, max:950}
+      }
+    }
+  });
+
+  // 4.2.6 การลาออก bar
+  new Chart(document.getElementById('an-resign-chart'), {
+    type:'bar', plugins: dlPlugin,
+    data:{
+      labels:['2563','2564','2565','2566','2567','2568'],
+      datasets:[{
+        label:'จำนวนผู้ลาออก (คน)',
+        data:[16,20,26,17,25,15],
+        backgroundColor:['#fca5a5','#fca5a5','#ef4444','#fca5a5','#ef4444','#86efac'],
+        borderRadius:6, borderWidth:0
+      }]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{
+        legend:{display:false},
+        tooltip:{callbacks:{label:c=>`ลาออก ${c.raw} คน`}},
+        datalabels: DL ? {anchor:'end',align:'top',color:'#374151',font:{size:12,weight:'700'},formatter:v=>v} : {display:false}
+      },
+      scales:{
+        x:{grid:{display:false},ticks:{font:{size:12}}},
+        y:{grid:{color:'rgba(0,0,0,.06)'},ticks:{font:{size:11}},min:0,max:32}
+      }
+    }
+  });
+
+  // 4.2.7 ค่าใช้จ่ายต่อบุคลากร line
+  new Chart(document.getElementById('an-cost-chart'), {
+    type:'line', plugins: dlPlugin,
+    data:{
+      labels:['2563','2564','2565','2566','2567','2568'],
+      datasets:[{
+        label:'บาท/คน/ปี',
+        data:[503713,509252,527070,551227,572035,580507],
+        borderColor:'#c8a84b', backgroundColor:'rgba(200,168,75,.12)',
+        pointBackgroundColor:'#c8a84b', pointRadius:5, tension:0.3, fill:true, borderWidth:2.5
+      }]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{
+        legend:{display:false},
+        tooltip:{callbacks:{label:c=>`${c.raw.toLocaleString('th-TH')} บาท`}},
+        datalabels: DL ? {anchor:'top',align:'top',color:'#92400e',font:{size:10,weight:'700'},formatter:v=>(v/1000).toFixed(0)+'K'} : {display:false}
+      },
+      scales:{
+        x:{grid:{display:false},ticks:{font:{size:11}}},
+        y:{grid:{color:'rgba(0,0,0,.06)'},ticks:{font:{size:11},callback:v=>(v/1000).toFixed(0)+'K'},min:480000,max:620000}
+      }
+    }
+  });
 }
 </script>
 </body>
