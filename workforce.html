@@ -6975,11 +6975,29 @@ function initAnalysisCharts(){
 
   // 4.2.2 กลุ่มงาน horizontal bar
   const _GRP_LABELS = ['กลุ่มบริการอุตสาหกรรม','กลุ่มวิจัยชีวภาพ','กลุ่มวิจัยยั่งยืน','กลุ่มบริหาร','ขึ้นตรง ผวว.','กลุ่มยุทธศาสตร์'];
-  const _GRP_ALL  = [221,185,154,116,55,47];  // 778 คน ทุกประเภท
-  const _GRP_EMP  = [175,124,107,84,48,36];   // 574 คน เฉพาะพนักงาน
+  const _GRP_ALL  = [221,185,154,116,55,47];
+  const _GRP_EMP  = [175,124,107,84,48,36];
   const _GRP_COLORS = ['#6366F1','#818cf8','#a5b4fc','#c7d2fe','#4f46e5','#4338ca'];
+  const _hbarLabelPlugin = {
+    id:'hbarLabels',
+    afterDatasetsDraw(chart){
+      const {ctx,data,scales:{x,y}}=chart;
+      ctx.save();
+      ctx.font='700 11px "Sarabun",sans-serif';
+      ctx.fillStyle='#374151';
+      ctx.textAlign='left';
+      ctx.textBaseline='middle';
+      data.datasets[0].data.forEach((v,i)=>{
+        const px=x.getPixelForValue(v)+6;
+        const py=y.getPixelForValue(i);
+        ctx.fillText(v,px,py);
+      });
+      ctx.restore();
+    }
+  };
   window._anGroupChart = new Chart(document.getElementById('an-group-chart'), {
     type:'bar',
+    plugins: [_hbarLabelPlugin],
     data:{
       labels: _GRP_LABELS,
       datasets:[{label:'จำนวนบุคลากร (คน)', data:[..._GRP_ALL], backgroundColor:_GRP_COLORS, borderRadius:6, borderWidth:0}]
@@ -6989,10 +7007,10 @@ function initAnalysisCharts(){
       plugins:{
         legend:{display:false},
         tooltip:{callbacks:{label:c=>{const tot=window._grpTotal||778; return `${c.raw} คน (${(c.raw/tot*100).toFixed(1)}%)`}}},
-        datalabels: dlOn ? {anchor:'end',align:'end',color:'#374151',font:{size:11,weight:'700'},formatter:v=>v} : {display:false}
+        datalabels:{display:false}
       },
       scales:{
-        x:{grid:{color:'rgba(0,0,0,.06)'},ticks:{font:{size:11}},max:250},
+        x:{grid:{color:'rgba(0,0,0,.06)'},ticks:{font:{size:11}},max:260},
         y:{grid:{display:false},ticks:{font:{size:11,family:'Sarabun'}}}
       }
     }
@@ -7124,7 +7142,8 @@ function initAnalysisCharts(){
     if(!retireCanvas) return;
     try {
       new Chart(retireCanvas, {
-        type:'bar', plugins: dlPlugin,
+        type:'bar',
+        plugins:[_hbarLabelPlugin],
         data:{
           labels:['กลุ่มบริการอุตสาหกรรม','กลุ่มวิจัยยั่งยืน','กลุ่มวิจัยชีวภาพ','กลุ่มบริหาร','ขึ้นตรง ผวว.','กลุ่มยุทธศาสตร์'],
           datasets:[{
@@ -7139,10 +7158,10 @@ function initAnalysisCharts(){
           plugins:{
             legend:{display:false},
             tooltip:{callbacks:{label:c=>`${c.raw} คน (${(c.raw/206*100).toFixed(1)}%)`}},
-            datalabels: dlOn ? {anchor:'end',align:'end',color:'#374151',font:{size:11,weight:'700'},formatter:v=>v} : {display:false}
+            datalabels:{display:false}
           },
           scales:{
-            x:{grid:{color:'rgba(0,0,0,.06)'},ticks:{font:{size:11}},max:90},
+            x:{grid:{color:'rgba(0,0,0,.06)'},ticks:{font:{size:11}},max:95},
             y:{grid:{display:false},ticks:{font:{size:11,family:'Sarabun'}}}
           }
         }
