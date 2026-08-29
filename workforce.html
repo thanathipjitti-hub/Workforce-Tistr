@@ -3290,12 +3290,12 @@ function renderCoreChart(){
       datasets:[{data:[core,sup],backgroundColor:['#6366F1','#10b981'],borderWidth:3,borderColor:'#fff',hoverOffset:8}]
     },
     options:{
-      responsive:true,maintainAspectRatio:false,cutout:'62%',
+      responsive:true,maintainAspectRatio:false,cutout:'50%',
       plugins:{
         legend:{display:false},
         tooltip:{callbacks:{label:c=>`${c.label}: ${c.raw.toLocaleString('th-TH')} คน (${Math.round(c.raw/total*100)}%)`}},
         datalabels: _DLc ? {
-          color:'#fff', font:{size:12,weight:'700',family:'Sarabun'},
+          color:'#fff', font:(ctx)=>{const r=ctx.chart.chartArea;const w=r?(r.right-r.left):160;return {size:Math.max(10,Math.round(w/14)),weight:'700',family:'Sarabun'};},
           formatter:(v,ctx)=>{
             const tot=ctx.chart.data.datasets[0].data.reduce((s,x)=>s+x,0);
             return Math.round(v/tot*100)+'%';
@@ -7232,12 +7232,12 @@ function initAnalysisCharts(){
       datasets:[{data:[453,325],backgroundColor:['#6366F1','#10b981'],borderWidth:3,borderColor:'#fff',hoverOffset:8}]
     },
     options:{
-      responsive:true, maintainAspectRatio:false, cutout:'62%',
+      responsive:true, maintainAspectRatio:false, cutout:'50%',
       plugins:{
         legend:{position:'bottom',labels:{font:{size:10,family:'Sarabun'},padding:8,boxWidth:10}},
         tooltip:{callbacks:{label:c=>`${c.label}: ${c.raw} คน (${Math.round(c.raw/778*100)}%)`}},
         datalabels: _DL ? {
-          color:'#fff', font:{size:12,weight:'700',family:'Sarabun'},
+          color:'#fff', font:(ctx)=>{const r=ctx.chart.chartArea;const w=r?(r.right-r.left):160;return {size:Math.max(10,Math.round(w/14)),weight:'700',family:'Sarabun'};},
           formatter:(v,ctx)=>{
             const tot=ctx.chart.data.datasets[0].data.reduce((s,x)=>s+x,0);
             return Math.round(v/tot*100)+'%';
