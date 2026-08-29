@@ -1327,6 +1327,41 @@ body{background:linear-gradient(160deg,#eaecf5 0%,#f0f2f8 60%,#e8edf6 100%);min-
     </div>
   </div>
 
+  <!-- Core vs Support Chart -->
+  <div class="cc full-w" style="margin-bottom:14px">
+    <div class="cch">
+      <div class="cct"><span class="ccd" style="background:#6366F1"></span>สัดส่วน Core Business vs Support</div>
+      <div class="ccs">สายวิจัย/บริการ (Core) และสายสนับสนุน (Support) — ตามตัวกรองที่เลือก</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:24px;padding:8px 0">
+      <div style="position:relative;height:200px;width:200px;flex-shrink:0"><canvas id="ch-core"></canvas></div>
+      <div style="flex:1">
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <div>
+            <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+              <span style="font-size:.82rem;font-weight:700;color:#6366F1">🔬 Core Business (สายวิจัย/บริการ)</span>
+              <span style="font-size:.82rem;font-weight:700;color:#6366F1" id="dash-core-pct">—%</span>
+            </div>
+            <div style="background:#e0e7ff;border-radius:6px;height:14px;overflow:hidden">
+              <div id="dash-core-bar" style="background:#6366F1;height:100%;width:0%;border-radius:6px;transition:.4s"></div>
+            </div>
+            <div style="font-size:.75rem;color:#64748b;margin-top:3px"><span id="dash-core-n">—</span> คน</div>
+          </div>
+          <div>
+            <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+              <span style="font-size:.82rem;font-weight:700;color:#10b981">🛠 Support (สายสนับสนุน)</span>
+              <span style="font-size:.82rem;font-weight:700;color:#10b981" id="dash-support-pct">—%</span>
+            </div>
+            <div style="background:#d1fae5;border-radius:6px;height:14px;overflow:hidden">
+              <div id="dash-support-bar" style="background:#10b981;height:100%;width:0%;border-radius:6px;transition:.4s"></div>
+            </div>
+            <div style="font-size:.75rem;color:#64748b;margin-top:3px"><span id="dash-support-n">—</span> คน</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Section: Gender + Dept Table -->
   <div class="ds-section">
     <span class="ds-section-ttl">จำแนกตามเพศและหน่วยงาน</span>
@@ -1756,6 +1791,76 @@ body{background:linear-gradient(160deg,#eaecf5 0%,#f0f2f8 60%,#e8edf6 100%);min-
       <div class="dm-kpi k-blue"><div class="dm-kpi-val">778</div><div class="dm-kpi-lbl">บุคลากรทั้งหมด</div></div>
       <div class="dm-kpi k-green"><div class="dm-kpi-val">574</div><div class="dm-kpi-lbl">พนักงาน</div></div>
       <div class="dm-kpi k-amber"><div class="dm-kpi-val">206</div><div class="dm-kpi-lbl">เสี่ยงเกษียณ 7 ปี</div></div>
+    </div>
+  </div>
+
+  <!-- Core vs Support Row -->
+  <div class="cgrid" style="margin-bottom:0">
+    <div class="cc" style="border-top:4px solid #6366F1">
+      <div class="cc-hdr">
+        <span class="cc-hdr-title">สัดส่วน Core Business vs Support</span>
+        <div style="display:flex;gap:6px;align-items:center">
+          <button id="cs-btn-all" onclick="switchCsData('all')" style="padding:3px 10px;border:none;background:var(--c1);color:#fff;cursor:pointer;font-family:'Sarabun',sans-serif;font-size:.73rem;border-radius:4px">ทั้งหมด 778</button>
+          <button id="cs-btn-emp" onclick="switchCsData('emp')" style="padding:3px 10px;border:none;background:#fff;color:var(--muted);cursor:pointer;font-family:'Sarabun',sans-serif;font-size:.73rem;border-radius:4px;border:1px solid #e2e8f0">พนักงาน 574</button>
+          <button class="cc-copy-btn" onclick="copyChart('an-core-chart',this)">📋 คัดลอก</button>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:20px">
+        <div style="position:relative;height:180px;width:180px;flex-shrink:0"><canvas id="an-core-chart"></canvas></div>
+        <div style="flex:1;display:flex;flex-direction:column;gap:12px">
+          <div>
+            <div style="display:flex;justify-content:space-between;margin-bottom:5px">
+              <span style="font-size:.82rem;font-weight:700;color:#6366F1">🔬 Core Business</span>
+              <span style="font-size:.82rem;font-weight:700;color:#6366F1" id="an-core-pct">58.2%</span>
+            </div>
+            <div style="background:#e0e7ff;border-radius:6px;height:16px;overflow:hidden">
+              <div id="an-core-bar" style="background:#6366F1;height:100%;width:58.2%;border-radius:6px"></div>
+            </div>
+            <div style="font-size:.75rem;color:#64748b;margin-top:3px" id="an-core-n">453 คน จากทั้งหมด 778 คน</div>
+          </div>
+          <div>
+            <div style="display:flex;justify-content:space-between;margin-bottom:5px">
+              <span style="font-size:.82rem;font-weight:700;color:#10b981">🛠 Support</span>
+              <span style="font-size:.82rem;font-weight:700;color:#10b981" id="an-support-pct">41.8%</span>
+            </div>
+            <div style="background:#d1fae5;border-radius:6px;height:16px;overflow:hidden">
+              <div id="an-support-bar" style="background:#10b981;height:100%;width:41.8%;border-radius:6px"></div>
+            </div>
+            <div style="font-size:.75rem;color:#64748b;margin-top:3px" id="an-support-n">325 คน จากทั้งหมด 778 คน</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="cc" style="border-top:4px solid #6366F1">
+      <div class="cc-hdr"><span class="cc-hdr-title">Core vs Support แยกตาม Band (พนักงาน 574 คน)</span></div>
+      <div style="display:flex;flex-direction:column;gap:10px;margin-top:6px">
+        <div style="background:#f8fafc;border-radius:8px;padding:10px 14px">
+          <div style="font-size:.78rem;font-weight:700;color:#1e3a8a;margin-bottom:8px">🔬 Core Business — 390 คน (67.9%)</div>
+          <div style="display:flex;gap:8px">
+            <div style="background:#e0e7ff;border-radius:6px;padding:8px 12px;text-align:center;flex:1">
+              <div style="font-size:1.2rem;font-weight:700;color:#4f46e5">50</div>
+              <div style="font-size:.7rem;color:#64748b">Band 1 บริหาร/อาวุโส</div>
+            </div>
+            <div style="background:#e0e7ff;border-radius:6px;padding:8px 12px;text-align:center;flex:1">
+              <div style="font-size:1.2rem;font-weight:700;color:#4f46e5">340</div>
+              <div style="font-size:.7rem;color:#64748b">Band 2 สายวิจัย</div>
+            </div>
+          </div>
+        </div>
+        <div style="background:#f8fafc;border-radius:8px;padding:10px 14px">
+          <div style="font-size:.78rem;font-weight:700;color:#065f46;margin-bottom:8px">🛠 Support — 184 คน (32.1%)</div>
+          <div style="display:flex;gap:8px">
+            <div style="background:#d1fae5;border-radius:6px;padding:8px 12px;text-align:center;flex:1">
+              <div style="font-size:1.2rem;font-weight:700;color:#059669">57</div>
+              <div style="font-size:.7rem;color:#64748b">Band 3 วิชาการสนับสนุน</div>
+            </div>
+            <div style="background:#d1fae5;border-radius:6px;padding:8px 12px;text-align:center;flex:1">
+              <div style="font-size:1.2rem;font-weight:700;color:#059669">127</div>
+              <div style="font-size:.7rem;color:#64748b">Band 4 สนับสนุนทั่วไป</div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -3157,7 +3262,40 @@ function renderKPIs(){
 // CHARTS
 // ============================================================
 function dc(id){ if(charts[id]){try{charts[id].destroy();}catch(e){} charts[id]=null;} }
-function renderCharts(){ renderPosChart(); renderGroupChart(); renderBandChart(); renderEduChart(); renderGenderChart(); }
+function renderCharts(){ renderPosChart(); renderGroupChart(); renderBandChart(); renderEduChart(); renderGenderChart(); renderCoreChart(); }
+
+function renderCoreChart(){
+  const total=filtered.length; if(!total) return;
+  const core=filtered.filter(r=>isResearch(r.posNew||r.position,r.band,r.positioning,r.group,r.deptCode)).length;
+  const sup=total-core;
+  const corePct=Math.round(core/total*100);
+  const supPct=100-corePct;
+  // update progress bars
+  const se=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
+  const sw=(id,v)=>{const el=document.getElementById(id);if(el)el.style.width=v+'%';};
+  se('dash-core-n',core.toLocaleString('th-TH'));
+  se('dash-support-n',sup.toLocaleString('th-TH'));
+  se('dash-core-pct',corePct+'%');
+  se('dash-support-pct',supPct+'%');
+  sw('dash-core-bar',corePct);
+  sw('dash-support-bar',supPct);
+  // donut chart
+  dc('core');
+  charts['core']=new Chart(document.getElementById('ch-core').getContext('2d'),{
+    type:'doughnut',
+    data:{
+      labels:['Core Business','Support'],
+      datasets:[{data:[core,sup],backgroundColor:['#6366F1','#10b981'],borderWidth:3,borderColor:'#fff',hoverOffset:8}]
+    },
+    options:{
+      responsive:true,maintainAspectRatio:false,cutout:'65%',
+      plugins:{
+        legend:{display:false},
+        tooltip:{callbacks:{label:c=>`${c.label}: ${c.raw.toLocaleString('th-TH')} คน (${Math.round(c.raw/total*100)}%)`}}
+      }
+    }
+  });
+}
 
 function renderPosChart(){
   dc('pos');
@@ -6971,6 +7109,32 @@ function copyTable(tableId, btn){
   }).catch(e=>alert('คัดลอกไม่สำเร็จ: '+e.message));
 }
 
+// ===== CORE vs SUPPORT CHART TOGGLE =====
+function switchCsData(mode){
+  const chart = window._anCoreChart;
+  if(!chart) return;
+  const isAll = mode === 'all';
+  // all778: Core 453, Support 325 | emp574: Core 390, Support 184
+  chart.data.datasets[0].data = isAll ? [453,325] : [390,184];
+  const total = isAll ? 778 : 574;
+  const core = isAll ? 453 : 390;
+  const sup = isAll ? 325 : 184;
+  const corePct = Math.round(core/total*100);
+  const supPct = 100-corePct;
+  const se=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
+  const sw=(id,v)=>{const el=document.getElementById(id);if(el)el.style.width=v+'%';};
+  se('an-core-pct',corePct+'%'); se('an-support-pct',supPct+'%');
+  se('an-core-n',`${core} คน จากทั้งหมด ${total} คน`);
+  se('an-support-n',`${sup} คน จากทั้งหมด ${total} คน`);
+  sw('an-core-bar',corePct); sw('an-support-bar',supPct);
+  chart.update();
+  const ba=document.getElementById('cs-btn-all'), be=document.getElementById('cs-btn-emp');
+  if(ba&&be){
+    ba.style.background=isAll?'var(--c1)':'#fff'; ba.style.color=isAll?'#fff':'var(--muted)';
+    be.style.background=isAll?'#fff':'var(--c1)'; be.style.color=isAll?'var(--muted)':'#fff';
+  }
+}
+
 // ===== EDUCATION CHART TOGGLE =====
 function switchEduData(mode){
   const chart = window._anEduChart;
@@ -7048,6 +7212,22 @@ function initAnalysisCharts(){
   const DL = window.ChartDataLabels || null;
   const dlPlugin = DL ? [DL] : [];
   const dlOn = !!DL;
+
+  // Core vs Support donut (ทั้งหมด 778: Core 453, Support 325)
+  window._anCoreChart = new Chart(document.getElementById('an-core-chart'), {
+    type:'doughnut',
+    data:{
+      labels:['Core Business (สายวิจัย/บริการ)','Support (สายสนับสนุน)'],
+      datasets:[{data:[453,325],backgroundColor:['#6366F1','#10b981'],borderWidth:3,borderColor:'#fff',hoverOffset:8}]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false, cutout:'65%',
+      plugins:{
+        legend:{position:'bottom',labels:{font:{size:10,family:'Sarabun'},padding:8,boxWidth:10}},
+        tooltip:{callbacks:{label:c=>`${c.label}: ${c.raw} คน (${Math.round(c.raw/778*100)}%)`}}
+      }
+    }
+  });
 
   // 4.2.1 ประเภทบุคลากร donut
   new Chart(document.getElementById('an-type-chart'), {
