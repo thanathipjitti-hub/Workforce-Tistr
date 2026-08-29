@@ -3295,10 +3295,10 @@ function renderCoreChart(){
         legend:{display:false},
         tooltip:{callbacks:{label:c=>`${c.label}: ${c.raw.toLocaleString('th-TH')} คน (${Math.round(c.raw/total*100)}%)`}},
         datalabels: _DLc ? {
-          color:'#fff', font:{size:11,weight:'700',family:'Sarabun'},
+          color:'#fff', font:{size:12,weight:'700',family:'Sarabun'},
           formatter:(v,ctx)=>{
             const tot=ctx.chart.data.datasets[0].data.reduce((s,x)=>s+x,0);
-            return v.toLocaleString('th-TH')+'\n'+Math.round(v/tot*100)+'%';
+            return Math.round(v/tot*100)+'%';
           }
         } : {display:false}
       }
@@ -7237,10 +7237,10 @@ function initAnalysisCharts(){
         legend:{position:'bottom',labels:{font:{size:10,family:'Sarabun'},padding:8,boxWidth:10}},
         tooltip:{callbacks:{label:c=>`${c.label}: ${c.raw} คน (${Math.round(c.raw/778*100)}%)`}},
         datalabels: _DL ? {
-          color:'#fff', font:{size:11,weight:'700',family:'Sarabun'},
+          color:'#fff', font:{size:12,weight:'700',family:'Sarabun'},
           formatter:(v,ctx)=>{
             const tot=ctx.chart.data.datasets[0].data.reduce((s,x)=>s+x,0);
-            return v+'\n'+Math.round(v/tot*100)+'%';
+            return Math.round(v/tot*100)+'%';
           }
         } : {display:false}
       }
