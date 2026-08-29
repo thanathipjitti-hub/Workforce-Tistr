@@ -3280,9 +3280,27 @@ function renderCoreChart(){
   sw('dash-core-bar',corePct);
   sw('dash-support-bar',supPct);
   // donut chart
+  const _coreDonutPlugin = {
+    id:'coreDonutLabels',
+    afterDatasetsDraw(chart){
+      const {ctx,data}=chart;
+      ctx.save();
+      chart.getDatasetMeta(0).data.forEach((arc,i)=>{
+        const v=data.datasets[0].data[i]; if(!v) return;
+        const angle=(arc.startAngle+arc.endAngle)/2;
+        const r=(arc.outerRadius+arc.innerRadius)/2;
+        const x=arc.x+r*Math.cos(angle), y=arc.y+r*Math.sin(angle);
+        ctx.font='700 12px "Sarabun",sans-serif';
+        ctx.fillStyle='#fff'; ctx.textAlign='center'; ctx.textBaseline='middle';
+        ctx.fillText(v.toLocaleString('th-TH'),x,y);
+      });
+      ctx.restore();
+    }
+  };
   dc('core');
   charts['core']=new Chart(document.getElementById('ch-core').getContext('2d'),{
     type:'doughnut',
+    plugins:[_coreDonutPlugin],
     data:{
       labels:['Core Business','Support'],
       datasets:[{data:[core,sup],backgroundColor:['#6366F1','#10b981'],borderWidth:3,borderColor:'#fff',hoverOffset:8}]
@@ -7214,8 +7232,29 @@ function initAnalysisCharts(){
   const dlOn = !!DL;
 
   // Core vs Support donut (ทั้งหมด 778: Core 453, Support 325)
+  const _anCoreDonutPlugin = {
+    id:'anCoreDonutLabels',
+    afterDatasetsDraw(chart){
+      const {ctx,data}=chart;
+      const total=data.datasets[0].data.reduce((s,v)=>s+v,0);
+      ctx.save();
+      chart.getDatasetMeta(0).data.forEach((arc,i)=>{
+        const v=data.datasets[0].data[i]; if(!v) return;
+        const angle=(arc.startAngle+arc.endAngle)/2;
+        const r=(arc.outerRadius+arc.innerRadius)/2;
+        const x=arc.x+r*Math.cos(angle), y=arc.y+r*Math.sin(angle);
+        ctx.font='700 12px "Sarabun",sans-serif';
+        ctx.fillStyle='#fff'; ctx.textAlign='center'; ctx.textBaseline='middle';
+        ctx.fillText(v,x,y-7);
+        ctx.font='600 10px "Sarabun",sans-serif';
+        ctx.fillText(Math.round(v/total*100)+'%',x,y+7);
+      });
+      ctx.restore();
+    }
+  };
   window._anCoreChart = new Chart(document.getElementById('an-core-chart'), {
     type:'doughnut',
+    plugins:[_anCoreDonutPlugin],
     data:{
       labels:['Core Business (สายวิจัย/บริการ)','Support (สายสนับสนุน)'],
       datasets:[{data:[453,325],backgroundColor:['#6366F1','#10b981'],borderWidth:3,borderColor:'#fff',hoverOffset:8}]
