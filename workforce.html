@@ -7196,48 +7196,6 @@ function switchGroupData(mode){
 function copyChart(canvasId, btn){
   const canvas = document.getElementById(canvasId);
   if(!canvas){ alert('ไม่พบกราฟ'); return; }
-  // Find parent .cc card to capture chart + summary text together
-  const card = canvas.closest('.cc') || canvas.parentElement;
-  const orig = btn.innerHTML;
-  btn.innerHTML = '⏳ กำลังจับภาพ...';
-  btn.disabled = true;
-
-  const doCapture = () => {
-    if(typeof html2canvas !== 'undefined'){
-      // Hide copy button while capturing
-      btn.style.visibility='hidden';
-      html2canvas(card, {
-        backgroundColor:'#ffffff',
-        scale: 2,
-        useCORS: true,
-        logging: false
-      }).then(offscreen=>{
-        btn.style.visibility='';
-        offscreen.toBlob(blob=>{
-          if(!blob){ btn.innerHTML=orig; btn.disabled=false; alert('ไม่สามารถสร้างรูปได้'); return; }
-          navigator.clipboard.write([new ClipboardItem({'image/png': blob})])
-            .then(()=>{
-              btn.innerHTML='✓ คัดลอกแล้ว';
-              btn.classList.add('copied');
-              btn.disabled=false;
-              setTimeout(()=>{ btn.innerHTML=orig; btn.classList.remove('copied'); }, 2200);
-            })
-            .catch(e=>{ btn.innerHTML=orig; btn.disabled=false; alert('คัดลอกไม่สำเร็จ: '+e.message); });
-        }, 'image/png');
-      }).catch(()=>{
-        btn.style.visibility=''; btn.innerHTML=orig; btn.disabled=false;
-        fallbackCopyCanvas(canvas, btn, orig);
-      });
-    } else {
-      fallbackCopyCanvas(canvas, btn, orig);
-    }
-  };
-
-  // Small delay so button state renders before capture
-  setTimeout(doCapture, 80);
-}
-
-function fallbackCopyCanvas(canvas, btn, orig){
   const offscreen = document.createElement('canvas');
   offscreen.width = canvas.width; offscreen.height = canvas.height;
   const ctx = offscreen.getContext('2d');
@@ -7245,13 +7203,15 @@ function fallbackCopyCanvas(canvas, btn, orig){
   ctx.fillRect(0,0,offscreen.width,offscreen.height);
   ctx.drawImage(canvas,0,0);
   offscreen.toBlob(blob=>{
-    if(!blob){ btn.innerHTML=orig; btn.disabled=false; return; }
+    if(!blob){ alert('ไม่สามารถสร้างรูปได้'); return; }
     navigator.clipboard.write([new ClipboardItem({'image/png': blob})])
       .then(()=>{
-        btn.innerHTML='✓ คัดลอกแล้ว'; btn.classList.add('copied'); btn.disabled=false;
+        const orig = btn.innerHTML;
+        btn.innerHTML = '✓ คัดลอกแล้ว';
+        btn.classList.add('copied');
         setTimeout(()=>{ btn.innerHTML=orig; btn.classList.remove('copied'); }, 2200);
       })
-      .catch(e=>{ btn.innerHTML=orig; btn.disabled=false; alert('คัดลอกไม่สำเร็จ: '+e.message); });
+      .catch(e=>{ alert('คัดลอกไม่สำเร็จ: '+e.message); });
   }, 'image/png');
 }
 
