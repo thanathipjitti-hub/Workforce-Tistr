@@ -2472,6 +2472,9 @@ function normEduDash(e){
 }
 const EDU_COLORS   = ['#F59E0B','#3B82F6','#8B5CF6','#10B981','#EF4444','#64748B'];
 const FONT         = {family:"'Sarabun',sans-serif",size:11};
+// Global Chart.js defaults — darker axis labels across all charts
+Chart.defaults.color = '#111827';
+Chart.defaults.scale.ticks.color = '#111827';
 const PBADGE={
   ผู้บริหาร:'<span class="badge ba">ผู้บริหาร</span>',
   พนักงาน:'<span class="badge bn">พนักงาน</span>',
@@ -3337,7 +3340,7 @@ function renderPosChart(){
           const r2=(arc.innerRadius+arc.outerRadius)/2;
           const x=arc.x+Math.cos(angle)*r2, y=arc.y+Math.sin(angle)*r2;
           ctx.save();
-          ctx.font="700 11px 'Sarabun',sans-serif"; ctx.fillStyle='rgba(255,255,255,.95)';
+          ctx.font="700 12px 'Sarabun',sans-serif"; ctx.fillStyle='rgba(255,255,255,.95)';
           ctx.textAlign='center'; ctx.textBaseline='middle';
           ctx.fillText(val.toLocaleString('th-TH'),x,y-5);
           ctx.font="400 9.5px 'Sarabun',sans-serif"; ctx.fillStyle='rgba(255,255,255,.8)';
@@ -3382,8 +3385,8 @@ function renderGroupChart(){
         lastMeta.data.forEach((bar,i)=>{
           const tot=dss.reduce((s,ds)=>s+(ds.data[i]||0),0);
           if(!tot) return;
-          ctx.save(); ctx.font="700 11px 'Sarabun',sans-serif";
-          ctx.fillStyle='#374151'; ctx.textAlign='center'; ctx.textBaseline='bottom';
+          ctx.save(); ctx.font="700 12px 'Sarabun',sans-serif";
+          ctx.fillStyle='#111827'; ctx.textAlign='center'; ctx.textBaseline='bottom';
           ctx.fillText(tot.toLocaleString('th-TH'),bar.x,bar.y-2); ctx.restore();
         });
       }
@@ -3416,8 +3419,8 @@ function renderBandChart(){
         const ctx=chart.ctx;
         chart.getDatasetMeta(0).data.forEach((bar,i)=>{
           const val=vals[i]; if(!val) return;
-          ctx.save(); ctx.font="700 11px 'Sarabun',sans-serif";
-          ctx.fillStyle='#374151'; ctx.textAlign='center'; ctx.textBaseline='bottom';
+          ctx.save(); ctx.font="700 12px 'Sarabun',sans-serif";
+          ctx.fillStyle='#111827'; ctx.textAlign='center'; ctx.textBaseline='bottom';
           ctx.fillText(val.toLocaleString('th-TH'),bar.x,bar.y-2); ctx.restore();
         });
       }
@@ -3468,8 +3471,8 @@ function renderEduChart(){
         lastMeta.data.forEach((bar,i)=>{
           const tot=dss.reduce((s,ds)=>s+(ds.data[i]||0),0);
           if(!tot) return;
-          ctx.save();ctx.font="700 11px 'Sarabun',sans-serif";
-          ctx.fillStyle='#374151';ctx.textAlign='left';ctx.textBaseline='middle';
+          ctx.save();ctx.font="700 12px 'Sarabun',sans-serif";
+          ctx.fillStyle='#111827';ctx.textAlign='left';ctx.textBaseline='middle';
           ctx.fillText(tot.toLocaleString('th-TH')+' คน',bar.x+7,bar.y);ctx.restore();
         });
       }
@@ -4946,8 +4949,8 @@ function renderGenderChart(){
           }
           // Combined total above both bars
           const topY=Math.min(bar0.y,bar1.y);
-          ctx.font="700 11px 'Sarabun',sans-serif";
-          ctx.fillStyle='#374151'; ctx.textAlign='center'; ctx.textBaseline='bottom';
+          ctx.font="700 12px 'Sarabun',sans-serif";
+          ctx.fillStyle='#111827'; ctx.textAlign='center'; ctx.textBaseline='bottom';
           ctx.fillText('รวม '+tot.toLocaleString('th-TH'),(bar0.x+bar1.x)/2,topY-4);
           ctx.restore();
         });
@@ -5868,8 +5871,8 @@ function renderRetireYrChart(base,pf,yrs){
       const ctx=chart.ctx,meta=chart.getDatasetMeta(0);
       meta.data.forEach((bar,i)=>{
         if(!counts[i]) return;
-        ctx.save();ctx.font="700 11px 'Sarabun',sans-serif";
-        ctx.fillStyle='#374151';ctx.textAlign='center';ctx.textBaseline='bottom';
+        ctx.save();ctx.font="700 12px 'Sarabun',sans-serif";
+        ctx.fillStyle='#111827';ctx.textAlign='center';ctx.textBaseline='bottom';
         ctx.fillText(counts[i],bar.x,bar.y-3);ctx.restore();
       });
     }}]
@@ -5900,7 +5903,7 @@ function renderRetireGrpChart(base,pf,yrs){
       meta.data.forEach((bar,i)=>{
         if(!counts[i]) return;
         ctx.save();ctx.font="700 12px 'Sarabun',sans-serif";
-        ctx.fillStyle='#374151';ctx.textAlign='left';ctx.textBaseline='middle';
+        ctx.fillStyle='#111827';ctx.textAlign='left';ctx.textBaseline='middle';
         ctx.fillText(counts[i]+' คน',bar.x+6,bar.y);ctx.restore();
       });
     }}]
@@ -5936,8 +5939,8 @@ function renderRetireBandChart(base,pf,yrs){
       const ctx=chart.ctx,meta=chart.getDatasetMeta(0);
       meta.data.forEach((bar,i)=>{
         if(!counts[i])return;
-        ctx.save();ctx.font="700 11px 'Sarabun',sans-serif";
-        ctx.fillStyle='#374151';ctx.textAlign='center';ctx.textBaseline='bottom';
+        ctx.save();ctx.font="700 12px 'Sarabun',sans-serif";
+        ctx.fillStyle='#111827';ctx.textAlign='center';ctx.textBaseline='bottom';
         ctx.fillText(counts[i],bar.x,bar.y-4);ctx.restore();
       });
     }}]
@@ -5977,7 +5980,7 @@ function renderRetireEduChart(base,pf,yrs){
           const r2=(arc.innerRadius+arc.outerRadius)/2;
           const x=arc.x+Math.cos(angle)*r2, y=arc.y+Math.sin(angle)*r2;
           ctx.save();
-          ctx.font="700 11px 'Sarabun',sans-serif"; ctx.fillStyle='rgba(255,255,255,.95)';
+          ctx.font="700 12px 'Sarabun',sans-serif"; ctx.fillStyle='rgba(255,255,255,.95)';
           ctx.textAlign='center'; ctx.textBaseline='middle';
           ctx.fillText(val,x,y-5);
           ctx.font="400 9.5px 'Sarabun',sans-serif"; ctx.fillStyle='rgba(255,255,255,.8)';
@@ -7274,8 +7277,8 @@ function initAnalysisCharts(){
     afterDatasetsDraw(chart){
       const {ctx,data,scales:{x,y}}=chart;
       ctx.save();
-      ctx.font='700 11px "Sarabun",sans-serif';
-      ctx.fillStyle='#374151';
+      ctx.font='700 13px "Sarabun",sans-serif';
+      ctx.fillStyle='#111827';
       ctx.textAlign='left';
       ctx.textBaseline='middle';
       data.datasets[0].data.forEach((v,i)=>{
@@ -7301,8 +7304,8 @@ function initAnalysisCharts(){
         datalabels:{display:false}
       },
       scales:{
-        x:{grid:{color:'rgba(0,0,0,.06)'},ticks:{font:{size:11}},max:260},
-        y:{grid:{display:false},ticks:{font:{size:11,family:'Sarabun'}}}
+        x:{grid:{color:'rgba(0,0,0,.06)'},ticks:{color:'#111827',font:{size:12}},max:260},
+        y:{grid:{display:false},ticks:{color:'#111827',font:{size:12,family:'Sarabun'}}}
       }
     }
   });
@@ -7397,8 +7400,8 @@ function initAnalysisCharts(){
         datalabels:{display:false}
       },
       scales:{
-        x:{stacked:true, grid:{display:false}, ticks:{font:{size:11}}},
-        y:{stacked:true, grid:{color:'rgba(0,0,0,.06)'}, ticks:{font:{size:11}}, min:0, max:970}
+        x:{stacked:true, grid:{display:false}, ticks:{color:'#111827',font:{size:12}}},
+        y:{stacked:true, grid:{color:'rgba(0,0,0,.06)'}, ticks:{color:'#111827',font:{size:12}}, min:0, max:970}
       }
     }
   });
@@ -7414,7 +7417,7 @@ function initAnalysisCharts(){
       data.datasets[0].data.forEach((v,i)=>{
         const meta=chart.getDatasetMeta(0);
         const bar=meta.data[i];
-        ctx.fillStyle='#374151';
+        ctx.fillStyle='#111827';
         ctx.fillText(v, bar.x, bar.y-4);
       });
       ctx.restore();
@@ -7439,8 +7442,8 @@ function initAnalysisCharts(){
         datalabels:{display:false}
       },
       scales:{
-        x:{grid:{display:false},ticks:{font:{size:12}}},
-        y:{grid:{color:'rgba(0,0,0,.06)'},ticks:{font:{size:11}},min:0,max:32}
+        x:{grid:{display:false},ticks:{color:'#111827',font:{size:12}}},
+        y:{grid:{color:'rgba(0,0,0,.06)'},ticks:{color:'#111827',font:{size:12}},min:0,max:32}
       }
     }
   });
@@ -7481,8 +7484,8 @@ function initAnalysisCharts(){
         datalabels:{display:false}
       },
       scales:{
-        x:{grid:{display:false},ticks:{font:{size:11}}},
-        y:{grid:{color:'rgba(0,0,0,.06)'},ticks:{font:{size:11},callback:v=>(v/1000).toFixed(0)+'K'},min:480000,max:620000}
+        x:{grid:{display:false},ticks:{color:'#111827',font:{size:12}}},
+        y:{grid:{color:'rgba(0,0,0,.06)'},ticks:{color:'#111827',font:{size:12},callback:v=>(v/1000).toFixed(0)+'K'},min:480000,max:620000}
       }
     }
   });
@@ -7512,8 +7515,8 @@ function initAnalysisCharts(){
             datalabels:{display:false}
           },
           scales:{
-            x:{grid:{color:'rgba(0,0,0,.06)'},ticks:{font:{size:11}},max:95},
-            y:{grid:{display:false},ticks:{font:{size:11,family:'Sarabun'}}}
+            x:{grid:{color:'rgba(0,0,0,.06)'},ticks:{color:'#111827',font:{size:12}},max:95},
+            y:{grid:{display:false},ticks:{color:'#111827',font:{size:12,family:'Sarabun'}}}
           }
         }
       });
