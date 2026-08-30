@@ -3324,7 +3324,7 @@ function renderPosChart(){
     options:{
       responsive:true,maintainAspectRatio:false,cutout:'56%',
       plugins:{
-        legend:{position:'bottom',labels:{font:{...FONT,size:11},padding:14,boxWidth:13,usePointStyle:true,pointStyleWidth:10}},
+        legend:{position:'bottom',labels:{font:{...FONT,size:10},padding:6,usePointStyle:true,pointStyle:'circle',boxWidth:8,boxHeight:8}},
         tooltip:{callbacks:{label:c=>` ${c.label}: ${c.raw.toLocaleString('th-TH')} คน (${((c.raw/total)*100).toFixed(1)}%)`}}
       },
       animation:{duration:700,easing:'easeOutQuart'}
@@ -3371,7 +3371,7 @@ function renderGroupChart(){
         y:{stacked:true,ticks:{font:FONT},beginAtZero:true,grid:{color:'rgba(0,0,0,.04)'},border:{display:false}}
       },
       plugins:{
-        legend:{position:'bottom',labels:{font:{...FONT,size:11},padding:12,boxWidth:13,usePointStyle:true,pointStyleWidth:10}},
+        legend:{position:'bottom',labels:{font:{...FONT,size:10},padding:6,usePointStyle:true,pointStyle:'circle',boxWidth:8,boxHeight:8}},
         tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${c.raw.toLocaleString('th-TH')} คน`}}
       },
       animation:{duration:700,easing:'easeOutQuart'},
@@ -3457,7 +3457,7 @@ function renderEduChart(){
         y:{stacked:true,ticks:{font:FONT},grid:{display:false},border:{display:false}}
       },
       plugins:{
-        legend:{position:'bottom',labels:{font:FONT,padding:10,boxWidth:12}},
+        legend:{position:'bottom',labels:{font:{...FONT,size:10},padding:6,usePointStyle:true,pointStyle:'circle',boxWidth:8,boxHeight:8}},
         tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${c.raw.toLocaleString('th-TH')} คน`}}
       },
       animation:{duration:350},
@@ -4012,7 +4012,7 @@ function renderDemandForecast(){
       type:'bar',data:{labels:showGroups.map(d=>d.g),datasets:ds},
       plugins:[dmLabelPlugin],
       options:{responsive:true,maintainAspectRatio:true,
-        plugins:{legend:{position:'bottom',labels:{font:{family:'Sarabun',size:11},boxWidth:12}},
+        plugins:{legend:{position:'bottom',labels:{font:{family:'Sarabun',size:10},padding:6,usePointStyle:true,pointStyle:'circle',boxWidth:8,boxHeight:8}},
           tooltip:{callbacks:{label:c=>`${c.dataset.label}: ${c.raw} คน`}}},
         scales:{x:{grid:{display:false}},y:{beginAtZero:true,ticks:{font:{family:'Sarabun',size:11}}}}}
     });
@@ -4919,7 +4919,7 @@ function renderGenderChart(){
       responsive:true,maintainAspectRatio:false,layout:{padding:{top:28}},
       scales:{x:{ticks:{font:FONT}},y:{beginAtZero:true,ticks:{font:FONT}}},
       plugins:{
-        legend:{position:'bottom',labels:{font:FONT,padding:12,boxWidth:12}},
+        legend:{position:'bottom',labels:{font:{...FONT,size:10},padding:6,usePointStyle:true,pointStyle:'circle',boxWidth:8,boxHeight:8}},
         tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${c.raw.toLocaleString('th-TH')} คน`}}
       },
       animation:{duration:350},
@@ -5964,7 +5964,7 @@ function renderRetireEduChart(base,pf,yrs){
     options:{
       responsive:true,maintainAspectRatio:false,cutout:'52%',
       plugins:{
-        legend:{position:'bottom',labels:{font:FONT,padding:10,boxWidth:12}},
+        legend:{position:'bottom',labels:{font:{...FONT,size:10},padding:6,usePointStyle:true,pointStyle:'circle',boxWidth:8,boxHeight:8}},
         tooltip:{callbacks:{label:c=>` ${c.label}: ${c.raw} คน`}}
       },
       animation:{duration:700}
@@ -7237,7 +7237,7 @@ function initAnalysisCharts(){
     options:{
       responsive:true, maintainAspectRatio:false, cutout:'50%',
       plugins:{
-        legend:{position:'bottom',labels:{font:{size:10,family:'Sarabun'},padding:8,boxWidth:10}},
+        legend:{position:'bottom',labels:{font:{size:10,family:'Sarabun'},padding:6,usePointStyle:true,pointStyle:'circle',boxWidth:8,boxHeight:8}},
         tooltip:{callbacks:{label:c=>`${c.label}: ${c.raw} คน (${Math.round(c.raw/778*100)}%)`}},
         datalabels: _DL ? {
           color:'#fff', font:(ctx)=>{const r=ctx.chart.chartArea;const w=r?(r.right-r.left):160;return {size:Math.max(10,Math.round(w/14)),weight:'700',family:'Sarabun'};},
@@ -7322,7 +7322,7 @@ function initAnalysisCharts(){
     options:{
       responsive:true, maintainAspectRatio:false, cutout:'62%',
       plugins:{
-        legend:{position:'bottom', labels:{font:{size:11,family:'Sarabun'},padding:8}},
+        legend:{position:'bottom',labels:{font:{size:10,family:'Sarabun'},padding:6,usePointStyle:true,pointStyle:'circle',boxWidth:8,boxHeight:8}},
         tooltip:{callbacks:{label:c=>`${c.label}: ${c.raw} คน (${(c.raw/574*100).toFixed(1)}%)`}},
         datalabels: dlOn ? {color:'#fff',font:{size:11,weight:'700'},formatter:(v)=>v>=20?v:''} : {display:false}
       }
@@ -7339,7 +7339,7 @@ function initAnalysisCharts(){
     options:{
       responsive:true, maintainAspectRatio:false, cutout:'62%',
       plugins:{
-        legend:{position:'bottom', labels:{font:{size:11,family:'Sarabun'},padding:8}},
+        legend:{position:'bottom',labels:{font:{size:10,family:'Sarabun'},padding:6,usePointStyle:true,pointStyle:'circle',boxWidth:8,boxHeight:8}},
         tooltip:{callbacks:{label:c=>`${c.label}: ${c.raw} คน (${(c.raw/778*100).toFixed(1)}%)`}},
         datalabels: dlOn ? {color:'#fff',font:{size:11,weight:'700'},formatter:(v)=>v>=30?v:''} : {display:false}
       }
@@ -7393,7 +7393,7 @@ function initAnalysisCharts(){
     options:{
       responsive:true, maintainAspectRatio:false,
       plugins:{
-        legend:{position:'bottom', labels:{font:{size:11,family:'Sarabun'},padding:8, boxWidth:12}},
+        legend:{position:'bottom',labels:{font:{size:10,family:'Sarabun'},padding:6,usePointStyle:true,pointStyle:'circle',boxWidth:8,boxHeight:8}},
         tooltip:{mode:'index',intersect:false, callbacks:{
           footer: items=>`รวม: ${items.reduce((s,i)=>s+i.raw,0)} คน`
         }},
