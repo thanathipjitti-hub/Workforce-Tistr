@@ -2506,12 +2506,12 @@ const donutLeaderPlugin = {
       // leader line + % label
       const pct=((val/total)*100).toFixed(1)+'%';
       const isRight=Math.cos(midAngle)>=0;
-      const diagLen=arcSpan<0.2?62:34;
-      const lx1=cx+Math.cos(midAngle)*(outerR+5);
-      const ly1=cy+Math.sin(midAngle)*(outerR+5);
+      const diagLen=arcSpan<0.2?44:24;
+      const lx1=cx+Math.cos(midAngle)*(outerR+4);
+      const ly1=cy+Math.sin(midAngle)*(outerR+4);
       const lx2=cx+Math.cos(midAngle)*(outerR+diagLen);
       const ly2=cy+Math.sin(midAngle)*(outerR+diagLen);
-      const tickLen=20, lx3=lx2+(isRight?tickLen:-tickLen);
+      const tickLen=16, lx3=lx2+(isRight?tickLen:-tickLen);
       ctx.save();
       ctx.beginPath(); ctx.moveTo(lx1,ly1); ctx.lineTo(lx2,ly2); ctx.lineTo(lx3,ly2);
       ctx.strokeStyle=color; ctx.lineWidth=2; ctx.stroke();
@@ -3341,7 +3341,7 @@ function renderCoreChart(){
     },
     options:{
       responsive:true,maintainAspectRatio:false,cutout:'50%',
-      layout:{padding:70},
+      layout:{padding:48},
       plugins:{
         legend:{display:false},
         tooltip:{callbacks:{label:c=>`${c.label}: ${c.raw.toLocaleString('th-TH')} คน (${Math.round(c.raw/total*100)}%)`}},
@@ -3366,7 +3366,7 @@ function renderPosChart(){
     data:{labels,datasets:[{data,backgroundColor:colors,borderWidth:3,borderColor:'#fff',hoverOffset:10}]},
     options:{
       responsive:true,maintainAspectRatio:false,cutout:'56%',
-      layout:{padding:70},
+      layout:{padding:48},
       plugins:{
         legend:{position:'bottom',labels:{font:{...FONT,size:10},padding:6,usePointStyle:true,pointStyle:'circle',boxWidth:8,boxHeight:8}},
         tooltip:{callbacks:{label:c=>` ${c.label}: ${c.raw.toLocaleString('th-TH')} คน (${((c.raw/total)*100).toFixed(1)}%)`}},
@@ -5989,7 +5989,7 @@ function renderRetireEduChart(base,pf,yrs){
       borderWidth:2,borderColor:'#fff',hoverOffset:8}]},
     options:{
       responsive:true,maintainAspectRatio:false,cutout:'52%',
-      layout:{padding:70},
+      layout:{padding:48},
       plugins:{
         legend:{position:'bottom',labels:{font:{...FONT,size:10},padding:6,usePointStyle:true,pointStyle:'circle',boxWidth:8,boxHeight:8}},
         tooltip:{callbacks:{label:c=>` ${c.label}: ${c.raw} คน`}},
@@ -7242,7 +7242,7 @@ function initAnalysisCharts(){
     },
     options:{
       responsive:true, maintainAspectRatio:false, cutout:'50%',
-      layout:{padding:70},
+      layout:{padding:48},
       plugins:{
         legend:{position:'bottom',labels:{font:{size:10,family:'Sarabun'},padding:6,usePointStyle:true,pointStyle:'circle',boxWidth:8,boxHeight:8}},
         tooltip:{callbacks:{label:c=>`${c.label}: ${c.raw} คน (${Math.round(c.raw/778*100)}%)`}},
@@ -7260,7 +7260,7 @@ function initAnalysisCharts(){
     },
     options:{
       responsive:true, maintainAspectRatio:false, cutout:'62%',
-      layout:{padding:70},
+      layout:{padding:48},
       plugins:{
         legend:{position:'bottom', labels:{font:{size:10,family:'Sarabun'},padding:6,usePointStyle:true,pointStyle:'circle',boxWidth:8,boxHeight:8}},
         tooltip:{callbacks:{label:c=>`${c.label}: ${c.raw} คน (${(c.raw/778*100).toFixed(1)}%)`}},
@@ -7323,7 +7323,7 @@ function initAnalysisCharts(){
     },
     options:{
       responsive:true, maintainAspectRatio:false, cutout:'62%',
-      layout:{padding:70},
+      layout:{padding:48},
       plugins:{
         legend:{position:'bottom',labels:{font:{size:10,family:'Sarabun'},padding:6,usePointStyle:true,pointStyle:'circle',boxWidth:8,boxHeight:8}},
         tooltip:{callbacks:{label:c=>`${c.label}: ${c.raw} คน (${(c.raw/574*100).toFixed(1)}%)`}},
@@ -7341,7 +7341,7 @@ function initAnalysisCharts(){
     },
     options:{
       responsive:true, maintainAspectRatio:false, cutout:'62%',
-      layout:{padding:70},
+      layout:{padding:48},
       plugins:{
         legend:{position:'bottom',labels:{font:{size:10,family:'Sarabun'},padding:6,usePointStyle:true,pointStyle:'circle',boxWidth:8,boxHeight:8}},
         tooltip:{callbacks:{label:c=>`${c.label}: ${c.raw} คน (${(c.raw/778*100).toFixed(1)}%)`}},
