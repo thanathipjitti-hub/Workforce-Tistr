@@ -3336,17 +3336,31 @@ function renderPosChart(){
       afterDatasetsDraw(chart){
         const ctx=chart.ctx,meta=chart.getDatasetMeta(0),tot=data.reduce((a,b)=>a+b,0);
         if(!tot) return;
+        const clrs=chart.data.datasets[0].backgroundColor;
         meta.data.forEach((arc,i)=>{
-          const val=data[i]; if(!val||val/tot<0.04) return;
+          const val=data[i]; if(!val) return;
           const angle=(arc.startAngle+arc.endAngle)/2;
-          const r2=(arc.innerRadius+arc.outerRadius)/2;
-          const x=arc.x+Math.cos(angle)*r2, y=arc.y+Math.sin(angle)*r2;
+          const span=Math.abs(arc.endAngle-arc.startAngle);
+          const clr=Array.isArray(clrs)?clrs[i]:clrs;
           ctx.save();
-          ctx.font="700 12px 'Sarabun',sans-serif"; ctx.fillStyle='rgba(255,255,255,.95)';
-          ctx.textAlign='center'; ctx.textBaseline='middle';
-          ctx.fillText(val.toLocaleString('th-TH'),x,y-5);
-          ctx.font="400 9.5px 'Sarabun',sans-serif"; ctx.fillStyle='rgba(255,255,255,.8)';
-          ctx.fillText(((val/tot)*100).toFixed(0)+'%',x,y+6);
+          if(span<0.28){
+            // tiny arc → label outside with short line
+            const r1=arc.outerRadius+4, r2=arc.outerRadius+18;
+            ctx.beginPath(); ctx.moveTo(arc.x+Math.cos(angle)*r1,arc.y+Math.sin(angle)*r1);
+            ctx.lineTo(arc.x+Math.cos(angle)*r2,arc.y+Math.sin(angle)*r2);
+            ctx.strokeStyle=clr; ctx.lineWidth=1.5; ctx.stroke();
+            ctx.font="700 11px 'Sarabun',sans-serif"; ctx.fillStyle=clr;
+            ctx.textAlign='center'; ctx.textBaseline='middle';
+            ctx.fillText(val.toLocaleString('th-TH'),arc.x+Math.cos(angle)*(r2+10),arc.y+Math.sin(angle)*(r2+10));
+          } else {
+            const r2=(arc.innerRadius+arc.outerRadius)/2;
+            const x=arc.x+Math.cos(angle)*r2, y=arc.y+Math.sin(angle)*r2;
+            ctx.font="700 12px 'Sarabun',sans-serif"; ctx.fillStyle='rgba(255,255,255,.95)';
+            ctx.textAlign='center'; ctx.textBaseline='middle';
+            ctx.fillText(val.toLocaleString('th-TH'),x,y-5);
+            ctx.font="400 9.5px 'Sarabun',sans-serif"; ctx.fillStyle='rgba(255,255,255,.8)';
+            ctx.fillText(((val/tot)*100).toFixed(0)+'%',x,y+6);
+          }
           ctx.restore();
         });
       }
@@ -5976,17 +5990,30 @@ function renderRetireEduChart(base,pf,yrs){
       afterDatasetsDraw(chart){
         const ctx=chart.ctx,meta=chart.getDatasetMeta(0),tot=counts.reduce((a,b)=>a+b,0);
         if(!tot)return;
+        const clrs=chart.data.datasets[0].backgroundColor;
         meta.data.forEach((arc,i)=>{
-          const val=counts[i]; if(!val||val/tot<0.04) return;
+          const val=counts[i]; if(!val) return;
           const angle=(arc.startAngle+arc.endAngle)/2;
-          const r2=(arc.innerRadius+arc.outerRadius)/2;
-          const x=arc.x+Math.cos(angle)*r2, y=arc.y+Math.sin(angle)*r2;
+          const span=Math.abs(arc.endAngle-arc.startAngle);
+          const clr=Array.isArray(clrs)?clrs[i]:clrs;
           ctx.save();
-          ctx.font="700 12px 'Sarabun',sans-serif"; ctx.fillStyle='rgba(255,255,255,.95)';
-          ctx.textAlign='center'; ctx.textBaseline='middle';
-          ctx.fillText(val,x,y-5);
-          ctx.font="400 9.5px 'Sarabun',sans-serif"; ctx.fillStyle='rgba(255,255,255,.8)';
-          ctx.fillText(((val/tot)*100).toFixed(0)+'%',x,y+6);
+          if(span<0.28){
+            const r1=arc.outerRadius+4, r2=arc.outerRadius+18;
+            ctx.beginPath(); ctx.moveTo(arc.x+Math.cos(angle)*r1,arc.y+Math.sin(angle)*r1);
+            ctx.lineTo(arc.x+Math.cos(angle)*r2,arc.y+Math.sin(angle)*r2);
+            ctx.strokeStyle=clr; ctx.lineWidth=1.5; ctx.stroke();
+            ctx.font="700 11px 'Sarabun',sans-serif"; ctx.fillStyle=clr;
+            ctx.textAlign='center'; ctx.textBaseline='middle';
+            ctx.fillText(val,arc.x+Math.cos(angle)*(r2+10),arc.y+Math.sin(angle)*(r2+10));
+          } else {
+            const r2=(arc.innerRadius+arc.outerRadius)/2;
+            const x=arc.x+Math.cos(angle)*r2, y=arc.y+Math.sin(angle)*r2;
+            ctx.font="700 12px 'Sarabun',sans-serif"; ctx.fillStyle='rgba(255,255,255,.95)';
+            ctx.textAlign='center'; ctx.textBaseline='middle';
+            ctx.fillText(val,x,y-5);
+            ctx.font="400 9.5px 'Sarabun',sans-serif"; ctx.fillStyle='rgba(255,255,255,.8)';
+            ctx.fillText(((val/tot)*100).toFixed(0)+'%',x,y+6);
+          }
           ctx.restore();
         });
       }
@@ -7263,7 +7290,7 @@ function initAnalysisCharts(){
       plugins:{
         legend:{position:'bottom', labels:{font:{size:10,family:'Sarabun'},padding:6,usePointStyle:true,pointStyle:'circle',boxWidth:8,boxHeight:8}},
         tooltip:{callbacks:{label:c=>`${c.label}: ${c.raw} คน (${(c.raw/778*100).toFixed(1)}%)`}},
-        datalabels: dlOn ? {color:'#fff',font:{size:11,weight:'700'},formatter:(v)=>v>=10?v:''} : {display:false}
+        datalabels: dlOn ? {color:'#fff',font:{size:11,weight:'700'},clamp:true,formatter:(v)=>v} : {display:false}
       }
     }
   });
@@ -7325,7 +7352,7 @@ function initAnalysisCharts(){
       plugins:{
         legend:{position:'bottom',labels:{font:{size:10,family:'Sarabun'},padding:6,usePointStyle:true,pointStyle:'circle',boxWidth:8,boxHeight:8}},
         tooltip:{callbacks:{label:c=>`${c.label}: ${c.raw} คน (${(c.raw/574*100).toFixed(1)}%)`}},
-        datalabels: dlOn ? {color:'#fff',font:{size:11,weight:'700'},formatter:(v)=>v>=20?v:''} : {display:false}
+        datalabels: dlOn ? {color:'#fff',font:{size:11,weight:'700'},clamp:true,formatter:(v)=>v} : {display:false}
       }
     }
   });
@@ -7342,7 +7369,7 @@ function initAnalysisCharts(){
       plugins:{
         legend:{position:'bottom',labels:{font:{size:10,family:'Sarabun'},padding:6,usePointStyle:true,pointStyle:'circle',boxWidth:8,boxHeight:8}},
         tooltip:{callbacks:{label:c=>`${c.label}: ${c.raw} คน (${(c.raw/778*100).toFixed(1)}%)`}},
-        datalabels: dlOn ? {color:'#fff',font:{size:11,weight:'700'},formatter:(v)=>v>=30?v:''} : {display:false}
+        datalabels: dlOn ? {color:'#fff',font:{size:11,weight:'700'},clamp:true,formatter:(v)=>v} : {display:false}
       }
     }
   });
