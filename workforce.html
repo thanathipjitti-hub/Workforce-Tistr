@@ -3345,14 +3345,20 @@ function renderPosChart(){
           const clr=Array.isArray(clrs)?clrs[i]:clrs;
           ctx.save();
           if(span<0.28){
-            // tiny arc → label outside with short line
-            const r1=arc.outerRadius+4, r2=arc.outerRadius+18;
+            const r1=arc.outerRadius+3, r2=arc.outerRadius+32;
+            const ex=arc.x+Math.cos(angle)*r2, ey=arc.y+Math.sin(angle)*r2;
             ctx.beginPath(); ctx.moveTo(arc.x+Math.cos(angle)*r1,arc.y+Math.sin(angle)*r1);
-            ctx.lineTo(arc.x+Math.cos(angle)*r2,arc.y+Math.sin(angle)*r2);
-            ctx.strokeStyle=clr; ctx.lineWidth=1.5; ctx.stroke();
-            ctx.font="700 11px 'Sarabun',sans-serif"; ctx.fillStyle=clr;
-            ctx.textAlign='center'; ctx.textBaseline='middle';
-            ctx.fillText(val.toLocaleString('th-TH'),arc.x+Math.cos(angle)*(r2+10),arc.y+Math.sin(angle)*(r2+10));
+            ctx.lineTo(ex,ey); ctx.strokeStyle=clr; ctx.lineWidth=2; ctx.stroke();
+            ctx.beginPath(); ctx.arc(ex,ey,3,0,Math.PI*2); ctx.fillStyle=clr; ctx.fill();
+            ctx.font="700 12px 'Sarabun',sans-serif";
+            const txt=val.toLocaleString('th-TH');
+            const tw=ctx.measureText(txt).width;
+            const bx=ex+Math.cos(angle)*18, by=ey+Math.sin(angle)*18;
+            ctx.fillStyle=clr+'33';
+            ctx.beginPath(); ctx.roundRect(bx-tw/2-5,by-9,tw+10,18,4); ctx.fill();
+            ctx.strokeStyle=clr; ctx.lineWidth=1.2; ctx.stroke();
+            ctx.fillStyle=clr; ctx.textAlign='center'; ctx.textBaseline='middle';
+            ctx.fillText(txt,bx,by);
           } else {
             const r2=(arc.innerRadius+arc.outerRadius)/2;
             const x=arc.x+Math.cos(angle)*r2, y=arc.y+Math.sin(angle)*r2;
@@ -6000,13 +6006,19 @@ function renderRetireEduChart(base,pf,yrs){
           const clr=Array.isArray(clrs)?clrs[i]:clrs;
           ctx.save();
           if(span<0.28){
-            const r1=arc.outerRadius+4, r2=arc.outerRadius+18;
+            const r1=arc.outerRadius+3, r2=arc.outerRadius+32;
+            const ex=arc.x+Math.cos(angle)*r2, ey=arc.y+Math.sin(angle)*r2;
             ctx.beginPath(); ctx.moveTo(arc.x+Math.cos(angle)*r1,arc.y+Math.sin(angle)*r1);
-            ctx.lineTo(arc.x+Math.cos(angle)*r2,arc.y+Math.sin(angle)*r2);
-            ctx.strokeStyle=clr; ctx.lineWidth=1.5; ctx.stroke();
-            ctx.font="700 11px 'Sarabun',sans-serif"; ctx.fillStyle=clr;
-            ctx.textAlign='center'; ctx.textBaseline='middle';
-            ctx.fillText(val,arc.x+Math.cos(angle)*(r2+10),arc.y+Math.sin(angle)*(r2+10));
+            ctx.lineTo(ex,ey); ctx.strokeStyle=clr; ctx.lineWidth=2; ctx.stroke();
+            ctx.beginPath(); ctx.arc(ex,ey,3,0,Math.PI*2); ctx.fillStyle=clr; ctx.fill();
+            ctx.font="700 12px 'Sarabun',sans-serif";
+            const tw=ctx.measureText(val).width;
+            const bx=ex+Math.cos(angle)*18, by=ey+Math.sin(angle)*18;
+            ctx.fillStyle=clr+'33';
+            ctx.beginPath(); ctx.roundRect(bx-tw/2-5,by-9,tw+10,18,4); ctx.fill();
+            ctx.strokeStyle=clr; ctx.lineWidth=1.2; ctx.stroke();
+            ctx.fillStyle=clr; ctx.textAlign='center'; ctx.textBaseline='middle';
+            ctx.fillText(val,bx,by);
           } else {
             const r2=(arc.innerRadius+arc.outerRadius)/2;
             const x=arc.x+Math.cos(angle)*r2, y=arc.y+Math.sin(angle)*r2;
@@ -7297,13 +7309,24 @@ function initAnalysisCharts(){
           const clr=Array.isArray(clrs)?clrs[i]:clrs;
           ctx.save();
           if(span<0.28){
-            const r1=arc.outerRadius+4, r2=arc.outerRadius+22;
+            // tiny segment: draw label in a badge outside the arc
+            const r1=arc.outerRadius+3, r2=arc.outerRadius+32;
+            const ex=arc.x+Math.cos(angle)*r2, ey=arc.y+Math.sin(angle)*r2;
+            // line
             ctx.beginPath(); ctx.moveTo(arc.x+Math.cos(angle)*r1,arc.y+Math.sin(angle)*r1);
-            ctx.lineTo(arc.x+Math.cos(angle)*r2,arc.y+Math.sin(angle)*r2);
-            ctx.strokeStyle=clr; ctx.lineWidth=2; ctx.stroke();
-            ctx.font="700 12px 'Sarabun',sans-serif"; ctx.fillStyle=clr;
-            ctx.textAlign='center'; ctx.textBaseline='middle';
-            ctx.fillText(val,arc.x+Math.cos(angle)*(r2+13),arc.y+Math.sin(angle)*(r2+13));
+            ctx.lineTo(ex,ey); ctx.strokeStyle=clr; ctx.lineWidth=2; ctx.stroke();
+            // dot
+            ctx.beginPath(); ctx.arc(ex,ey,3,0,Math.PI*2); ctx.fillStyle=clr; ctx.fill();
+            // badge background
+            ctx.font="700 12px 'Sarabun',sans-serif";
+            const tw=ctx.measureText(val).width;
+            const bx=ex+Math.cos(angle)*18, by=ey+Math.sin(angle)*18;
+            ctx.fillStyle=clr+'22';
+            ctx.beginPath(); ctx.roundRect(bx-tw/2-5,by-9,tw+10,18,4); ctx.fill();
+            ctx.strokeStyle=clr; ctx.lineWidth=1.2; ctx.stroke();
+            // text
+            ctx.fillStyle=clr; ctx.textAlign='center'; ctx.textBaseline='middle';
+            ctx.fillText(val,bx,by);
           } else {
             const r2=(arc.innerRadius+arc.outerRadius)/2;
             ctx.font="700 12px 'Sarabun',sans-serif"; ctx.fillStyle='rgba(255,255,255,.95)';
@@ -7320,7 +7343,7 @@ function initAnalysisCharts(){
     },
     options:{
       responsive:true, maintainAspectRatio:false, cutout:'62%',
-      layout:{padding:30},
+      layout:{padding:50},
       plugins:{
         legend:{position:'bottom', labels:{font:{size:10,family:'Sarabun'},padding:6,usePointStyle:true,pointStyle:'circle',boxWidth:8,boxHeight:8}},
         tooltip:{callbacks:{label:c=>`${c.label}: ${c.raw} คน (${(c.raw/778*100).toFixed(1)}%)`}},
